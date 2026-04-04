@@ -15,11 +15,11 @@ Check out my live dashboard: **[alvinasael.github.io/Home/](https://alvinasael.g
 
 ---
 
-### 🛠️ Core Stack & Expertise
-* **Methodologies**: Lean Six Sigma, PFMEA, DMADOV, Statistical Process Control (SPC).
-* **Development**: HTML/CSS (Tailwind), JavaScript (Chart.js, Plotly), AI-Assisted Workflows.
-* **Automation**: n8n, Python-lite for data manipulation, Digital Twins.
-* **Music Technology**: Audio Engineering, Jazz Harmony, Systematic Learning Design.
+### 🛠️ Core Stack & Black Belt Expertise
+* **Continuous Improvement**: Lean Six Sigma **Black Belt**, PFMEA, DMADOV, Kaizen, Root Cause Analysis (RCA).
+* **Statistical Engineering**: Statistical Process Control (SPC), Design of Experiments (DOE), Stochastic Simulation (Monte Carlo).
+* **Digital Acceleration**: AI-Driven Development, Workflow Automation (n8n), Custom Engineering Dashboards.
+* **Music Systems**: Systematic Pedagogy, Jazz Harmony & Theory, Digital Audio Workflows.
 
 ---
 
