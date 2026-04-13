@@ -7,7 +7,7 @@ I specialize in bridging the gap between **industrial engineering** and **digita
 ---
 
 ### 🚀 Digital Ecosystem & Projects
-Check out my live dashboard: **[alvinasael.github.io/Home/](https://alvinasael.github.io/Home/)**
+Check out my live dashboard: **[alvinasael.github.io/home/](https://alvinasael.github.io/home/)**
 
 * **[Monte Carlo Simulation](https://github.com/alvinasael/MonteCarloSimulation)**: Stochastic modeling for risk assessment and process optimization.
 * **[Guitar Academy](https://github.com/alvinasael/GuitarCourse)**: A structured learning system for modern guitar technique and theory.
