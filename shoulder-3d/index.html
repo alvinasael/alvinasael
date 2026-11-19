@@ -1,0 +1,847 @@
+<title>Right Shoulder Model</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap">
+<style>
+/* Layout: full-height viewer, 3D stage on the left, clinical reading panel on the right (stacks below on phones). */
+:root{
+  --bg:#eef0f1; --panel:#fbfbfa; --fg:#1d2327; --muted:#5d686f; --line:#d9dee1;
+  --accent:#e2481c; --accent-soft:#fde6dc; --chip:#eef2f4; --ok:#2f7d5b;
+  --stage-a:#f7f8f8; --stage-b:#d9dde0; --label-bg:rgba(255,255,255,.88); --label-fg:#1d2327;
+  --f-display:"Fraunces", Georgia, "Times New Roman", serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191c; --panel:#1b2024; --fg:#e7ebed; --muted:#9aa6ad; --line:#2d353a;
+    --accent:#ff6a3d; --accent-soft:#3a2219; --chip:#252c31; --ok:#5fc497;
+    --label-bg:rgba(20,24,27,.86); --label-fg:#eef1f2; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191c; --panel:#1b2024; --fg:#e7ebed; --muted:#9aa6ad; --line:#2d353a;
+  --accent:#ff6a3d; --accent-soft:#3a2219; --chip:#252c31; --ok:#5fc497;
+  --label-bg:rgba(20,24,27,.86); --label-fg:#eef1f2; color-scheme:dark;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.5;overflow:hidden}
+#app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 372px}
+#stage{position:relative;min-width:0;min-height:0;overflow:hidden;
+  background:radial-gradient(120% 90% at 50% 38%,var(--stage-a) 0%,#eceeef 45%,var(--stage-b) 100%)}
+#c{display:block;width:100%;height:100%;touch-action:none;outline:none}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lbl{position:absolute;left:0;top:0;display:flex;align-items:center;gap:6px;white-space:nowrap;
+  font-size:11.5px;font-weight:500;color:#1d2327;will-change:transform}
+.lbl i{width:7px;height:7px;border-radius:50%;background:#1d2327;box-shadow:0 0 0 2px rgba(255,255,255,.9);flex:none}
+.lbl span{background:rgba(255,255,255,.86);padding:2px 7px;border-radius:4px;border:1px solid rgba(29,35,39,.12);
+  box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.lbl.lesion span{background:#e2481c;color:#fff;border-color:#c43a12;font-weight:600}
+.lbl.lesion i{background:#e2481c;box-shadow:0 0 0 3px rgba(226,72,28,.28)}
+.lbl.lesion span{transform:translate(18px,-22px)}
+.lbl.lesion::before{content:"";position:absolute;left:6px;top:50%;width:22px;height:1.5px;background:#e2481c;transform:translateY(-11px) rotate(-45deg);transform-origin:left center}
+.lbl.clock{font-family:var(--f-mono);font-size:13px;font-weight:500;color:#3d4a52}
+.lbl.clock span{background:none;border:0;box-shadow:none;padding:0}
+.lbl.clock i{display:none}
+.lbl.clock.hot{color:#e2481c;font-weight:600}
+
+.topbar{position:absolute;top:max(12px,env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:16px;
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;pointer-events:none}
+.views{display:flex;flex-wrap:wrap;gap:4px;padding:4px;border-radius:10px;background:rgba(255,255,255,.82);
+  border:1px solid rgba(29,35,39,.1);box-shadow:0 2px 10px rgba(30,40,50,.08);pointer-events:auto;backdrop-filter:blur(6px)}
+.views button{font:500 12.5px/1 var(--f-body);color:#1d2327;background:transparent;border:0;border-radius:7px;padding:8px 11px;cursor:pointer}
+.views button:hover{background:#e9edef}
+.views button[aria-pressed="true"]{background:#1d2327;color:#fff}
+.views button:focus-visible,.btn:focus-visible,.toggle input:focus-visible+span,.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{position:absolute;left:50%;bottom:max(12px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  font-size:12px;color:#4b565c;background:rgba(255,255,255,.75);padding:5px 12px;border-radius:999px;pointer-events:none;white-space:nowrap}
+.scalebar{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));
+  font:500 11px/1 var(--f-mono);color:#4b565c;display:flex;flex-direction:column;align-items:flex-end;gap:5px;pointer-events:none}
+.scalebar b{display:block;height:5px;border:1.5px solid #4b565c;border-top:0}
+#loading{position:absolute;inset:0;display:grid;place-items:center;background:rgba(240,242,243,.7);font-size:13px;color:#3d4a52;z-index:5}
+#loading div{display:flex;flex-direction:column;align-items:center;gap:10px}
+#loading progress{width:180px;accent-color:#e2481c}
+
+#panel{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;min-width:0;
+  padding-block:22px 28px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.eyebrow{font:500 11px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:600;font-size:27px;line-height:1.12;margin:6px 0 8px;text-wrap:balance;letter-spacing:-.01em}
+h2{font:600 11px/1.3 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px}
+p{margin:0 0 10px;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.meta span{font:500 11.5px/1 var(--f-mono);background:var(--chip);padding:6px 8px;border-radius:5px;color:var(--fg)}
+.cards{display:flex;flex-direction:column;gap:10px}
+.card{display:block;width:100%;text-align:left;font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;padding:13px 14px 12px;cursor:pointer;position:relative}
+.card:hover{border-color:var(--accent)}
+.card .num{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;
+  font:600 11px/1 var(--f-mono);margin-right:8px;vertical-align:1px}
+.card h3{display:inline;font-size:15px;font-weight:600;margin:0}
+.card p{font-size:13px;color:var(--fg);margin:8px 0 8px}
+.card dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:0;font-size:12px}
+.card dt{color:var(--muted);font-family:var(--f-mono);font-size:11px;padding-top:1px}
+.card dd{margin:0;font-variant-numeric:tabular-nums}
+.card .go{display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:var(--accent)}
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.toggle{display:flex;align-items:center;cursor:pointer;user-select:none}
+.toggle input{position:absolute;opacity:0;pointer-events:none}
+.toggle span{flex:1;display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;border:1px solid var(--line);font-size:13px;background:var(--panel)}
+.toggle span::before{content:"";width:14px;height:14px;border-radius:4px;border:1.5px solid var(--muted);flex:none;box-sizing:border-box}
+.toggle input:checked+span{background:var(--chip);border-color:transparent}
+.toggle input:checked+span::before{background:var(--fg);border-color:var(--fg);
+  box-shadow:inset 0 0 0 2.5px var(--chip)}
+.toggle.lesion input:checked+span::before{background:var(--accent);border-color:var(--accent)}
+.normal{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.normal li{display:flex;gap:9px;align-items:flex-start}
+.normal li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-top:7px}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:12.5px}
+.legend div{display:flex;align-items:center;gap:8px}
+.legend i{width:14px;height:14px;border-radius:3px;flex:none;border:1px solid rgba(0,0,0,.12)}
+.note{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:22px}
+.btn{font:600 12.5px/1 var(--f-body);border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:8px;padding:9px 12px;cursor:pointer}
+
+@media (max-width: 860px){
+  #app{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,58%) minmax(0,42%)}
+  #panel{border-left:0;border-top:1px solid var(--line);padding-block:16px 24px}
+  h1{font-size:22px}
+  .lbl{font-size:10.5px}
+  .views button{padding:7px 9px;font-size:12px}
+  .hint{display:none}
+  .views{flex-wrap:nowrap;overflow-x:auto;max-width:100%}
+  .views .wide{display:none}
+  .topbar{right:max(16px,env(safe-area-inset-right,0px))}
+}
+@media (prefers-reduced-motion: reduce){ *{scroll-behavior:auto!important} }
+</style>
+
+<div id="app">
+  <div id="stage">
+    <canvas id="c" tabindex="0" aria-label="Interactive 3D model of a right shoulder. Drag to rotate, pinch or scroll to zoom."></canvas>
+    <div id="labels" aria-hidden="true"></div>
+    <div class="topbar">
+      <div class="views" role="group" aria-label="Preset views">
+        <button data-view="overview" aria-pressed="true">Overview</button>
+        <button data-view="anterior" aria-pressed="false">Anterior</button>
+        <button data-view="posterior" aria-pressed="false">Posterior</button>
+        <button data-view="superior" aria-pressed="false">Superior</button>
+        <button data-view="lateral" aria-pressed="false">Lateral<span class="wide"> · glenoid</span></button>
+      </div>
+    </div>
+    <div class="hint">Drag to rotate · pinch or scroll to zoom · two fingers to pan</div>
+    <div class="scalebar" aria-hidden="true"><span id="scaleTxt">1 cm</span><b id="scaleBar" style="width:40px"></b></div>
+    <div id="loading"><div><span id="loadTxt">Building bones…</span><progress id="loadBar" max="100" value="5"></progress></div></div>
+  </div>
+
+  <aside id="panel">
+    <div class="eyebrow">Right shoulder · MR arthrogram, 1.5T</div>
+    <h1>Your shoulder, layer by layer</h1>
+    <p>An interactive model of a right glenohumeral joint with the two findings from your report placed where the radiologist described them. Turn the model, peel away layers, and tap a finding to fly to it.</p>
+    <div class="meta"><span>43 y · male</span><span>Pain with movement · 1 yr</span><span>Indication: bicipital tendinitis</span><span>Intra-articular gadolinium</span></div>
+
+    <h2>Findings</h2>
+    <div class="cards">
+      <button class="card" id="cardSlap" type="button">
+        <span class="num">1</span><h3>SLAP tear</h3>
+        <p>A thin, contrast-filled cleft runs along the back-top (posterosuperior) labrum, the rim of cartilage around the socket. The labrum is partly lifted off the bone along this arc and the cleft passes beneath the biceps anchor. No piece has broken loose.</p>
+        <dl><dt>Where</dt><dd>9:00 → 12:00 on the glenoid clock, about ¼ of the ring</dd>
+            <dt>Type</dt><dd>SLAP type not specified in the report</dd></dl>
+        <span class="go">Show glenoid face-on →</span>
+      </button>
+      <button class="card" id="cardSupra" type="button">
+        <span class="num">2</span><h3>Supraspinatus interstitial tear</h3>
+        <p>A small low-grade split <em>inside</em> the supraspinatus tendon near where it attaches to the greater tuberosity. It reaches neither the joint-side nor the top (bursal) surface of the tendon. Drawn at true scale.</p>
+        <dl><dt>Size</dt><dd>≈ 7 × 4 mm (0.7 × 0.4 cm), partial width</dd>
+            <dt>Depth</dt><dd>Partial-thickness, intrasubstance</dd></dl>
+        <span class="go">Show inside the tendon →</span>
+      </button>
+    </div>
+
+    <h2>Layers</h2>
+    <div class="toggles">
+      <label class="toggle"><input type="checkbox" id="tDeltoid"><span>Deltoid</span></label>
+      <label class="toggle"><input type="checkbox" id="tCuff" checked><span>Rotator cuff</span></label>
+      <label class="toggle"><input type="checkbox" id="tHumerus" checked><span>Humerus</span></label>
+      <label class="toggle"><input type="checkbox" id="tBiceps" checked><span>Biceps tendon</span></label>
+      <label class="toggle lesion"><input type="checkbox" id="tLesion" checked><span>Lesion highlights</span></label>
+      <label class="toggle"><input type="checkbox" id="tSee" checked><span>See-through tendon</span></label>
+      <label class="toggle"><input type="checkbox" id="tLabels" checked><span>Labels</span></label>
+      <label class="toggle"><input type="checkbox" id="tClock" checked><span>Clock face</span></label>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">Hide the humerus to look straight into the socket. The clock face appears around the glenoid whenever the humerus is hidden.</p>
+
+    <h2>Reported as normal</h2>
+    <ul class="normal">
+      <li>Long head of biceps tendon intact, sitting normally in the bicipital groove</li>
+      <li>Infraspinatus, subscapularis and teres minor tendons intact</li>
+      <li>Rotator cuff muscles of normal bulk, no atrophy or fatty change</li>
+      <li>Joint cartilage preserved and smooth</li>
+      <li>No fracture, normal bone marrow</li>
+      <li>Acromioclavicular joint normal</li>
+    </ul>
+
+    <h2>Legend</h2>
+    <div class="legend">
+      <div><i style="background:#e8dcc4"></i>Bone</div>
+      <div><i style="background:#d3e2ee"></i>Joint cartilage</div>
+      <div><i style="background:#efd1c9"></i>Labrum</div>
+      <div><i style="background:#f1ece2"></i>Tendon</div>
+      <div><i style="background:#a5302a"></i>Muscle</div>
+      <div><i style="background:#e2481c"></i>Lesion</div>
+    </div>
+
+    <p class="note">Educational illustration to help explain the report. This is a general anatomical model with the lesions placed according to the radiology report. It is not a reconstruction from your own scan, and shapes and proportions are approximate. Clock convention for a right shoulder viewed from the side: 12 = top, 3 = front, 6 = bottom, 9 = back.</p>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
+<script>
+(function(){
+"use strict";
+const T = THREE;
+T.ColorManagement.legacyMode = false;
+const V3 = (x,y,z)=>new T.Vector3(x,y,z);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const mix=(a,b,t)=>a+(b-a)*t;
+const sstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
+function smin(a,b,k){const h=Math.max(k-Math.abs(a-b),0)/k;return Math.min(a,b)-h*h*k*0.25;}
+function smax(a,b,k){return -smin(-a,-b,k);}
+const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
+
+/* ---------------- noise ---------------- */
+function hash3(i,j,k){let h=(Math.imul(i,374761393)+Math.imul(j,668265263)+Math.imul(k,1440662683))|0;
+  h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;}
+function vnoise(x,y,z){const xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z);
+  let xf=x-xi,yf=y-yi,zf=z-zi;xf=xf*xf*(3-2*xf);yf=yf*yf*(3-2*yf);zf=zf*zf*(3-2*zf);
+  const a=hash3(xi,yi,zi),b=hash3(xi+1,yi,zi),c=hash3(xi,yi+1,zi),d=hash3(xi+1,yi+1,zi);
+  const e=hash3(xi,yi,zi+1),f=hash3(xi+1,yi,zi+1),g=hash3(xi,yi+1,zi+1),h=hash3(xi+1,yi+1,zi+1);
+  return mix(mix(mix(a,b,xf),mix(c,d,xf),yf),mix(mix(e,f,xf),mix(g,h,xf),yf),zf);}
+function fbm(x,y,z){return 0.55*vnoise(x,y,z)+0.3*vnoise(x*2.07+5.1,y*2.07,z*2.07)+0.15*vnoise(x*4.3,y*4.3+3.3,z*4.3);}
+
+/* ---------------- anatomical frame ----------------
+   Model coordinates (cm), before the final mirror: +x lateral, +y superior, +z anterior.
+   Origin = centre of the humeral head. The root group is mirrored in x so the result is a RIGHT shoulder. */
+const HEAD_R = 2.35;            // bony head radius
+const CART_R = 2.43;            // head + cartilage
+const hd = V3(-0.80,0.42,-0.42).normalize();       // articular axis of the humeral head (medial, up, back)
+const u = V3(0.92,0.10,0.38).normalize();          // glenoid face normal (lateral, slightly anterior & up)
+const v = V3(0,1,0).addScaledVector(u,-u.y).normalize(); // glenoid "12 o'clock"
+const w = new T.Vector3().crossVectors(u,v).normalize(); // glenoid "3 o'clock" (anterior)
+const D_HEAD = 2.30;
+const G = u.clone().multiplyScalar(-D_HEAD);       // centre of glenoid face
+const L = (U,Vv,W)=>G.clone().addScaledVector(u,U).addScaledVector(v,Vv).addScaledVector(w,W);
+const ux=u.x,uy=u.y,uz=u.z,vx=v.x,vy=v.y,vz=v.z,wx=w.x,wy=w.y,wz=w.z,Gx=G.x,Gy=G.y,Gz=G.z;
+
+/* ---------------- SDF primitives (closures for speed) ---------------- */
+function mkEll(c,r){const [cx,cy,cz]=c,[rx,ry,rz]=r;
+  return (x,y,z)=>{const px=(x-cx)/rx,py=(y-cy)/ry,pz=(z-cz)/rz;const k0=Math.sqrt(px*px+py*py+pz*pz);
+    const k1=Math.sqrt(px*px/(rx*rx)+py*py/(ry*ry)+pz*pz/(rz*rz));return k1>1e-9?k0*(k0-1)/k1:-Math.min(rx,ry,rz);};}
+function mkCap(a,b,r1,r2){const ax=a[0],ay=a[1],az=a[2],bx=b[0]-ax,by=b[1]-ay,bz=b[2]-az,bb=bx*bx+by*by+bz*bz;
+  return (x,y,z)=>{const px=x-ax,py=y-ay,pz=z-az;const h=clamp((px*bx+py*by+pz*bz)/bb,0,1);
+    const dx=px-bx*h,dy=py-by*h,dz=pz-bz*h;return Math.sqrt(dx*dx+dy*dy+dz*dz)-(r1+(r2-r1)*h);};}
+function mkTri(A,B,C){ // unsigned distance to a triangle
+  const a=V3(...A),b=V3(...B),c=V3(...C);
+  const ba=b.clone().sub(a),cb=c.clone().sub(b),ac=a.clone().sub(c);const nor=new T.Vector3().crossVectors(ba,ac);
+  const q1=new T.Vector3().crossVectors(ba,nor),q2=new T.Vector3().crossVectors(cb,nor),q3=new T.Vector3().crossVectors(ac,nor);
+  const d2=v=>v.x*v.x+v.y*v.y+v.z*v.z;const bb=d2(ba),cc=d2(cb),aa=d2(ac),nn=d2(nor);
+  return (x,y,z)=>{const pax=x-a.x,pay=y-a.y,paz=z-a.z,pbx=x-b.x,pby=y-b.y,pbz=z-b.z,pcx=x-c.x,pcy=y-c.y,pcz=z-c.z;
+    const s=Math.sign(q1.x*pax+q1.y*pay+q1.z*paz)+Math.sign(q2.x*pbx+q2.y*pby+q2.z*pbz)+Math.sign(q3.x*pcx+q3.y*pcy+q3.z*pcz);
+    if(s<2){
+      let t=clamp((ba.x*pax+ba.y*pay+ba.z*paz)/bb,0,1);let ex=ba.x*t-pax,ey=ba.y*t-pay,ez=ba.z*t-paz;let m=ex*ex+ey*ey+ez*ez;
+      t=clamp((cb.x*pbx+cb.y*pby+cb.z*pbz)/cc,0,1);ex=cb.x*t-pbx;ey=cb.y*t-pby;ez=cb.z*t-pbz;m=Math.min(m,ex*ex+ey*ey+ez*ez);
+      t=clamp((ac.x*pcx+ac.y*pcy+ac.z*pcz)/aa,0,1);ex=ac.x*t-pcx;ey=ac.y*t-pcy;ez=ac.z*t-pcz;m=Math.min(m,ex*ex+ey*ey+ez*ez);
+      return Math.sqrt(m);}
+    const dn=nor.x*pax+nor.y*pay+nor.z*paz;return Math.sqrt(dn*dn/nn);};}
+const arr=v=>[v.x,v.y,v.z];
+
+/* ---------------- glenoid outline (pear shape) ---------------- */
+function ell2(y,z,cy,cz,ry,rz){const py=(y-cy)/ry,pz=(z-cz)/rz;return (Math.sqrt(py*py+pz*pz)-1)*Math.min(ry,rz);}
+function glen2d(y,z){return smin(ell2(y,z,0.75,0,1.08,0.98),ell2(y,z,-0.45,0,1.42,1.42),0.45);}
+// clock angle theta: 0 = 12 o'clock (+v), +PI/2 = 3 o'clock (anterior, +w)
+const RIM_N=512, RIM=[];
+for(let i=0;i<=RIM_N;i++){const th=i/RIM_N*Math.PI*2;const dy=Math.cos(th),dz=Math.sin(th);
+  let lo=0,hi=3;for(let k=0;k<40;k++){const m=(lo+hi)/2;if(glen2d(dy*m,dz*m)<0)lo=m;else hi=m;}
+  const y=dy*lo,z=dz*lo,e=1e-3;let gy=glen2d(y+e,z)-glen2d(y-e,z),gz=glen2d(y,z+e)-glen2d(y,z-e);const gl=Math.hypot(gy,gz);
+  RIM.push({y,z,r:lo,oy:gy/gl,oz:gz/gl});}
+function rimAt(th){let f=((th/(Math.PI*2))%1+1)%1*RIM_N;const i=Math.floor(f),t=f-i;const a=RIM[i],b=RIM[Math.min(i+1,RIM_N)];
+  const oy=mix(a.oy,b.oy,t),oz=mix(a.oz,b.oz,t),ol=Math.hypot(oy,oz);
+  return {y:mix(a.y,b.y,t),z:mix(a.z,b.z,t),r:mix(a.r,b.r,t),oy:oy/ol,oz:oz/ol};}
+const hourToTheta=h=>h/12*Math.PI*2;
+
+const RC=3.2, DEPTH=0.25;
+function glenBoneU(y,z){const r2=y*y+z*z;return Math.min(0,(RC-DEPTH)-Math.sqrt(Math.max(RC*RC-r2,0)));}
+function cartTopU(y,z){const r2=y*y+z*z;const ub=glenBoneU(y,z);const uc=D_HEAD-Math.sqrt(Math.max(2.47*2.47-r2,0));
+  return ub+clamp(uc-ub,0.17,0.24);}
+
+/* ---------------- SCAPULA ---------------- */
+const Lr=(U,Vv,W)=>arr(L(U,Vv,W));
+const sc={};
+(function(){
+  // body (local coords U,V,W) – built as triangles with thickness
+  const A=[-1.4,1.0,-0.3],B=[-10.0,3.0,-0.35],C=[-8.4,-11.0,-0.3],Dd=[-1.5,-2.4,-0.3],M=[-6.0,-3.2,-0.65];
+  sc.body=[mkTri(A,B,M),mkTri(B,C,M),mkTri(C,Dd,M),mkTri(Dd,A,M)];
+  sc.latBorder=mkCap(Dd,[-8.4,-11.0,-0.35],0.46,0.3);
+  sc.medBorder=mkCap(B,C,0.24,0.26);
+  sc.supBorder=mkCap([-2.0,1.4,-0.3],B,0.24,0.2);
+  sc.infAngle=mkEll([-8.4,-11.0,-0.3],[0.55,0.55,0.4]);
+  sc.neck=mkEll([-1.2,-0.15,-0.1],[1.0,1.7,0.92]);
+  sc.supraTub=mkEll([-0.35,1.9,0],[0.45,0.4,0.42]);
+  sc.infraTub=mkEll([-0.7,-2.05,-0.15],[0.55,0.5,0.45]);
+  // spine (local)
+  const Bm=[-10,0.8,-0.45],Bl=[-1.9,1.7,-0.6],Cl=[-2.2,2.6,-2.6],Cm=[-10,1.15,-1.0];
+  sc.spine=[mkTri(Bm,Bl,Cl),mkTri(Bm,Cl,Cm)];
+  sc.crest=mkCap(Cm,Cl,0.3,0.42);
+  // acromion (model coords)
+  const P1=[-3.5,2.75,-4.0],P2=[1.4,3.8,-2.0],P3=[1.6,4.1,0.6],P4=[-0.6,4.2,1.2],P5=[-2.4,3.9,-1.2];
+  sc.acro=[mkTri(P1,P2,P5),mkTri(P5,P2,P3),mkTri(P5,P3,P4)];
+  sc.acroEdge=mkCap([1.45,3.85,-1.9],[1.65,4.1,0.5],0.3,0.3);
+  sc.spineAcro=mkCap(arr(L(-2.2,2.6,-2.6)),P1,0.42,0.38);
+  // coracoid (model)
+  const cb=Lr(-1.6,2.1,0.35);
+  sc.cor1=mkCap(cb,[-3.6,3.15,0.3],0.72,0.6);
+  sc.cor2=mkCap([-3.6,3.15,0.3],[-1.6,2.5,2.5],0.6,0.45);
+  sc.corTip=mkEll([-1.55,2.45,2.6],[0.6,0.45,0.55]);
+})();
+function sdScapula(x,y,z){
+  const dx=x-Gx,dy=y-Gy,dz=z-Gz;
+  const U=dx*ux+dy*uy+dz*uz,Vv=dx*vx+dy*vy+dz*vz,W=dx*wx+dy*wy+dz*wz;
+  // glenoid
+  const f=glen2d(Vv,W)+Math.max(0,-U-0.25)*0.32;
+  const slab=Math.max(U,-U-1.2);const r=0.1;const a=f+r,b=slab+r;
+  let d=Math.sqrt(Math.max(a,0)**2+Math.max(b,0)**2)+Math.min(Math.max(a,b),0)-r;
+  const s=Math.sqrt((U-(RC-DEPTH))**2+Vv*Vv+W*W)-RC;
+  d=smax(d,-s,0.06);
+  d=smin(d,sc.neck(U,Vv,W),0.5);
+  d=smin(d,sc.supraTub(U,Vv,W),0.25);
+  d=smin(d,sc.infraTub(U,Vv,W),0.35);
+  let body=Math.min(sc.body[0](U,Vv,W),sc.body[1](U,Vv,W),sc.body[2](U,Vv,W),sc.body[3](U,Vv,W))-0.22;
+  body=smin(body,sc.latBorder(U,Vv,W),0.35);
+  body=smin(body,sc.medBorder(U,Vv,W),0.2);
+  body=smin(body,sc.supBorder(U,Vv,W),0.2);
+  body=smin(body,sc.infAngle(U,Vv,W),0.3);
+  d=smin(d,body,0.7);
+  let sp=Math.min(sc.spine[0](U,Vv,W),sc.spine[1](U,Vv,W))-0.2;
+  sp=smin(sp,sc.crest(U,Vv,W),0.35);
+  d=smin(d,sp,0.45);
+  let ac=Math.min(sc.acro[0](x,y,z),sc.acro[1](x,y,z),sc.acro[2](x,y,z))-0.36;
+  ac=smin(ac,sc.acroEdge(x,y,z),0.4);
+  ac=smin(ac,sc.spineAcro(x,y,z),0.8);
+  d=smin(d,ac,0.5);
+  let co=smin(sc.cor1(x,y,z),sc.cor2(x,y,z),0.4);co=smin(co,sc.corTip(x,y,z),0.3);
+  d=smin(d,co,0.5);
+  return d;
+}
+
+/* ---------------- HUMERUS ---------------- */
+const hu={
+  head:(x,y,z)=>Math.sqrt(x*x+y*y+z*z)-HEAD_R,
+  meta:mkEll([0.75,-1.3,0.05],[1.75,2.2,1.65]),
+  gt:mkEll([1.95,0.75,-0.2],[0.95,1.25,1.5]),
+  lt:mkEll([0.45,-0.3,1.85],[0.75,0.95,0.6]),
+  shaft:mkCap([0.75,-2.5,0.1],[0.6,-15.5,0.25],1.28,1.02),
+  delt:mkEll([1.62,-9.5,0.45],[0.38,1.7,0.6]),
+  groove:mkCap([1.6,2.4,1.8],[1.3,-7,1.45],0.33,0.3),
+};
+function sdHumerus(x,y,z){
+  let d=smin(hu.head(x,y,z),hu.meta(x,y,z),0.9);
+  d=smin(d,hu.gt(x,y,z),0.7);
+  d=smin(d,hu.lt(x,y,z),0.55);
+  d=smin(d,hu.shaft(x,y,z),1.4);
+  d=smin(d,hu.delt(x,y,z),0.6);
+  d=smax(d,-hu.groove(x,y,z),0.25);
+  d=Math.max(d,-(y+14.6));
+  return d;
+}
+function sdHumerusCart(x,y,z){return Math.min(sdHumerus(x,y,z),Math.sqrt(x*x+y*y+z*z)-CART_R);}
+
+/* ---------------- CLAVICLE (distal) ---------------- */
+const cl=[mkCap([-1.95,4.35,1.25],[-4.5,4.7,2.35],0.55,0.6),mkCap([-4.5,4.7,2.35],[-7.5,4.7,3.6],0.6,0.66),mkCap([-7.5,4.7,3.6],[-11.3,4.35,4.9],0.66,0.74)];
+function sdClavicle(x,y,z){const yy=4.5+(y-4.5)*1.18;let d=smin(cl[0](x,yy,z),cl[1](x,yy,z),0.4);d=smin(d,cl[2](x,yy,z),0.4);
+  d=smin(d,Math.sqrt((x+2.0)**2+((yy-4.35)*1.1)**2+(z-1.25)**2)-0.62,0.3);return Math.max(d,-(x+11.8));}
+
+/* ---------------- surface nets ---------------- */
+function surfaceNets(f,bmin,bmax,h){
+  const nx=Math.ceil((bmax[0]-bmin[0])/h)+1,ny=Math.ceil((bmax[1]-bmin[1])/h)+1,nz=Math.ceil((bmax[2]-bmin[2])/h)+1;
+  const vals=new Float32Array(nx*ny*nz);let n=0;
+  for(let k=0;k<nz;k++){const z=bmin[2]+k*h;for(let j=0;j<ny;j++){const y=bmin[1]+j*h;for(let i=0;i<nx;i++)vals[n++]=f(bmin[0]+i*h,y,z);}}
+  const sy=nx,sz=nx*ny,cx=nx-1,cy=ny-1,cz=nz-1;
+  const cellV=new Int32Array(cx*cy*cz).fill(-1);const pos=[];
+  const co=[0,1,sy,1+sy,sz,1+sz,sy+sz,1+sy+sz];
+  const E=[[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];
+  const cv=new Float32Array(8);
+  for(let k=0;k<cz;k++)for(let j=0;j<cy;j++)for(let i=0;i<cx;i++){
+    const base=i+j*sy+k*sz;let mask=0;
+    for(let c=0;c<8;c++){cv[c]=vals[base+co[c]];if(cv[c]<0)mask|=1<<c;}
+    if(mask===0||mask===255)continue;
+    let ax=0,ay=0,az=0,cnt=0;
+    for(let e=0;e<12;e++){const a=E[e][0],b=E[e][1];if((cv[a]<0)!==(cv[b]<0)){const t=cv[a]/(cv[a]-cv[b]);
+      ax+=(a&1)+t*((b&1)-(a&1));ay+=((a>>1)&1)+t*(((b>>1)&1)-((a>>1)&1));az+=((a>>2)&1)+t*(((b>>2)&1)-((a>>2)&1));cnt++;}}
+    cellV[i+j*cx+k*cx*cy]=pos.length/3;
+    pos.push(bmin[0]+(i+ax/cnt)*h,bmin[1]+(j+ay/cnt)*h,bmin[2]+(k+az/cnt)*h);
+  }
+  const cell=(i,j,k)=>cellV[i+j*cx+k*cx*cy];
+  const idx=[];
+  const quad=(a,b,c,d,inside)=>{if(a<0||b<0||c<0||d<0)return;if(inside){idx.push(a,b,c,a,c,d);}else{idx.push(a,c,b,a,d,c);}};
+  for(let k=0;k<nz;k++)for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
+    const v0=vals[i+j*sy+k*sz];const in0=v0<0;
+    if(i<cx&&j>=1&&j<=cy-1&&k>=1&&k<=cz-1){const v1=vals[i+1+j*sy+k*sz];if(in0!==(v1<0))
+      quad(cell(i,j-1,k-1),cell(i,j,k-1),cell(i,j,k),cell(i,j-1,k),in0);}
+    if(j<cy&&i>=1&&i<=cx-1&&k>=1&&k<=cz-1){const v1=vals[i+(j+1)*sy+k*sz];if(in0!==(v1<0))
+      quad(cell(i-1,j,k-1),cell(i-1,j,k),cell(i,j,k),cell(i,j,k-1),in0);}
+    if(k<cz&&i>=1&&i<=cx-1&&j>=1&&j<=cy-1){const v1=vals[i+j*sy+(k+1)*sz];if(in0!==(v1<0))
+      quad(cell(i-1,j-1,k),cell(i,j-1,k),cell(i,j,k),cell(i-1,j,k),in0);}
+  }
+  return {pos:new Float32Array(pos),idx:new Uint32Array(idx)};
+}
+function gradAt(f,x,y,z,e){e=e||0.01;const gx=f(x+e,y,z)-f(x-e,y,z),gy=f(x,y+e,z)-f(x,y-e,z),gz=f(x,y,z+e)-f(x,y,z-e);
+  const l=Math.hypot(gx,gy,gz)||1;return [gx/l,gy/l,gz/l];}
+const toLin=c=>{const col=new T.Color(c);col.convertSRGBToLinear();return col;};
+function boneGeometry(f,bmin,bmax,h,tint){
+  const {pos,idx}=surfaceNets(f,bmin,bmax,h);const nv=pos.length/3;
+  const nor=new Float32Array(nv*3),col=new Float32Array(nv*3);
+  const base=new T.Color(tint||0xe8dcc4);const dark=new T.Color(0xc9b48f);const tmp=new T.Color();
+  for(let i=0;i<nv;i++){const x=pos[i*3],y=pos[i*3+1],z=pos[i*3+2];const g=gradAt(f,x,y,z,h*0.5);
+    nor[i*3]=g[0];nor[i*3+1]=g[1];nor[i*3+2]=g[2];
+    const a1=clamp(f(x+g[0]*0.25,y+g[1]*0.25,z+g[2]*0.25)/0.25,0,1),a2=clamp(f(x+g[0]*0.7,y+g[1]*0.7,z+g[2]*0.7)/0.7,0,1);
+    const ao=0.55+0.45*(0.5*a1+0.5*a2);
+    const nz=fbm(x*1.3,y*1.3,z*1.3),fine=vnoise(x*7,y*7,z*7);
+    tmp.copy(base).lerp(dark,clamp(0.55*(1-ao)+0.35*(nz-0.45),0,1));
+    const k=ao*(0.94+0.06*fine);
+    const lin=tmp.clone().convertSRGBToLinear();
+    col[i*3]=lin.r*k;col[i*3+1]=lin.g*k;col[i*3+2]=lin.b*k;}
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));
+  g.setAttribute('normal',new T.BufferAttribute(nor,3));g.setAttribute('color',new T.BufferAttribute(col,3));
+  g.setIndex(new T.BufferAttribute(idx,1));g.computeBoundingSphere();return g;
+}
+
+/* ---------------- textures ---------------- */
+function fiberTexture(contrast,band){
+  const W=512,H=256,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');const im=g.createImageData(W,H);
+  for(let y=0;y<H;y++){const row=0.5+0.5*Math.sin(y*0.9+vnoise(0,y*0.21,1)*6);const bundle=vnoise(0.5,y/band,3);
+    for(let x=0;x<W;x++){const n=vnoise(x*0.012,y*0.55,7)*0.6+vnoise(x*0.05,y*1.3,2)*0.4;
+      let val=1-contrast*(0.45*row+0.35*n+0.2*(1-bundle));
+      val=clamp(val,0,1);const o=(y*W+x)*4;const c8=Math.round(val*255);im.data[o]=c8;im.data[o+1]=c8;im.data[o+2]=c8;im.data[o+3]=255;}}
+  // make x seamless: blend edges
+  g.putImageData(im,0,0);
+  const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.encoding=T.sRGBEncoding;t.anisotropy=4;return t;
+}
+function glowTexture(){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');
+  const gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,120,60,1)');gr.addColorStop(0.35,'rgba(255,90,30,.45)');gr.addColorStop(1,'rgba(255,80,20,0)');
+  g.fillStyle=gr;g.fillRect(0,0,128,128);const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;return t;}
+
+/* ---------------- loft (muscles, tendons) ---------------- */
+function pushOut(p,bodies,key){for(let it=0;it<2;it++)for(const b of bodies){const need=b[key];if(need==null)continue;
+  const d=b.f(p.x,p.y,p.z);if(d<need){const g=gradAt(b.f,p.x,p.y,p.z,0.02);p.x+=g[0]*(need-d);p.y+=g[1]*(need-d);p.z+=g[2]*(need-d);}}}
+function loft(o){
+  const ns=o.ns||90,nseg=o.nseg||28,exp=o.exp||2.6,push=o.push||[];
+  const curve=new T.CatmullRomCurve3(o.pts,false,'centripetal');
+  const P=[],Wd=[],Th=[];
+  for(let i=0;i<=ns;i++){const t=i/ns;P.push(curve.getPointAt(t));Wd.push(o.width(t));Th.push(o.thick(t));}
+  // centreline clearance
+  for(let i=0;i<=ns;i++){for(const b of push){if(b.cc==null)continue;const need=Th[i]*0.5*(b.k||1)+b.cc;
+    for(let it=0;it<3;it++){const p=P[i];const d=b.f(p.x,p.y,p.z);if(d<need){const g=gradAt(b.f,p.x,p.y,p.z,0.02);p.x+=g[0]*(need-d);p.y+=g[1]*(need-d);p.z+=g[2]*(need-d);}}}}
+  for(let pass=0;pass<3;pass++){const Q=P.map(p=>p.clone());for(let i=1;i<ns;i++)P[i].copy(Q[i-1]).add(Q[i+1]).multiplyScalar(0.25).addScaledVector(Q[i],0.5);}
+  const TT=[],NN=[],BB=[];const arcs=[0];
+  for(let i=0;i<=ns;i++){const a=P[Math.max(i-1,0)],b=P[Math.min(i+1,ns)];const t=b.clone().sub(a).normalize();TT.push(t);
+    if(i>0)arcs.push(arcs[i-1]+P[i].distanceTo(P[i-1]));}
+  let prevN=null;
+  for(let i=0;i<=ns;i++){const t=i/ns;const h=o.hint(t,P[i]).clone();const Tg=TT[i];
+    const N=h.addScaledVector(Tg,-h.dot(Tg)).normalize();if(prevN&&N.dot(prevN)<0)N.negate();prevN=N;
+    const B=new T.Vector3().crossVectors(Tg,N).normalize();N.crossVectors(B,Tg).normalize();NN.push(N);BB.push(B);}
+  const nv=(ns+1)*(nseg+1)+2;const pos=new Float32Array(nv*3),uv=new Float32Array(nv*2),col=new Float32Array(nv*3);
+  const p=new T.Vector3();let vi=0;let maxPer=0;for(let i=0;i<=ns;i++)maxPer=Math.max(maxPer,Math.PI*(Wd[i]+Th[i])*0.5);const vRep=Math.max(1,Math.round(maxPer/(o.vScale||0.9)));
+  for(let i=0;i<=ns;i++){const t=i/ns;const c=o.color(t);
+    for(let j=0;j<=nseg;j++){const ph=j/nseg*Math.PI*2;const cs=Math.cos(ph),sn=Math.sin(ph);
+      const cx=Math.sign(cs)*Math.pow(Math.abs(cs),2/exp),sy=Math.sign(sn)*Math.pow(Math.abs(sn),2/exp);
+      p.copy(P[i]).addScaledVector(BB[i],Wd[i]*0.5*cx).addScaledVector(NN[i],Th[i]*0.5*sy);
+      if(o.shape)o.shape(p,t,ph,P[i],BB[i],NN[i]);
+      pushOut(p,push,'vc');
+      pos[vi*3]=p.x;pos[vi*3+1]=p.y;pos[vi*3+2]=p.z;uv[vi*2]=arcs[i]/(o.uScale||1.6);uv[vi*2+1]=j/nseg*vRep;
+      col[vi*3]=c.r;col[vi*3+1]=c.g;col[vi*3+2]=c.b;vi++;}}
+  const c0=vi;const pc=P[0].clone();pushOut(pc,push,'vc');pos.set([pc.x,pc.y,pc.z],vi*3);const cA=o.color(0);col.set([cA.r,cA.g,cA.b],vi*3);vi++;
+  const c1=vi;const pe=P[ns].clone();pos.set([pe.x,pe.y,pe.z],vi*3);const cB=o.color(1);col.set([cB.r,cB.g,cB.b],vi*3);vi++;
+  const idxA=[],idxB=[];const split=o.split==null?2:o.split;
+  for(let i=0;i<ns;i++){const tgt=(i/ns>=split)?idxB:idxA;for(let j=0;j<nseg;j++){const a=i*(nseg+1)+j,b=a+nseg+1;tgt.push(a,b,b+1,a,b+1,a+1);}}
+  for(let j=0;j<nseg;j++){idxA.push(c0,j+1,j);const e=ns*(nseg+1);(split<=1?idxB:idxA).push(c1,e+j,e+j+1);}
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));g.setAttribute('uv',new T.BufferAttribute(uv,2));
+  g.setAttribute('color',new T.BufferAttribute(col,3));g.setIndex(idxA.concat(idxB));
+  g.addGroup(0,idxA.length,0);if(idxB.length)g.addGroup(idxA.length,idxB.length,1);
+  g.computeVertexNormals();
+  const nr=g.attributes.normal;for(let i=0;i<=ns;i++){const a=i*(nseg+1),b=a+nseg;const x=nr.getX(a)+nr.getX(b),y=nr.getY(a)+nr.getY(b),z=nr.getZ(a)+nr.getZ(b);const l=Math.hypot(x,y,z)||1;nr.setXYZ(a,x/l,y/l,z/l);nr.setXYZ(b,x/l,y/l,z/l);}
+  return {geometry:g,P,TT,NN,BB,Wd,Th,arcs,ns,
+    at(t){const i=Math.round(clamp(t,0,1)*ns);return {p:P[i].clone(),T:TT[i].clone(),N:NN[i].clone(),B:BB[i].clone(),w:Wd[i],h:Th[i]};}};
+}
+const pw=(t,keys)=>{for(let i=0;i<keys.length-1;i++){const [t0,v0]=keys[i],[t1,v1]=keys[i+1];if(t<=t1){return mix(v0,v1,sstep(0,1,(t-t0)/(t1-t0)));}}return keys[keys.length-1][1];};
+const MUSCLE=toLin(0x9e2b26),MUSCLE_D=toLin(0x7e1f1c),TENDON=toLin(0xf0ebe0);
+const mtColor=(a,b)=>t=>{const k=sstep(a,b,t);return MUSCLE.clone().lerp(TENDON,k);};
+const radial=(p)=>p.clone().normalize();
+
+/* ---------------- renderer / scene ---------------- */
+const canvas=document.getElementById('c');
+const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.outputEncoding=T.sRGBEncoding;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+renderer.setClearColor(0x000000,0);
+const scene=new T.Scene();
+try{const pm=new T.PMREMGenerator(renderer);scene.environment=pm.fromScene(new T.RoomEnvironment(),0.04).texture;}catch(e){}
+const camera=new T.PerspectiveCamera(30,1,0.1,400);
+scene.add(new T.HemisphereLight(0xffffff,0xb8b0a8,0.45));
+const key=new T.DirectionalLight(0xfff6ec,1.25);key.position.set(-8,14,12);scene.add(key);
+const rim=new T.DirectionalLight(0xdfe8ff,0.55);rim.position.set(10,6,-14);scene.add(rim);
+const fill=new T.DirectionalLight(0xffffff,0.3);fill.position.set(6,-6,10);scene.add(fill);
+
+const root=new T.Group();root.scale.x=-1;scene.add(root);   // mirror -> RIGHT shoulder
+const m2w=p=>V3(-p.x,p.y,p.z);
+
+const controls=new T.OrbitControls(camera,canvas);
+controls.enableDamping=true;controls.dampingFactor=0.08;controls.rotateSpeed=0.8;controls.zoomSpeed=0.9;
+controls.minDistance=4;controls.maxDistance=70;controls.screenSpacePanning=true;
+controls.touches={ONE:T.TOUCH.ROTATE,TWO:T.TOUCH.DOLLY_PAN};
+
+/* ---------------- materials ---------------- */
+const fiberT=fiberTexture(0.22,9),muscleT=fiberTexture(0.38,5),glowT=glowTexture();
+const mats={
+  bone:new T.MeshPhysicalMaterial({vertexColors:true,roughness:0.6,metalness:0,clearcoat:0.15,clearcoatRoughness:0.55}),
+  cart:new T.MeshPhysicalMaterial({color:0xd3e2ee,roughness:0.16,metalness:0,clearcoat:1,clearcoatRoughness:0.06,sheen:0.4,sheenColor:0xffffff,side:T.DoubleSide}),
+  labrum:new T.MeshPhysicalMaterial({color:0xefd1c9,map:fiberT,bumpMap:fiberT,bumpScale:0.6,roughness:0.42,sheen:0.6,sheenColor:0xffffff,clearcoat:0.35,clearcoatRoughness:0.3,side:T.DoubleSide}),
+  muscle:new T.MeshPhysicalMaterial({vertexColors:true,map:muscleT,bumpMap:muscleT,bumpScale:0.5,roughness:0.52,sheen:0.35,sheenColor:0xd88a80,sheenRoughness:0.5,clearcoat:0.18,clearcoatRoughness:0.4,side:T.DoubleSide}),
+  tendon:new T.MeshPhysicalMaterial({vertexColors:true,map:fiberT,bumpMap:fiberT,bumpScale:0.7,roughness:0.34,sheen:0.8,sheenColor:0xffffff,sheenRoughness:0.35,clearcoat:0.5,clearcoatRoughness:0.25,side:T.DoubleSide}),
+  tendonSee:new T.MeshPhysicalMaterial({vertexColors:true,map:fiberT,roughness:0.3,clearcoat:0.6,clearcoatRoughness:0.2,transparent:true,opacity:0.36,depthWrite:false,side:T.DoubleSide}),
+  ligament:new T.MeshPhysicalMaterial({color:0xece4d6,map:fiberT,bumpMap:fiberT,bumpScale:0.6,roughness:0.4,sheen:0.6,sheenColor:0xffffff,side:T.DoubleSide}),
+  lesion:new T.MeshStandardMaterial({color:0xff4a1a,emissive:0xff3b0a,emissiveIntensity:0.65,roughness:0.35,side:T.DoubleSide}),
+  lesionPlain:new T.MeshStandardMaterial({color:0x8f8a86,roughness:0.6,side:T.DoubleSide}),
+  halo:new T.MeshBasicMaterial({color:0xff3a10,transparent:true,opacity:0.15,blending:T.AdditiveBlending,depthWrite:false}),
+  fiber:new T.MeshStandardMaterial({color:0xd9cfbf,roughness:0.45}),
+  clock:new T.LineBasicMaterial({color:0x56646c,transparent:true,opacity:0.85}),
+  clockHot:new T.MeshBasicMaterial({color:0xff5a22}),
+};
+// tendons share the muscle colour ramp; one material per loft with map tuned for both
+mats.cuff=mats.muscle;
+
+/* ---------------- groups ---------------- */
+const grp={};for(const k of['humerus','scapula','cuff','deltoid','biceps','highlight','clock','supraLesion'])grp[k]=new T.Group(),root.add(grp[k]);
+const glenoidFrame=new T.Group();glenoidFrame.matrixAutoUpdate=false;
+glenoidFrame.matrix.makeBasis(u,v,w).setPosition(G);grp.scapula.add(glenoidFrame);
+const clockFrame=new T.Group();clockFrame.matrixAutoUpdate=false;clockFrame.matrix.copy(glenoidFrame.matrix);grp.clock.add(clockFrame);
+const hlFrame=new T.Group();hlFrame.matrixAutoUpdate=false;hlFrame.matrix.copy(glenoidFrame.matrix);grp.highlight.add(hlFrame);
+
+/* ---------------- labels ---------------- */
+const labelsEl=document.getElementById('labels');const LABELS=[];
+function addLabel(text,pos,normal,opts){opts=opts||{};const el=document.createElement('div');el.className='lbl'+(opts.cls?' '+opts.cls:'');
+  el.innerHTML=opts.kind==='clock'?'<span>'+text+'</span>':'<i></i><span>'+text+'</span>';labelsEl.appendChild(el);
+  LABELS.push({el,pos:pos.clone(),n:normal.clone().normalize(),opts});}
+
+const loadTxt=document.getElementById('loadTxt'),loadBar=document.getElementById('loadBar');
+function progress(t,v){loadTxt.textContent=t;loadBar.value=v;}
+
+let supra=null,lesionCenter=null,lesionN=null;
+const slapMid=new T.Vector3();
+
+async function build(){
+  /* ---- bones ---- */
+  progress('Building humerus…',8);await nextFrame();
+  const hg=boneGeometry(sdHumerus,[-2.7,-14.8,-2.7],[3.3,2.6,2.8],0.11);
+  grp.humerus.add(new T.Mesh(hg,mats.bone));
+  // humeral head cartilage cap
+  {const e1=new T.Vector3().crossVectors(hd,V3(0,1,0)).normalize(),e2=new T.Vector3().crossVectors(hd,e1).normalize();
+   const na=40,nb=120,amax=Math.acos(0.22);const pos=[],idx=[];
+   for(let i=0;i<=na;i++){const a=i/na*amax;for(let j=0;j<=nb;j++){const b=j/nb*Math.PI*2;
+     const d=hd.clone().multiplyScalar(Math.cos(a)).addScaledVector(e1,Math.sin(a)*Math.cos(b)).addScaledVector(e2,Math.sin(a)*Math.sin(b));
+     const r=HEAD_R+0.005+0.075*(1-sstep(0.8*amax,amax,a));pos.push(d.x*r,d.y*r,d.z*r);}}
+   for(let i=0;i<na;i++)for(let j=0;j<nb;j++){const a=i*(nb+1)+j,b=a+nb+1;idx.push(a,b,b+1,a,b+1,a+1);}
+   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
+   grp.humerus.add(new T.Mesh(g,mats.cart));}
+  progress('Building scapula…',22);await nextFrame();
+  const sg=boneGeometry(sdScapula,[-12.4,-12.2,-7.6],[2.6,5.0,3.8],0.13);
+  grp.scapula.add(new T.Mesh(sg,mats.bone));
+  progress('Building clavicle…',42);await nextFrame();
+  const cg=boneGeometry(sdClavicle,[-12.0,3.2,0.2],[-0.9,5.6,6.0],0.11);
+  grp.scapula.add(new T.Mesh(cg,mats.bone));
+
+  /* ---- glenoid cartilage (local frame) ---- */
+  progress('Glenoid and labrum…',50);await nextFrame();
+  {const nr=26,nt=160;const pos=[],idx=[];
+   for(let i=0;i<=nr;i++){const s=i/nr;for(let j=0;j<=nt;j++){const R=rimAt(j/nt*Math.PI*2);const y=R.y*s*0.985,z=R.z*s*0.985;
+     const ub=glenBoneU(y,z),top=cartTopU(y,z);const k=1-sstep(0.9,1,s);pos.push(ub+(top-ub)*k+0.012,y,z);}}
+   for(let i=0;i<nr;i++)for(let j=0;j<nt;j++){const a=i*(nt+1)+j,b=a+nt+1;idx.push(a,b,b+1,a,b+1,a+1);}
+   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
+   glenoidFrame.add(new T.Mesh(g,mats.cart));}
+
+  /* ---- labrum with SLAP tear (9:00 -> 12:00, beneath the biceps anchor) ---- */
+  const TEAR_A=hourToTheta(9)-Math.PI*2, TEAR_B=hourToTheta(0.25); // -3h ... +0.25h (passes under the anchor at 12)
+  const tearRamp=th=>{let x=th;if(x>Math.PI)x-=Math.PI*2;const tt=(x-TEAR_A)/(TEAR_B-TEAR_A);if(tt<0||tt>1)return 0;return sstep(0,0.1,tt)*sstep(1,0.9,tt);};
+  const HEADC=V3(D_HEAD,0,0);
+  const labProfile=(()=>{const C=[[0.03,-0.21],[0.41,0.0],[-0.24,0.27]];const out=[];
+    for(let i=0;i<3;i++){const p=C[i],a=C[(i+2)%3],b=C[(i+1)%3];const m1=[(a[0]+p[0])/2,(a[1]+p[1])/2],m2=[(b[0]+p[0])/2,(b[1]+p[1])/2];
+      for(let k=0;k<8;k++){const t=k/8;const x=(1-t)*(1-t)*m1[0]+2*(1-t)*t*p[0]+t*t*m2[0],y=(1-t)*(1-t)*m1[1]+2*(1-t)*t*p[1]+t*t*m2[1];out.push([x,y]);}}
+    return out;})();
+  const GAP_O=0.2,GAP_U=0.08;
+  {const nt=320,np=labProfile.length;const pos=[],uvs=[],idx=[];const p=new T.Vector3();
+   for(let j=0;j<=nt;j++){const th=j/nt*Math.PI*2;const R=rimAt(th);const ramp=tearRamp(th);
+     const sup=0.85+0.25*Math.max(0,Math.cos(th)); // superior labrum a bit more meniscoid
+     for(let k=0;k<=np;k++){const q=labProfile[k%np];const U=q[0]*sup+ramp*GAP_U,o=q[1]*sup+ramp*GAP_O;
+       p.set(U,R.y+R.oy*o,R.z+R.oz*o);
+       const d=p.distanceTo(HEADC);if(d<CART_R+0.03)p.sub(HEADC).multiplyScalar((CART_R+0.03)/d).add(HEADC);
+       pos.push(p.x,p.y,p.z);uvs.push(th*4,k/np*2);}}
+   for(let j=0;j<nt;j++)for(let k=0;k<np;k++){const a=j*(np+1)+k,b=a+np+1;idx.push(a,b,b+1,a,b+1,a+1);}
+   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));
+   g.setIndex(idx);g.computeVertexNormals();glenoidFrame.add(new T.Mesh(g,mats.labrum));}
+
+  // cleft: thin contrast-filled sheet in the gap between rim and lifted labrum
+  const cleftMeshes=[];
+  {const nt=140;const pos=[],idx=[];const nc=10;
+   const ta=TEAR_A,tb=TEAR_B;
+   for(let j=0;j<=nt;j++){let th=ta+(tb-ta)*j/nt;const R=rimAt(th);const ramp=tearRamp(th<0?th+Math.PI*2:th);
+     const b1=[0.1*ramp,-0.05],b2=[-0.24,0.02+0.06*ramp];const half=Math.max(ramp,0.15)*0.5;
+     for(let k=0;k<=nc;k++){const ph=k/nc*Math.PI*2;const sx=Math.cos(ph)*0.5+0.5;const sy=Math.sin(ph);
+       const U=mix(b1[0],b2[0],sx)+sy*half*0.03,o=mix(b1[1],b2[1],sx)+sy*half*0.11;
+       pos.push(U,R.y+R.oy*o,R.z+R.oz*o);}}
+   for(let j=0;j<nt;j++)for(let k=0;k<nc;k++){const a=j*(nc+1)+k,b=a+nc+1;idx.push(a,b,b+1,a,b+1,a+1);}
+   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
+   const m=new T.Mesh(g,mats.lesion);glenoidFrame.add(m);cleftMeshes.push(m);}
+  // halo tube along the tear arc (highlight layer)
+  {const pts=[];for(let j=0;j<=60;j++){const th=TEAR_A+(TEAR_B-TEAR_A)*j/60;const R=rimAt(th);pts.push(V3(0.1,R.y+R.oy*0.04,R.z+R.oz*0.04));}
+   const tube=new T.TubeGeometry(new T.CatmullRomCurve3(pts),120,0.2,14,false);hlFrame.add(new T.Mesh(tube,mats.halo));
+   const R=rimAt(hourToTheta(10.5));slapMid.set(0.45,R.y+R.oy*0.12,R.z+R.oz*0.12);}
+
+  /* ---- clock face overlay ---- */
+  {const pts=[];for(let j=0;j<=240;j++){const th=j/240*Math.PI*2;const R=rimAt(th);pts.push(V3(0.25,R.y+R.oy*0.75,R.z+R.oz*0.75));}
+   clockFrame.add(new T.Line(new T.BufferGeometry().setFromPoints(pts),mats.clock));
+   const tick=[];for(let h=0;h<12;h++){const R=rimAt(hourToTheta(h));const l=(h%3===0)?0.32:0.18;
+     tick.push(V3(0.25,R.y+R.oy*0.75,R.z+R.oz*0.75),V3(0.25,R.y+R.oy*(0.75+l),R.z+R.oz*(0.75+l)));}
+   clockFrame.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(tick),mats.clock));
+   const arc=[];for(let j=0;j<=60;j++){const th=hourToTheta(9)+(hourToTheta(12)-hourToTheta(9))*j/60;const R=rimAt(th);arc.push(V3(0.25,R.y+R.oy*0.75,R.z+R.oz*0.75));}
+   clockFrame.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(arc),80,0.055,8,false),mats.clockHot));
+   for(const h of[12,1,2,3,4,5,6,7,8,9,10,11]){const R=rimAt(hourToTheta(h%12));const off=1.32;
+     const lp=new T.Vector3(0.25,R.y+R.oy*off,R.z+R.oz*off).applyMatrix4(glenoidFrame.matrix);
+     addLabel(String(h),lp,u,{cls:'clock'+((h>=9||h===12)?' hot':''),kind:'clock',layer:'clock'});}
+  }
+
+  /* ---- ligaments: coracoacromial and coracoclavicular ---- */
+  progress('Ligaments and tendons…',58);await nextFrame();
+  const bodiesBone=[{f:sdHumerusCart,vc:0.03,cc:0.04},{f:sdScapula,vc:0.03,cc:0.05},{f:sdClavicle,vc:0.03,cc:0.05}];
+  const lig=(pts,w0,w1,th)=>{const r=loft({pts,ns:40,nseg:18,exp:3,width:t=>mix(w0,w1,t),thick:t=>th,hint:(t,p)=>V3(0,1,0),color:()=>TENDON,uScale:1.2});
+    const m=new T.Mesh(r.geometry,mats.ligament);grp.scapula.add(m);return r;};
+  lig([V3(-1.75,2.85,2.3),V3(-0.7,3.45,1.95),V3(0.3,3.75,1.45)],1.3,1.0,0.16);
+  lig([V3(-3.45,3.55,0.55),V3(-3.7,3.9,1.4),V3(-3.9,4.15,2.0)],0.9,1.0,0.25); // trapezoid
+  lig([V3(-4.0,3.5,-0.05),V3(-4.7,3.95,1.0),V3(-5.3,4.2,1.95)],0.6,1.1,0.3);   // conoid
+
+  /* ---- rotator cuff ---- */
+  progress('Rotator cuff…',64);await nextFrame();
+  const cuffPush=[{f:sdHumerusCart,vc:0.025,cc:0.02},{f:sdScapula,vc:0.03,cc:0.05},{f:sdClavicle,vc:0.05,cc:0.1}];
+  const blendHint=(a,b,t0,t1)=>(t,p)=>{const k=sstep(t0,t1,t);return a(t,p).clone().multiplyScalar(1-k).add(b(t,p).clone().multiplyScalar(k)).normalize();};
+  const post=()=>w.clone().negate(),ant=()=>w.clone();
+  // supraspinatus
+  supra=loft({pts:[L(-9.2,2.05,-1.25),L(-6.2,2.15,-1.35),L(-3.6,2.6,-1.15),V3(-1.6,3.02,-0.85),V3(0.2,2.92,-0.4),V3(1.5,2.45,-0.15),V3(2.35,1.75,-0.05)],
+    ns:120,nseg:30,width:t=>pw(t,[[0,1.9],[0.15,2.5],[0.45,2.4],[0.62,2.0],[1,1.75]]),thick:t=>pw(t,[[0,1.0],[0.15,1.6],[0.45,1.4],[0.62,0.62],[1,0.5]]),
+    hint:blendHint(post,(t,p)=>radial(p),0.42,0.62),color:mtColor(0.52,0.64),push:cuffPush,split:0.7});
+  const supraMesh=new T.Mesh(supra.geometry,[mats.muscle,mats.tendonSee]);grp.cuff.add(supraMesh);
+  // infraspinatus
+  const infra=loft({pts:[L(-8.4,-3.4,-1.45),L(-5.7,-1.6,-1.5),L(-3.0,-0.1,-1.6),V3(-0.9,1.05,-3.15),V3(1.35,1.3,-2.25),V3(2.5,1.1,-1.25)],
+    ns:110,nseg:30,width:t=>pw(t,[[0,4.2],[0.12,5.4],[0.4,4.0],[0.66,2.4],[1,2.1]]),thick:t=>pw(t,[[0,0.9],[0.12,1.45],[0.4,1.35],[0.66,0.55],[1,0.45]]),
+    hint:blendHint(post,(t,p)=>radial(p),0.45,0.68),color:mtColor(0.6,0.72),push:cuffPush});
+  grp.cuff.add(new T.Mesh(infra.geometry,mats.muscle));
+  // teres minor
+  const tmin=loft({pts:[L(-4.8,-6.8,-0.95),L(-2.8,-3.9,-1.15),V3(-0.85,-1.35,-3.05),V3(1.35,-0.25,-2.3),V3(2.35,0.1,-1.5)],
+    ns:90,nseg:26,width:t=>pw(t,[[0,1.4],[0.15,1.9],[0.6,1.6],[1,1.25]]),thick:t=>pw(t,[[0,0.8],[0.15,1.25],[0.6,1.05],[0.82,0.5],[1,0.42]]),
+    hint:blendHint(post,(t,p)=>radial(p),0.5,0.78),color:mtColor(0.7,0.82),push:cuffPush});
+  grp.cuff.add(new T.Mesh(tmin.geometry,mats.muscle));
+  // subscapularis
+  const subs=loft({pts:[L(-8.0,-3.7,0.95),L(-5.4,-2.1,1.05),L(-2.9,-0.9,1.4),V3(-1.9,-0.55,2.6),V3(-0.25,-0.35,3.02),V3(0.85,-0.3,2.6)],
+    ns:110,nseg:30,width:t=>pw(t,[[0,5.0],[0.12,6.2],[0.4,4.8],[0.68,3.2],[1,2.7]]),thick:t=>pw(t,[[0,0.9],[0.12,1.5],[0.4,1.35],[0.68,0.6],[1,0.5]]),
+    hint:blendHint(ant,(t,p)=>radial(p),0.45,0.7),color:mtColor(0.6,0.72),push:cuffPush});
+  grp.cuff.add(new T.Mesh(subs.geometry,mats.muscle));
+
+  /* ---- supraspinatus interstitial tear (7 x 4 mm), inside the tendon near the GT ---- */
+  {let best=0,bd=1e9;for(let i=0;i<=supra.ns;i++){const d=Math.abs(supra.P[i].x-1.12);if(d<bd){bd=d;best=i;}}
+   const f=supra.at(best/supra.ns);lesionCenter=f.p.clone();lesionN=f.N.clone();
+   const basis=new T.Matrix4().makeBasis(f.T,f.B,f.N).setPosition(f.p);
+   // lens-shaped cleft with frayed margins
+   const g=new T.SphereGeometry(1,48,24);const pa=g.attributes.position;
+   for(let i=0;i<pa.count;i++){let x=pa.getX(i),y=pa.getY(i),z=pa.getZ(i);const n=vnoise(x*3+7,y*3,z*3);
+     const ang=Math.atan2(y,x);const fray=1+0.18*Math.sin(ang*9+n*4)*Math.abs(x);
+     pa.setXYZ(i,x*0.35*fray,y*0.2*(0.92+0.16*n),z*0.055*(0.7+0.6*(1-Math.abs(x))));}
+   g.computeVertexNormals();
+   const core=new T.Mesh(g,mats.lesion);core.matrixAutoUpdate=false;core.matrix.copy(basis);grp.supraLesion.add(core);cleftMeshes.push(core);
+   // fibre bundles splitting around the cleft (delamination)
+   for(let k=0;k<10;k++){const side=k<5?1:-1;const b=((k%5)-2)*0.085;const pts=[];
+     for(let s=0;s<=24;s++){const x=-0.55+1.1*s/24;const bump=Math.exp(-Math.pow(x/0.33,2))*Math.exp(-Math.pow(b/0.24,2));
+       pts.push(V3(x,b*(1+0.25*bump),side*(0.045+0.055*bump)));}
+     const tg=new T.TubeGeometry(new T.CatmullRomCurve3(pts),40,0.01,6,false);const m=new T.Mesh(tg,mats.fiber);
+     m.matrixAutoUpdate=false;m.matrix.copy(basis);grp.supraLesion.add(m);}
+   const halo=new T.Sprite(new T.SpriteMaterial({map:glowT,color:0xffffff,transparent:true,opacity:0.3,depthTest:false,depthWrite:false,blending:T.AdditiveBlending}));
+   halo.position.copy(f.p);halo.scale.set(0.8,0.8,1);halo.renderOrder=5;grp.highlight.add(halo);
+   supraMesh.renderOrder=3;}
+
+  /* ---- long head of biceps ---- */
+  progress('Biceps tendon…',74);await nextFrame();
+  const bic=loft({pts:[L(0.12,1.78,0),L(0.45,2.15,0.05),V3(-0.75,2.62,0.62),V3(0.45,2.35,1.58),V3(1.35,1.45,2.0),V3(1.6,0.2,1.86),V3(1.5,-2.5,1.78),V3(1.35,-6.5,1.78),V3(1.3,-9.5,2.25),V3(1.35,-12.8,2.95)],
+    ns:150,nseg:22,exp:2.2,width:t=>pw(t,[[0,0.8],[0.05,0.55],[0.5,0.5],[0.78,0.55],[0.86,1.1],[1,1.6]]),thick:t=>pw(t,[[0,0.28],[0.05,0.36],[0.5,0.36],[0.78,0.4],[0.86,0.8],[1,1.2]]),
+    hint:(t,p)=>{const k=sstep(0.3,0.42,t);return radial(p).multiplyScalar(1-k).add(V3(0.15,0,1).multiplyScalar(k)).normalize();},
+    color:t=>TENDON.clone().lerp(MUSCLE,sstep(0.8,0.9,t)),push:[{f:sdHumerusCart,vc:0.02,cc:0.0},{f:sdScapula,vc:0.0}]});
+  grp.biceps.add(new T.Mesh(bic.geometry,mats.tendon));
+
+  /* ---- deltoid ---- */
+  progress('Deltoid…',82);await nextFrame();
+  const delt=buildDeltoid();grp.deltoid.add(new T.Mesh(delt.geometry,mats.muscle));
+
+  /* ---- labels ---- */
+  const lab=(t,p,n,o)=>addLabel(t,p,n,o||{});
+  {const d=V3(-0.25,0.85,0.45).normalize();lab('Humeral head cartilage',d.clone().multiplyScalar(CART_R),d,{layer:'humerus',deep:1});}
+  lab('Greater tuberosity',V3(2.88,0.55,-0.4),V3(1,0,-0.1),{layer:'humerus',deep:1});
+  lab('Lesser tuberosity',V3(0.55,-0.45,2.43),V3(0.2,0,1),{layer:'humerus',deep:1});
+  lab('Bicipital groove',V3(1.62,-1.9,1.55),V3(0.3,0,1),{layer:'humerus',deep:1});
+  lab('Humeral shaft',V3(1.88,-6.5,0.3),V3(1,0,0.25),{layer:'humerus',deep:1});
+  lab('Acromion',V3(0.9,4.48,-0.7),V3(0.2,1,0),{layer:'scapula'});
+  lab('AC joint',V3(-1.25,4.7,1.25),V3(0,1,0.3),{layer:'scapula'});
+  lab('Clavicle',V3(-6.4,5.35,3.2),V3(0,1,0.4),{layer:'scapula'});
+  lab('Coracoid process',V3(-1.35,2.6,3.05),V3(0.2,0.2,1),{layer:'scapula'});
+  {const p=L(-6.1,1.9,-2.1);lab('Scapular spine',p,w.clone().negate().add(V3(0,0.6,0)),{layer:'scapula'});}
+  {const p=L(-6.5,-6.5,-0.55);lab('Scapula',p,w.clone().negate(),{layer:'scapula',deep:1});}
+  lab('Subacromial space',V3(0.75,3.42,-0.45),V3(1,0.15,0),{layer:'scapula',deep:1});
+  {const R=rimAt(Math.PI);lab('Glenoid cartilage',new T.Vector3(cartTopU(-0.6,0.35),-0.6,0.35).applyMatrix4(glenoidFrame.matrix),u,{layer:'scapula',needHidden:'humerus',deep:1});
+   lab('Glenoid labrum',new T.Vector3(0.3,R.y+R.oy*0.05,R.z).applyMatrix4(glenoidFrame.matrix),u,{layer:'scapula',needHidden:'humerus',deep:1});}
+  lab('Biceps anchor',L(0.42,2.2,0.0),u.clone().add(v),{layer:'biceps',deep:1});
+  lab('Long head of biceps tendon',V3(1.62,-4.2,2.05),V3(0.2,0,1),{layer:'biceps',deep:1});
+  const ml=(name,r,t,layer,sign)=>{const f=r.at(t);lab(name,f.p.clone().addScaledVector(f.N,f.h*0.5*(sign||1)),f.N.clone().multiplyScalar(sign||1),{layer,deep:1});};
+  ml('Supraspinatus',supra,0.3,'cuff');ml('Infraspinatus',infra,0.3,'cuff');ml('Teres minor',tmin,0.42,'cuff');ml('Subscapularis',subs,0.42,'cuff');
+  ml('Supraspinatus tendon',supra,0.8,'cuff');
+  lab('Deltoid',delt.anchor,delt.anchorN,{layer:'deltoid'});
+  lab('SLAP tear · 9:00–12:00',slapMid.clone().applyMatrix4(glenoidFrame.matrix),u,{layer:'highlight',cls:'lesion',kind:'lesion',needHidden:'humerus'});
+  lab('Interstitial tear · 7 × 4 mm',lesionCenter.clone().addScaledVector(lesionN,0.05),lesionN.clone().add(V3(0.3,0,0)),{layer:'supraLesion',cls:'lesion',kind:'lesion',deep:1});
+
+  window.__cleft=cleftMeshes;
+  progress('Ready',100);
+}
+
+function buildDeltoid(){
+  const origin=new T.CatmullRomCurve3([V3(-5.4,4.55,3.05),V3(-3.6,4.7,2.6),V3(-1.9,4.75,2.05),V3(-0.5,4.6,1.75),V3(1.25,4.45,1.05),V3(2.05,4.15,-0.6),V3(1.85,3.9,-2.25),
+    V3(0.2,3.35,-3.15),V3(-2.4,2.75,-4.45),V3(-4.9,2.25,-5.3)],false,'centripetal');
+  const na=56,nt=64;const inner=[];
+  const push=[{f:sdHumerus,c:0.95},{f:(x,y,z)=>Math.sqrt(x*x+y*y+z*z)-3.3,c:0.12},{f:sdScapula,c:0.08},{f:sdClavicle,c:0.08}];
+  for(let ia=0;ia<=na;ia++){const a=ia/na;const P0=origin.getPointAt(a);const psi=(-18+214*a)*Math.PI/180;const dir=V3(Math.sin(psi),0,Math.cos(psi));
+    const C1=V3(0.55,2.1,0.05).addScaledVector(dir,3.9),C2=V3(0.75,-3.6,0.15).addScaledVector(dir,3.0);
+    const P3=V3(1.75+0.3*Math.sin(Math.PI*a),-9.7,1.0-1.1*a);
+    const row=[];for(let it=0;it<=nt;it++){const t=it/nt,s=1-t;
+      const p=P0.clone().multiplyScalar(s*s*s).addScaledVector(C1,3*s*s*t).addScaledVector(C2,3*s*t*t).addScaledVector(P3,t*t*t);
+      for(let k=0;k<2;k++)for(const b of push){const d=b.f(p.x,p.y,p.z);if(d<b.c){const g=gradAt(b.f,p.x,p.y,p.z,0.03);p.addScaledVector(V3(...g),b.c-d);}}
+      row.push(p);}
+    inner.push(row);}
+  // smooth inner sheet a little
+  for(let pass=0;pass<2;pass++){const cp=inner.map(r=>r.map(p=>p.clone()));
+    for(let ia=1;ia<na;ia++)for(let it=1;it<nt;it++){inner[ia][it].copy(cp[ia-1][it]).add(cp[ia+1][it]).add(cp[ia][it-1]).add(cp[ia][it+1]).multiplyScalar(0.125).addScaledVector(cp[ia][it],0.5);}}
+  const pos=[],uvs=[],col=[],idx=[];const NI=(na+1)*(nt+1);
+  const outer=[];let anchor=null,anchorN=null;
+  for(let ia=0;ia<=na;ia++){const a=ia/na;const orow=[];for(let it=0;it<=nt;it++){const t=it/nt;
+    const pa=inner[Math.min(ia+1,na)][it].clone().sub(inner[Math.max(ia-1,0)][it]);const pt=inner[ia][Math.min(it+1,nt)].clone().sub(inner[ia][Math.max(it-1,0)]);
+    const n=new T.Vector3().crossVectors(pa,pt).normalize();const p=inner[ia][it];const axis=V3(0.6,p.y,0.05);if(n.dot(p.clone().sub(axis))<0)n.negate();
+    const edge=0.45+0.55*sstep(0,0.12,a)*sstep(1,0.88,a);
+    const th=(0.18+1.55*Math.pow(Math.sin(Math.PI*clamp(t*1.05,0,1)),0.85)*(0.72+0.28*Math.sin(Math.PI*a)))*edge+0.13*Math.pow(Math.sin(a*Math.PI*11),2)*Math.sin(Math.PI*t);
+    const o=p.clone().addScaledVector(n,th);orow.push(o);if(ia===Math.round(na*0.5)&&it===Math.round(nt*0.36)){anchor=o.clone();anchorN=n.clone();}}
+    outer.push(orow);}
+  const pushV=(p,a,t)=>{pos.push(p.x,p.y,p.z);uvs.push(t*7,a*22);const c=MUSCLE.clone().lerp(TENDON,sstep(0.88,1,t)*0.8);col.push(c.r,c.g,c.b);};
+  for(let ia=0;ia<=na;ia++)for(let it=0;it<=nt;it++)pushV(inner[ia][it],ia/na,it/nt);
+  for(let ia=0;ia<=na;ia++)for(let it=0;it<=nt;it++)pushV(outer[ia][it],ia/na,it/nt);
+  const id=(s,ia,it)=>s*NI+ia*(nt+1)+it;
+  for(let ia=0;ia<na;ia++)for(let it=0;it<nt;it++){
+    let a=id(0,ia,it),b=id(0,ia+1,it),c=id(0,ia+1,it+1),d=id(0,ia,it+1);idx.push(a,c,b,a,d,c);
+    a=id(1,ia,it);b=id(1,ia+1,it);c=id(1,ia+1,it+1);d=id(1,ia,it+1);idx.push(a,b,c,a,c,d);}
+  for(let it=0;it<nt;it++){for(const ia of[0,na]){const a=id(0,ia,it),b=id(1,ia,it),c=id(1,ia,it+1),d=id(0,ia,it+1);idx.push(a,b,c,a,c,d);}}
+  for(let ia=0;ia<na;ia++){for(const it of[0,nt]){const a=id(0,ia,it),b=id(1,ia,it),c=id(1,ia+1,it),d=id(0,ia+1,it);idx.push(a,b,c,a,c,d);}}
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));
+  g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();
+  return {geometry:g,anchor,anchorN};
+}
+
+/* ---------------- state / layers ---------------- */
+const state={deltoid:false,cuff:true,humerus:true,biceps:true,lesions:true,see:true,labels:true,clock:true};
+const ids={deltoid:'tDeltoid',cuff:'tCuff',humerus:'tHumerus',biceps:'tBiceps',lesions:'tLesion',see:'tSee',labels:'tLabels',clock:'tClock'};
+function applyLayers(){
+  grp.deltoid.visible=state.deltoid;grp.cuff.visible=state.cuff;grp.humerus.visible=state.humerus;grp.biceps.visible=state.biceps;
+  grp.supraLesion.visible=state.cuff;grp.highlight.visible=state.lesions;
+  grp.highlight.children.forEach(c=>{if(c.isSprite)c.visible=state.cuff;});
+  grp.clock.visible=state.clock&&!state.humerus;
+  (window.__cleft||[]).forEach(m=>m.material=state.lesions?mats.lesion:mats.lesionPlain);
+  const sm=grp.cuff.children[0];if(sm)sm.material[1]=state.see?mats.tendonSee:mats.tendon;
+  labelsEl.style.display=state.labels?'':'none';
+  for(const k in ids){const el=document.getElementById(ids[k]);if(el)el.checked=!!state[k];}
+}
+for(const k in ids){document.getElementById(ids[k]).addEventListener('change',e=>{state[k]=e.target.checked;applyLayers();});}
+const layerVisible=l=>{switch(l){case'humerus':return state.humerus;case'cuff':return state.cuff;case'deltoid':return state.deltoid;case'biceps':return state.biceps;
+  case'highlight':return state.lesions;case'supraLesion':return state.cuff&&state.lesions;case'clock':return state.clock&&!state.humerus;default:return true;}};
+
+/* ---------------- camera presets ---------------- */
+const C0=V3(-1.2,0.2,-0.4);
+function fitDist(r){const vf=camera.fov*Math.PI/180;const hf=2*Math.atan(Math.tan(vf/2)*camera.aspect);return r/Math.sin(Math.min(vf,hf)/2);}
+function presetFor(name){
+  switch(name){
+    case'anterior':return {t:V3(-2.6,-1.5,0),d:V3(0.12,0.1,1),r:11,humerus:true};
+    case'posterior':return {t:V3(-2.6,-1.5,0),d:V3(0.1,0.12,-1),r:11,humerus:true};
+    case'superior':return {t:V3(-2.4,1.5,-0.6),d:V3(0.05,1,0.16),r:8,humerus:true};
+    case'lateral':return {t:G.clone().addScaledVector(u,0.3),d:u.clone(),r:5.2,humerus:false,deltoid:false};
+    case'slap':return {t:G.clone().addScaledVector(u,0.3).addScaledVector(v,0.6).addScaledVector(w,-0.3),d:u.clone().add(V3(0,0.15,0)).normalize(),r:3.1,humerus:false,deltoid:false};
+    case'supra':return {t:lesionCenter.clone(),d:V3(0.8,0.3,0.55).normalize(),r:2.3,humerus:true,deltoid:false,cuff:true,see:true};
+    default:return {t:V3(-1.8,-0.8,-0.6),d:V3(0.62,0.62,-0.48).normalize(),r:10.5};
+  }
+}
+let tween=null;const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function goView(name){
+  const p=presetFor(name);
+  if(p.humerus!=null)state.humerus=p.humerus;if(p.deltoid!=null)state.deltoid=p.deltoid;if(p.cuff!=null)state.cuff=p.cuff;if(p.see!=null)state.see=p.see;applyLayers();
+  const tgt=m2w(p.t),dir=m2w(p.d).normalize();const dist=fitDist(p.r);const pos=tgt.clone().addScaledVector(dir,dist);
+  if(name==='superior'){camera.up.set(0,1,0);}
+  if(reduce){camera.position.copy(pos);controls.target.copy(tgt);controls.update();return;}
+  tween={t0:performance.now(),dur:850,p0:camera.position.clone(),p1:pos,q0:controls.target.clone(),q1:tgt};
+  document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===name)));
+}
+document.querySelectorAll('.views button').forEach(b=>b.addEventListener('click',()=>goView(b.dataset.view)));
+document.getElementById('cardSlap').addEventListener('click',()=>{state.lesions=true;goView('slap');});
+document.getElementById('cardSupra').addEventListener('click',()=>{state.lesions=true;goView('supra');});
+controls.addEventListener('start',()=>{tween=null;});
+
+/* ---------------- render loop ---------------- */
+const stage=document.getElementById('stage');
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+window.addEventListener('resize',resize);
+const tmpV=new T.Vector3(),tmpN=new T.Vector3(),camDir=new T.Vector3();
+const scaleBar=document.getElementById('scaleBar'),scaleTxt=document.getElementById('scaleTxt');
+function updateLabels(){
+  if(!state.labels)return;const w=stage.clientWidth,h=stage.clientHeight;const placed=[];
+  const order=LABELS.slice().sort((A,B)=>(B.opts.kind==='lesion')-(A.opts.kind==='lesion')||(B.opts.kind==='clock')-(A.opts.kind==='clock'));
+  for(const L of order){const o=L.opts;let vis=layerVisible(o.layer||'scapula');
+    if(vis&&o.needHidden&&state[o.needHidden])vis=false;
+    if(vis&&o.deep&&state.deltoid&&o.layer!=='deltoid'&&o.kind!=='lesion')vis=false;
+    if(vis){tmpV.set(-L.pos.x,L.pos.y,L.pos.z);tmpN.set(-L.n.x,L.n.y,L.n.z);camDir.copy(camera.position).sub(tmpV).normalize();
+      const dp=tmpN.dot(camDir);
+      if(!o.kind&&dp<0.08)vis=false;
+      if(o.kind==='lesion'&&dp<-0.2)vis=false;}
+    let x=0,y=0;
+    if(vis){tmpV.project(camera);if(tmpV.z>1||tmpV.x<-0.97||tmpV.x>0.9||tmpV.y<-0.9||tmpV.y>0.86)vis=false;else{x=(tmpV.x*0.5+0.5)*w;y=(-tmpV.y*0.5+0.5)*h;}}
+    if(vis){if(!L.size){L.el.style.display='';L.size=[L.el.offsetWidth||80,L.el.offsetHeight||20];L.el.style.display='none';L.shown=false;}
+      const r=o.kind==='clock'?[x-L.size[0]/2,y-L.size[1]/2,x+L.size[0]/2,y+L.size[1]/2]:o.kind==='lesion'?[x-4,y-22-L.size[1]/2,x+18+L.size[0],y+6]:[x-4,y-L.size[1]/2,x-4+L.size[0],y+L.size[1]/2];
+      for(const q of placed){if(r[0]<q[2]+2&&r[2]>q[0]-2&&r[1]<q[3]+1&&r[3]>q[1]-1){vis=false;break;}}
+      if(vis)placed.push(r);}
+    if(!vis){if(L.shown!==false){L.el.style.display='none';L.shown=false;}continue;}
+    if(L.shown!==true){L.el.style.display='';L.shown=true;}
+    L.el.style.transform=o.kind==='clock'?`translate(${x}px,${y}px) translate(-50%,-50%)`:o.kind==='lesion'?`translate(${x-3.5}px,${y}px) translateY(-50%)`:`translate(${x-3.5}px,${y}px) translateY(-50%)`;}
+}
+function updateScale(){ // 1 cm at the orbit target
+  const d=camera.position.distanceTo(controls.target);const pxPerCm=stage.clientHeight/(2*d*Math.tan(camera.fov*Math.PI/360));
+  let cm=1,label='1 cm';if(pxPerCm<25){cm=5;label='5 cm';}else if(pxPerCm>140){cm=0.5;label='5 mm';}
+  scaleBar.style.width=Math.round(pxPerCm*cm)+'px';scaleTxt.textContent=label;}
+function frame(now){
+  if(tween){const k=clamp((now-tween.t0)/tween.dur,0,1);const e=k<0.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+    camera.position.lerpVectors(tween.p0,tween.p1,e);controls.target.lerpVectors(tween.q0,tween.q1,e);if(k>=1)tween=null;}
+  controls.update();renderer.render(scene,camera);updateLabels();updateScale();requestAnimationFrame(frame);
+}
+
+resize();
+{const p=presetFor('overview');const tgt=m2w(p.t);camera.position.copy(tgt.clone().addScaledVector(m2w(p.d).normalize(),fitDist(p.r)));controls.target.copy(tgt);controls.update();}
+applyLayers();requestAnimationFrame(frame);
+build().then(()=>{applyLayers();document.getElementById('loading').hidden=true;window.__ready=true;})
+  .catch(e=>{console.error(e);loadTxt.textContent='Could not build the model: '+e.message;});
+window.__goView=goView;window.__state=state;window.__apply=applyLayers;
+})();
+</script>
