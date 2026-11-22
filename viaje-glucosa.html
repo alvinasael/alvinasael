@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Viaje de la Glucosa</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@300;600;900&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --blood: #c0392b;
+    --vein: #8b1a1a;
+    --glucose: #f39c12;
+    --insulin: #2ecc71;
+    --cell: #2980b9;
+    --bg: #0a0a14;
+    --text: #f0e6d3;
+    --accent: #e74c3c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  header {
+    text-align: center;
+    padding: 2.5rem 1rem 1rem;
+  }
+
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.8rem, 5vw, 3.2rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #f39c12, #e74c3c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p {
+    font-size: 0.95rem;
+    color: #aaa;
+    margin-top: 0.4rem;
+    font-weight: 300;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1.5rem auto 0;
+    flex-wrap: wrap;
+    padding: 0 1rem;
+  }
+
+  .tab-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #bbb;
+    padding: 0.5rem 1.2rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+  }
+
+  .tab-btn.active {
+    background: linear-gradient(135deg, #f39c12, #e74c3c);
+    border-color: transparent;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* SCENE CONTAINER */
+  .scene-wrap {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem 2rem;
+    animation: fadeIn 0.5s ease;
+  }
+  .scene-wrap.active { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* LABEL BADGE */
+  .scene-label {
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  .scene-label span {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+  .badge-healthy { background: rgba(46,204,113,0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+  .badge-diabetes { background: rgba(231,76,60,0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+
+  /* CANVAS */
+  canvas {
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: #080810;
+    max-width: 100%;
+    height: auto; /* keep aspect ratio when scaled down on phones */
+    display: block;
+  }
+
+  /* INFO STRIP */
+  .info-strip {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 600px;
+  }
+
+  .info-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 0.82rem;
+    color: #ccc;
+    flex: 1 1 140px;
+    text-align: center;
+  }
+  .info-card strong { display: block; font-size: 1.1rem; margin-bottom: 0.2rem; }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 1.2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: #bbb;
+  }
+  .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* EXPLANATION */
+  .explanation {
+    max-width: 560px;
+    margin: 1.5rem auto 0;
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid #f39c12;
+    border-radius: 0 12px 12px 0;
+    padding: 1rem 1.2rem;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: #ccc;
+  }
+  .explanation strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>El Viaje de la Glucosa</h1>
+  <p>Cómo la insulina abre o bloquea las células</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('healthy', this)">🟢 Persona Sana</button>
+  <button class="tab-btn" onclick="switchTab('diabetes', this)">🔴 Diabetes Tipo 2</button>
+</div>
+
+<!-- HEALTHY SCENE -->
+<div class="scene-wrap active" id="scene-healthy">
+  <div class="scene-label">
+    Funcionamiento Normal
+    <span class="badge-healthy">Saludable</span>
+  </div>
+  <canvas id="canvas-healthy" width="580" height="320"></canvas>
+
+  <div class="legend">
+    <div class="legend-item"><div class="dot" style="background:#e74c3c"></div> Glóbulo rojo</div>
+    <div class="legend-item"><div class="dot" style="background:#f39c12"></div> Glucosa</div>
+    <div class="legend-item"><div class="dot" style="background:#2ecc71"></div> Insulina (llave)</div>
+    <div class="legend-item"><div class="dot" style="background:#3498db"></div> Célula</div>
+  </div>
+
+  <div class="explanation">
+    <strong>¿Qué pasa aquí?</strong> Después de comer, la glucosa entra al torrente sanguíneo. El páncreas libera <strong>insulina</strong>, que actúa como una <strong>llave</strong>. Esa llave abre las células, que absorben la glucosa y la convierten en energía. El nivel de azúcar en sangre se mantiene estable.
+  </div>
+</div>
+
+<!-- DIABETES SCENE -->
+<div class="scene-wrap" id="scene-diabetes">
+  <div class="scene-label">
+    Diabetes Tipo 2
+    <span class="badge-diabetes">Resistencia a la insulina</span>
+  </div>
+  <canvas id="canvas-diabetes" width="580" height="320"></canvas>
+
+  <div class="legend">
+    <div class="legend-item"><div class="dot" style="background:#e74c3c"></div> Glóbulo rojo</div>
+    <div class="legend-item"><div class="dot" style="background:#f39c12"></div> Glucosa (acumulada)</div>
+    <div class="legend-item"><div class="dot" style="background:#2ecc71"></div> Insulina (bloqueada)</div>
+    <div class="legend-item"><div class="dot" style="background:#3498db"></div> Célula (cerrada)</div>
+  </div>
+
+  <div class="explanation">
+    <strong>¿Qué pasa aquí?</strong> En la diabetes tipo 2, las células se vuelven <strong>resistentes a la insulina</strong>: la llave ya no abre bien la puerta. La glucosa no puede entrar a las células y se acumula en la sangre, causando <strong>hiperglucemia</strong>. El páncreas produce más y más insulina hasta que se agota.
+  </div>
+</div>
+
+<script>
+// ─── UTILITIES ───────────────────────────────────────────────────────────────
+function lerp(a, b, t) { return a + (b - a) * t; }
+function rand(min, max) { return Math.random() * (max - min) + min; }
+
+// ─── HEALTHY SCENE ───────────────────────────────────────────────────────────
+(function healthyScene() {
+  const canvas = document.getElementById('canvas-healthy');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const VEIN_Y = H * 0.42, VEIN_R = 70;
+
+  let t = 0;
+
+  // Red blood cells
+  const rbcs = Array.from({length: 7}, () => ({
+    x: rand(0, W),
+    y: VEIN_Y + rand(-20, 20),
+    speed: rand(0.6, 1.2),
+    r: rand(10, 14),
+    wobble: rand(0, Math.PI * 2)
+  }));
+
+  // Glucose particles in vein
+  const glucose = Array.from({length: 12}, () => ({
+    x: rand(0, W),
+    y: VEIN_Y + rand(-VEIN_R * 0.5, VEIN_R * 0.5),
+    speed: rand(0.8, 1.4),
+    r: rand(5, 8),
+    phase: 'flowing',   // 'flowing' | 'entering'
+    targetCell: null,
+    alpha: 1,
+    scale: 1,
+    trail: []
+  }));
+
+  // Cell states: 'closed' | 'unlocking' | 'open' | 'absorbing'
+  const cells = [
+    { x: 120, y: H * 0.80, r: 38, state: 'closed', energy: 0, glow: 0, openAmount: 0, insulinDocked: false, dockedInsTimer: 0 },
+    { x: 290, y: H * 0.80, r: 38, state: 'closed', energy: 0, glow: 0, openAmount: 0, insulinDocked: false, dockedInsTimer: 0 },
+    { x: 460, y: H * 0.80, r: 38, state: 'closed', energy: 0, glow: 0, openAmount: 0, insulinDocked: false, dockedInsTimer: 0 },
+  ];
+
+  // Insulin keys — each can be: 'flowing' | 'docking' | 'docked'
+  const insulins = Array.from({length: 6}, () => ({
+    x: rand(0, W),
+    y: VEIN_Y + rand(-30, 30),
+    speed: rand(0.5, 1.0),
+    angle: rand(0, Math.PI * 2),
+    r: 6,
+    phase: 'flowing',
+    targetCell: null,
+    alpha: 1
+  }));
+
+  function drawVein() {
+    const grad = ctx.createLinearGradient(0, VEIN_Y - VEIN_R, 0, VEIN_Y + VEIN_R);
+    grad.addColorStop(0,   '#5a0000');
+    grad.addColorStop(0.3, '#8b0000');
+    grad.addColorStop(0.5, '#a00000');
+    grad.addColorStop(0.7, '#8b0000');
+    grad.addColorStop(1,   '#5a0000');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.rect(0, VEIN_Y - VEIN_R, W, VEIN_R * 2);
+    ctx.fill();
+
+    const shine = ctx.createLinearGradient(0, VEIN_Y - VEIN_R, 0, VEIN_Y - VEIN_R + 20);
+    shine.addColorStop(0, 'rgba(255,255,255,0.08)');
+    shine.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = shine;
+    ctx.beginPath();
+    ctx.rect(0, VEIN_Y - VEIN_R, W, 20);
+    ctx.fill();
+  }
+
+  function drawRBC(rbc) {
+    const y = rbc.y + Math.sin(t * 2 + rbc.wobble) * 3;
+    ctx.save();
+    ctx.translate(rbc.x, y);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, rbc.r * 1.4, rbc.r, 0, 0, Math.PI * 2);
+    const g = ctx.createRadialGradient(-3, -3, 1, 0, 0, rbc.r * 1.4);
+    g.addColorStop(0, '#ff6b6b');
+    g.addColorStop(0.6, '#e74c3c');
+    g.addColorStop(1, '#922b21');
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(0, 0, rbc.r * 0.5, rbc.r * 0.35, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(150,30,30,0.5)';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawGlucose(g) {
+    if (g.phase === 'entering' && g.trail.length > 1) {
+      for (let i = 0; i < g.trail.length; i++) {
+        const a = (i / g.trail.length) * 0.35 * g.alpha;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = '#f39c12';
+        ctx.shadowColor = '#f39c12';
+        ctx.shadowBlur = 5;
+        const tr = g.r * (i / g.trail.length) * 0.7;
+        ctx.beginPath();
+        ctx.arc(g.trail[i].x, g.trail[i].y, tr, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    ctx.save();
+    ctx.globalAlpha = g.alpha;
+    ctx.translate(g.x, g.y);
+    ctx.scale(g.scale, g.scale);
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, g.r);
+    gr.addColorStop(0, '#fff5aa');
+    gr.addColorStop(0.4, '#ffe033');
+    gr.addColorStop(0.7, '#f39c12');
+    gr.addColorStop(1, '#e67e22');
+    ctx.fillStyle = gr;
+    ctx.shadowColor = '#f39c12';
+    ctx.shadowBlur = g.phase === 'entering' ? 22 : 10;
+    ctx.beginPath();
+    ctx.arc(0, 0, g.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,220,0.8)';
+    ctx.beginPath();
+    ctx.arc(-g.r * 0.25, -g.r * 0.25, g.r * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawInsulin(ins) {
+    if (ins.phase === 'docked') return; // drawn inside drawCell instead
+    ctx.save();
+    ctx.globalAlpha = ins.alpha;
+    ctx.translate(ins.x, ins.y);
+    ctx.rotate(ins.angle);
+    const col = ins.phase === 'docking' ? '#00ff99' : '#2ecc71';
+    ctx.strokeStyle = col;
+    ctx.fillStyle = col;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = col;
+    ctx.shadowBlur = ins.phase === 'docking' ? 14 : 6;
+    ctx.beginPath();
+    ctx.arc(0, 0, ins.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ins.r, 0);
+    ctx.lineTo(ins.r + 11, 0);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ins.r + 8, 0); ctx.lineTo(ins.r + 8, -4);
+    ctx.moveTo(ins.r + 5, 0); ctx.lineTo(ins.r + 5, -3);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawCell(cell) {
+    ctx.save();
+    ctx.translate(cell.x, cell.y);
+
+    if (cell.glow > 0.05) {
+      const ringR = cell.r + 8 + (1 - cell.glow) * 20;
+      ctx.beginPath();
+      ctx.arc(0, 0, ringR, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(243,156,18,${cell.glow * 0.5})`;
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#f39c12';
+      ctx.shadowBlur = 14;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    const eb = cell.glow;
+    const bg2 = ctx.createRadialGradient(-10, -10, 2, 0, 0, cell.r);
+    bg2.addColorStop(0, `rgb(${Math.round(lerp(93,150,eb))},${Math.round(lerp(173,185,eb))},${Math.round(lerp(226,100,eb))})`);
+    bg2.addColorStop(0.6, `rgb(${Math.round(lerp(41,90,eb))},${Math.round(lerp(128,130,eb))},${Math.round(lerp(185,50,eb))})`);
+    bg2.addColorStop(1, '#1a5276');
+    ctx.fillStyle = bg2;
+    ctx.shadowColor = cell.glow > 0.1 ? '#f39c12' : 'transparent';
+    ctx.shadowBlur = cell.glow > 0.1 ? 16 * cell.glow : 0;
+    ctx.beginPath();
+    ctx.arc(0, 0, cell.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    const memCol = cell.openAmount > 0.5 ? '#2ecc71' : '#5dade2';
+    ctx.strokeStyle = memCol;
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0, 0, cell.r * 0.32, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(20,60,100,0.85)';
+    ctx.fill();
+
+    // ── RECEPTOR SITE (top of cell) ──
+    const recY = -cell.r;
+    ctx.strokeStyle = cell.insulinDocked ? '#00ff99' : '#7fb3d3';
+    ctx.lineWidth = 3;
+    ctx.shadowColor = cell.insulinDocked ? '#00ff99' : 'transparent';
+    ctx.shadowBlur = cell.insulinDocked ? 10 : 0;
+    ctx.beginPath();
+    ctx.moveTo(-8, recY); ctx.lineTo(8, recY);
+    ctx.moveTo(0, recY); ctx.lineTo(0, recY + 8);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // ── CHANNEL (opens proportional to openAmount) ──
+    if (cell.openAmount > 0.05) {
+      const halfGap = cell.openAmount * 10;
+      ctx.strokeStyle = `rgba(39,174,96,${cell.openAmount})`;
+      ctx.lineWidth = 5;
+      ctx.shadowColor = '#2ecc71';
+      ctx.shadowBlur = 8 * cell.openAmount;
+      ctx.beginPath();
+      ctx.moveTo(-halfGap, recY - 2);
+      ctx.lineTo(-halfGap, recY + 12);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(halfGap, recY - 2);
+      ctx.lineTo(halfGap, recY + 12);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      if (cell.state === 'open' || cell.state === 'absorbing') {
+        const arrowY = recY + 4 + Math.sin(t * 5) * 3;
+        ctx.fillStyle = `rgba(46,204,113,${0.5 + cell.openAmount * 0.5})`;
+        ctx.shadowColor = '#2ecc71';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.moveTo(0, arrowY + 8);
+        ctx.lineTo(-5, arrowY);
+        ctx.lineTo(5, arrowY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    // ── DOCKED INSULIN KEY drawn at receptor ──
+    if (cell.insulinDocked) {
+      ctx.save();
+      ctx.translate(0, recY - 14);
+      ctx.rotate(Math.PI / 2);
+      ctx.strokeStyle = '#00ff99';
+      ctx.fillStyle = '#00ff99';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#00ff99';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(0, 0, 5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(5, 0); ctx.lineTo(14, 0);
+      ctx.moveTo(11, 0); ctx.lineTo(11, -3);
+      ctx.moveTo(8, 0); ctx.lineTo(8, -3);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Energy sparks inside
+    const sparkCount = Math.round(cell.energy * 8);
+    for (let i = 0; i < sparkCount; i++) {
+      const a = (i / sparkCount) * Math.PI * 2 + t * 2.5;
+      const ex = Math.cos(a) * cell.r * 0.52;
+      const ey = Math.sin(a) * cell.r * 0.52;
+      const sa = 0.5 + 0.5 * Math.sin(t * 5 + i);
+      ctx.fillStyle = `rgba(255,220,60,${sa})`;
+      ctx.shadowColor = '#f39c12';
+      ctx.shadowBlur = 7;
+      ctx.beginPath();
+      ctx.arc(ex, ey, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (cell.glow > 0.7) {
+      ctx.fillStyle = `rgba(255,240,100,${(cell.glow - 0.7) * 2.5})`;
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#ffe033';
+      ctx.shadowBlur = 10;
+      ctx.fillText('⚡', 0, 5);
+    }
+
+    ctx.restore();
+
+    ctx.fillStyle = 'rgba(240,230,211,0.55)';
+    ctx.font = '11px DM Sans';
+    ctx.textAlign = 'center';
+    ctx.shadowBlur = 0;
+    ctx.fillText('célula', cell.x, cell.y + cell.r + 14);
+  }
+
+  function drawPancreas() {
+    const px = W - 70, py = 40;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.fillStyle = '#c0392b';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 35, 18, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#e74c3c';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 25, 12, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(240,230,211,0.7)';
+    ctx.font = '10px DM Sans';
+    ctx.textAlign = 'center';
+    ctx.fillText('Páncreas', 0, 34);
+
+    if (Math.sin(t * 1.5) > 0.5) {
+      ctx.fillStyle = '#2ecc71';
+      ctx.shadowColor = '#2ecc71';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(0, 28, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function update() {
+    rbcs.forEach(r => {
+      r.x += r.speed;
+      if (r.x > W + 20) r.x = -20;
+    });
+
+    // ── INSULIN: flowing → docking → docked ──
+    insulins.forEach(ins => {
+      if (ins.phase === 'flowing') {
+        ins.x += ins.speed;
+        ins.angle += 0.04;
+        if (ins.x > W + 10) ins.x = -10;
+
+        for (const cell of cells) {
+          if (cell.insulinDocked || cell.state !== 'closed') continue;
+          const dx = ins.x - cell.x;
+          const dy = ins.y - (cell.y - cell.r - 14);
+          if (Math.sqrt(dx*dx + dy*dy) < 70 && Math.random() < 0.03) {
+            ins.phase = 'docking';
+            ins.targetCell = cell;
+            cell.state = 'unlocking';
+            break; // one key per cell, one cell per key
+          }
+        }
+      }
+
+      if (ins.phase === 'docking' && ins.targetCell) {
+        const tx = ins.targetCell.x;
+        const ty = ins.targetCell.y - ins.targetCell.r - 14;
+        ins.x = lerp(ins.x, tx, 0.1);
+        ins.y = lerp(ins.y, ty, 0.1);
+        ins.angle = lerp(ins.angle, Math.PI / 2, 0.1);
+
+        const dx = ins.x - tx, dy = ins.y - ty;
+        if (Math.sqrt(dx*dx + dy*dy) < 4) {
+          ins.phase = 'docked';
+          ins.targetCell.insulinDocked = true;
+          ins.targetCell.state = 'open';
+        }
+      }
+    });
+
+    // ── CELLS: open channel over time, then close and reset ──
+    cells.forEach(cell => {
+      if (cell.state === 'unlocking') {
+        cell.openAmount = Math.min(1, cell.openAmount + 0.02);
+      }
+      if (cell.state === 'open' || cell.state === 'absorbing') {
+        cell.openAmount = Math.min(1, cell.openAmount + 0.03);
+        cell.dockedInsTimer++;
+        if (cell.dockedInsTimer > 300) {
+          cell.state = 'closed';
+          cell.insulinDocked = false;
+          cell.openAmount = 0;
+          cell.dockedInsTimer = 0;
+          insulins.forEach(ins => {
+            if (ins.targetCell === cell) {
+              ins.phase = 'flowing';
+              ins.targetCell = null;
+              ins.x = cell.x + rand(-40, 40);
+              ins.y = VEIN_Y + rand(-30, 30);
+            }
+          });
+        }
+      }
+      cell.glow *= 0.97;
+      cell.energy = Math.max(0, cell.energy - 0.001);
+    });
+
+    // ── GLUCOSE: flowing → entering (absorbed) ──
+    glucose.forEach(g => {
+      if (g.phase === 'flowing') {
+        g.x += g.speed;
+        if (g.x > W + 10) g.x = -10;
+
+        for (const cell of cells) {
+          if (cell.state !== 'open' && cell.state !== 'absorbing') continue;
+          const dx = g.x - cell.x;
+          const dy = g.y - (cell.y - cell.r);
+          if (Math.sqrt(dx*dx + dy*dy) < 90 && Math.random() < 0.035) {
+            g.phase = 'entering';
+            g.targetCell = cell;
+            cell.state = 'absorbing';
+            break;
+          }
+        }
+      }
+
+      if (g.phase === 'entering' && g.targetCell) {
+        g.trail.push({ x: g.x, y: g.y });
+        if (g.trail.length > 12) g.trail.shift();
+
+        const tx = g.targetCell.x;
+        const ty = g.targetCell.y;
+        g.x = lerp(g.x, tx, 0.09);
+        g.y = lerp(g.y, ty, 0.09);
+        g.alpha -= 0.025;
+        g.scale = Math.max(0.1, g.alpha);
+
+        g.targetCell.glow = Math.min(1, g.targetCell.glow + 0.05);
+        g.targetCell.energy = Math.min(1, g.targetCell.energy + 0.02);
+
+        if (g.alpha <= 0.08) {
+          g.x = rand(-20, W);
+          g.y = VEIN_Y + rand(-VEIN_R * 0.55, VEIN_R * 0.55);
+          g.alpha = 1; g.scale = 1;
+          g.phase = 'flowing';
+          g.targetCell = null;
+          g.trail = [];
+          g.speed = rand(0.8, 1.4);
+        }
+      }
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#080810');
+    bg.addColorStop(1, '#0e0e20');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    drawVein();
+    drawPancreas();
+    cells.forEach(drawCell);
+    rbcs.forEach(drawRBC);
+    insulins.forEach(drawInsulin);
+    glucose.forEach(drawGlucose);
+
+    ctx.fillStyle = 'rgba(240,230,211,0.4)';
+    ctx.font = '11px DM Sans';
+    ctx.textAlign = 'left';
+    ctx.fillText('↔ torrente sanguíneo', 10, VEIN_Y - VEIN_R - 8);
+
+    t += 0.016;
+    update();
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+})();
+
+// ─── DIABETES SCENE ──────────────────────────────────────────────────────────
+(function diabetesScene() {
+  const canvas = document.getElementById('canvas-diabetes');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const VEIN_Y = H * 0.42, VEIN_R = 70;
+
+  let t = 0;
+
+  const rbcs = Array.from({length: 6}, () => ({
+    x: rand(0, W), y: VEIN_Y + rand(-20, 20),
+    speed: rand(0.4, 0.8), r: rand(10, 14), wobble: rand(0, Math.PI * 2)
+  }));
+
+  const glucose = Array.from({length: 22}, () => ({
+    x: rand(0, W), y: VEIN_Y + rand(-VEIN_R * 0.7, VEIN_R * 0.7),
+    speed: rand(0.3, 0.8), r: rand(4, 8), alpha: 1, pulse: rand(0, Math.PI * 2)
+  }));
+
+  const cells = [
+    { x: 120, y: H * 0.80, r: 38 },
+    { x: 290, y: H * 0.80, r: 38 },
+    { x: 460, y: H * 0.80, r: 38 },
+  ];
+
+  const blockedInsulins = cells.map(c => ({ x: c.x, y: c.y - c.r - 12, cell: c, angle: 0 }));
+
+  function drawVein() {
+    const grad = ctx.createLinearGradient(0, VEIN_Y - VEIN_R, 0, VEIN_Y + VEIN_R);
+    grad.addColorStop(0, '#3d0000');
+    grad.addColorStop(0.3, '#600000');
+    grad.addColorStop(0.5, '#750000');
+    grad.addColorStop(0.7, '#600000');
+    grad.addColorStop(1, '#3d0000');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.rect(0, VEIN_Y - VEIN_R, W, VEIN_R * 2);
+    ctx.fill();
+  }
+
+  function drawRBC(rbc) {
+    const y = rbc.y + Math.sin(t * 1.5 + rbc.wobble) * 2;
+    ctx.save();
+    ctx.translate(rbc.x, y);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, rbc.r * 1.4, rbc.r, 0, 0, Math.PI * 2);
+    const g = ctx.createRadialGradient(-3, -3, 1, 0, 0, rbc.r * 1.4);
+    g.addColorStop(0, '#cc5555');
+    g.addColorStop(0.6, '#922b21');
+    g.addColorStop(1, '#5a1010');
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(0, 0, rbc.r * 0.5, rbc.r * 0.35, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(100,20,20,0.5)';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawGlucose(g) {
+    const pulse = 0.7 + 0.3 * Math.sin(t * 3 + g.pulse);
+    ctx.save();
+    ctx.globalAlpha = pulse;
+    ctx.translate(g.x, g.y);
+    ctx.shadowColor = '#f39c12';
+    ctx.shadowBlur = 15;
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, g.r);
+    gr.addColorStop(0, '#ffe066');
+    gr.addColorStop(0.5, '#f39c12');
+    gr.addColorStop(1, '#c0392b');
+    ctx.fillStyle = gr;
+    ctx.beginPath();
+    ctx.arc(0, 0, g.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawCell(cell) {
+    ctx.save();
+    ctx.translate(cell.x, cell.y);
+
+    const g = ctx.createRadialGradient(-10, -10, 2, 0, 0, cell.r);
+    g.addColorStop(0, '#4a7a9b');
+    g.addColorStop(0.5, '#1f618d');
+    g.addColorStop(1, '#154360');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, cell.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0, 0, cell.r * 0.35, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(15,40,70,0.8)';
+    ctx.fill();
+
+    const cx = 0, cy = -cell.r + 2;
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx - 8, cy - 8); ctx.lineTo(cx + 8, cy + 8);
+    ctx.moveTo(cx + 8, cy - 8); ctx.lineTo(cx - 8, cy + 8);
+    ctx.stroke();
+
+    ctx.restore();
+    ctx.fillStyle = 'rgba(240,230,211,0.6)';
+    ctx.font = '11px DM Sans';
+    ctx.textAlign = 'center';
+    ctx.fillText('célula', cell.x, cell.y + cell.r + 14);
+  }
+
+  function drawBlockedInsulin(ins) {
+    const bounce = Math.abs(Math.sin(t * 3 + ins.cell.x)) * 8;
+    const iy = ins.y - bounce;
+    ctx.save();
+    ctx.translate(ins.x, iy);
+    ctx.rotate(t * 2);
+    ctx.strokeStyle = '#2ecc71';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#2ecc71';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(0, 0, 6, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(6, 0); ctx.lineTo(16, 0);
+    ctx.lineTo(16, 3);
+    ctx.moveTo(13, 0); ctx.lineTo(13, -3);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(231,76,60,0.9)';
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.moveTo(-10, -10); ctx.lineTo(10, 10);
+    ctx.moveTo(10, -10); ctx.lineTo(-10, 10);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPancreas() {
+    const px = W - 70, py = 40;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.fillStyle = '#922b21';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 35, 18, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#c0392b';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 25, 12, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(240,230,211,0.7)';
+    ctx.font = '10px DM Sans';
+    ctx.textAlign = 'center';
+    ctx.fillText('Páncreas', 0, 34);
+    ctx.fillText('(agotado)', 0, 46);
+    ctx.restore();
+  }
+
+  function drawWarning() {
+    const alpha = 0.4 + 0.3 * Math.sin(t * 2);
+    ctx.fillStyle = `rgba(231,76,60,${alpha})`;
+    ctx.font = 'bold 11px DM Sans';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚠ Glucosa elevada en sangre', W / 2, VEIN_Y - VEIN_R - 10);
+  }
+
+  function update() {
+    rbcs.forEach(r => {
+      r.x += r.speed;
+      if (r.x > W + 20) r.x = -20;
+    });
+    glucose.forEach(g => {
+      g.x += g.speed;
+      if (g.x > W + 10) g.x = -10;
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#0a0008');
+    bg.addColorStop(1, '#120010');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    drawVein();
+    drawWarning();
+    drawPancreas();
+    cells.forEach(drawCell);
+    blockedInsulins.forEach(drawBlockedInsulin);
+    rbcs.forEach(drawRBC);
+    glucose.forEach(drawGlucose);
+
+    ctx.fillStyle = 'rgba(240,230,211,0.4)';
+    ctx.font = '11px DM Sans';
+    ctx.textAlign = 'left';
+    ctx.fillText('↔ torrente sanguíneo', 10, VEIN_Y - VEIN_R - 26);
+
+    t += 0.016;
+    update();
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+})();
+
+// ─── TAB SWITCHING ───────────────────────────────────────────────────────────
+function switchTab(scene, btn) {
+  document.querySelectorAll('.scene-wrap').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('scene-' + scene).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
