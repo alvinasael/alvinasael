@@ -20,7 +20,8 @@ window.NHCelula = window.NHCelula || (function () {
   // ── Escena lógica (unidades de dibujo) ──────────────────────────────────
   const LW = 640, LH = 380;
   const LUMEN_B = 118, WALL_B = 138, BI = 22;
-  const yM = x => 244 + 24 * Math.pow((x - 320) / 320, 2);   // cara externa de la membrana
+  // cara externa de la membrana: ondulación suave (células vecinas) que sigue fuera del cuadro al ampliar
+  const yM = x => 244 + 12 * (1 - Math.cos(Math.PI * (x - 320) / 320));
   const SLOTS = [80, 240, 400, 560];                         // posiciones de GLUT4
   const DEFAULT_RECEPTORS = [160, 320, 480];
 
@@ -44,7 +45,25 @@ window.NHCelula = window.NHCelula || (function () {
     .slide-anim .s-header-title { font-family: var(--serif); font-size: 1.5em; font-weight: 400; color: var(--white); }
     .slide-anim .s-header-brand { font-size: .7em; font-weight: 600; letter-spacing: .08em; color: var(--green-light); }
     .slide-anim .ga-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3%; padding: 2% 6% 0; cursor: pointer; }
-    .slide-anim .ga-panel { margin: 0; display: flex; flex-direction: column; min-height: 0; min-width: 0; gap: .45em; }
+    .slide-anim .ga-panel { margin: 0; display: flex; flex-direction: column; min-height: 0; min-width: 0; gap: .45em; cursor: zoom-in; }
+    .slide-anim .ga-canvas::after { content: 'Clic para ampliar'; position: absolute; right: .8em; bottom: .7em; font-size: .6em; font-weight: 600; color: var(--charcoal); background: rgba(247,243,237,.9); padding: .35em .9em; border-radius: 999px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+    .slide-anim .ga-panel:hover .ga-canvas::after, .slide-anim .ga-canvas:focus-visible::after { opacity: 1; }
+    .slide-anim .ga-canvas:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+    .slide-anim .ga-body.zoomed { grid-template-columns: 1fr; }
+    .slide-anim .ga-body.zoomed .ga-panel { cursor: default; }
+    .slide-anim .ga-body.zoomed .ga-canvas::after { display: none; }
+    .slide-anim .ga-body.zoomed .ga-panel:not(.is-zoomed) { display: none; }
+    .slide-anim .ga-body.zoomed .is-zoomed .ga-label { display: none; }
+    .slide-anim .ga-panel.is-zoomed .ga-canvas { animation: ga-pop .35s ease; }
+    @keyframes ga-pop { from { opacity: .4; transform: scale(.98); } to { opacity: 1; transform: none; } }
+    .slide-anim .ga-zoombar { display: flex; align-items: center; gap: 1.2em; }
+    .slide-anim .ga-tabs { display: inline-flex; gap: 3px; padding: 3px; background: var(--cream-dark); border-radius: 999px; }
+    .slide-anim .ga-tab { font: inherit; font-size: .66em; font-weight: 600; letter-spacing: .04em; border: 0; background: none; color: var(--charcoal-60); padding: .5em 1.2em; border-radius: 999px; cursor: pointer; }
+    .slide-anim .ga-tab[aria-selected="true"] { background: var(--green); color: var(--white); }
+    .slide-anim .ga-unzoom { font: inherit; font-size: .62em; font-weight: 600; color: var(--charcoal-60); background: none; border: 1px solid var(--charcoal-30); border-radius: 999px; padding: .45em 1.1em; cursor: pointer; }
+    .slide-anim .ga-unzoom:hover, .slide-anim .ga-tab:hover { color: var(--charcoal); }
+    .slide-anim .ga-tab[aria-selected="true"]:hover { color: var(--white); }
+    .slide-anim .ga-tab:focus-visible, .slide-anim .ga-unzoom:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
     .slide-anim .ga-panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1em; }
     .slide-anim .ga-label { font-size: .72em; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--charcoal-60); }
     .slide-anim .ga-reading { font-size: .72em; color: var(--charcoal-60); white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -227,6 +246,8 @@ window.NHCelula = window.NHCelula || (function () {
   }
   // ── Escena del riñón: túbulo (arriba), célula del túbulo (medio), capilar (abajo) ──
   const K = { LUM_B: 112, APICAL: 122, BASAL: 236, CAP_T: 262, CAP_L: 274, SGLT: [90, 230, 370, 510] };
+  // Transportadores repetidos cada 140 unidades a todo lo ancho; idx 0..3 indica a qué estado del slide corresponde
+  const sgltList = g => { const out = []; for (let k = Math.ceil((g.x0 - 110) / 140); 90 + 140 * k < g.x1 + 20; k++) out.push({ x: 90 + 140 * k, idx: ((k % 4) + 4) % 4 }); return out; };
   function drawStaticKidney(c, g) {
     const X0 = g.x0 - 4, X1 = g.x1 + 4;
     let gr = c.createLinearGradient(0, g.y0, 0, K.LUM_B);
@@ -258,7 +279,7 @@ window.NHCelula = window.NHCelula || (function () {
     gr.addColorStop(0, C.plasmaBot); gr.addColorStop(1, C.plasmaTop);
     c.fillStyle = gr; c.fillRect(X0, K.CAP_L, X1 - X0, g.y1 - K.CAP_L);
     // GLUT2 en la cara basal (salida hacia la sangre)
-    K.SGLT.forEach(x => {
+    sgltList(g).forEach(({ x }) => {
       c.fillStyle = C.glutHi; c.beginPath();
       c.roundRect ? c.roundRect(x - 9, K.BASAL - 9, 8, 18, 4) : c.rect(x - 9, K.BASAL - 9, 8, 18); c.fill();
       c.beginPath(); c.roundRect ? c.roundRect(x + 1, K.BASAL - 9, 8, 18, 4) : c.rect(x + 1, K.BASAL - 9, 8, 18); c.fill();
@@ -347,10 +368,10 @@ window.NHCelula = window.NHCelula || (function () {
     // Estructura del slide
     root.innerHTML = `
       <div class="s-header"><div class="s-header-title"></div><div class="s-header-brand">Nutrición.Health</div></div>
-      <div class="ga-body" title="Clic para avanzar">${cfg.panels.map(p => `
+      <div class="ga-body">${cfg.panels.map(p => `
         <figure class="ga-panel" data-tone="${p.tone || 'green'}">
           <figcaption class="ga-panel-head"><span class="ga-label"></span><span class="ga-reading"><b></b>mg/dL</span></figcaption>
-          <div class="ga-canvas"><canvas></canvas></div>
+          <div class="ga-canvas" tabindex="0" role="button" aria-label="Ampliar este panel"><canvas></canvas></div>
           ${meterKeys(p).length ? `<div class="ga-meters">${meterKeys(p).map(k => `<div class="ga-meter" data-k="${k}"><svg viewBox="0 0 40 28" aria-hidden="true">${METERS[k].svg}</svg><span>${METERS[k].label}</span><span class="ga-meter-bars">${'<i></i>'.repeat(5)}</span>${meterKeys(p).length === 1 ? '<span class="ga-meter-txt"></span>' : ''}</div>`).join('')}</div>` : ''}
         </figure>`).join('')}
       </div>
@@ -495,12 +516,12 @@ window.NHCelula = window.NHCelula || (function () {
       }
 
       // Etiquetas encima de todo
-      if (p.P.labels) {
-        tag(c, 'Sangre (capilar)', 10, 10);
-        tag(c, 'Pared del capilar', 10, LUMEN_B - 3);
-        tag(c, 'Célula muscular', 10, LH - 34);
+      if (p.P.labels || zoom != null) {
+        tag(c, 'Sangre (capilar)', g.x0 + 10, 10);
+        tag(c, 'Pared del capilar', g.x0 + 10, LUMEN_B - 3);
+        tag(c, 'Célula muscular', g.x0 + 10, LH - 34);
       }
-      if (st.tag && st.tag.alpha > .01) tag(c, st.tag.text, LW - 10 - (st.tag.text.length * 8 + 16), 10, st.tag.alpha);
+      if (st.tag && st.tag.alpha > .01) tag(c, st.tag.text, g.x1 - 10 - (st.tag.text.length * 8 + 16), 10, st.tag.alpha);
     }
 
     function kidneyFrame(p, c, g, st, dt, wrap, k) {
@@ -521,7 +542,8 @@ window.NHCelula = window.NHCelula || (function () {
       c.restore();
       // transportadores SGLT2 y medicamento que se une
       const block = st.block || [0, 0, 0, 0];
-      K.SGLT.forEach((x, i) => {
+      const list = sgltList(g);
+      list.forEach(({ x, idx: i }) => {
         const b = block[i] || 0;
         sglt2(c, x, b);
         if (b > 0) {
@@ -531,12 +553,12 @@ window.NHCelula = window.NHCelula || (function () {
       });
       // glucosa que el riñón recupera: túbulo → SGLT2 → célula → GLUT2 → sangre
       if (st.reabsorb && st.reabsorb.elapsed >= 0) {
-        const open = K.SGLT.map((_, i) => i).filter(i => (block[i] || 0) < .5);
+        const open = list.filter(o => (block[o.idx] || 0) < .5).map(o => o.x);
         const dur = 2.6, every = st.reabsorb.every, el = st.reabsorb.elapsed;
         const n = Math.floor(el / every) + 1;
         if (open.length) for (let q = Math.max(0, n - Math.ceil(dur / every) - 1); q < n; q++) {
           const age = el - q * every; if (age < 0 || age > dur) continue;
-          const x0 = K.SGLT[open[q % open.length]];
+          const x0 = open[q % open.length];
           const sx = x0 - 60 + hash(q, 1) * 40, sy = 30 + hash(q, 2) * 60, ex = x0 + (hash(q, 3) - .5) * 70, ey = 300 + hash(q, 4) * 40;
           const t = age / dur; let x, y;
           if (t < .3) { const e = ease(t / .3); x = lerp(sx, x0, e); y = lerp(sy, K.APICAL - 4, e); }
@@ -546,13 +568,13 @@ window.NHCelula = window.NHCelula || (function () {
           glucose(c, x, y, q + t * 2, a);
         }
       }
-      if (p.P.labels) {
-        tag(c, 'Túbulo del riñón (orina)', 10, 10);
-        tag(c, 'Célula del riñón', 10, 150);
-        tag(c, 'Sangre (capilar)', 10, LH - 34);
+      if (p.P.labels || zoom != null) {
+        tag(c, 'Túbulo del riñón (orina)', g.x0 + 10, 10);
+        tag(c, 'Célula del riñón', g.x0 + 10, 150);
+        tag(c, 'Sangre (capilar)', g.x0 + 10, LH - 34);
       }
-      tag(c, 'hacia la orina →', LW - 150, K.LUM_B - 32, .9);
-      if (st.tag && st.tag.alpha > .01) tag(c, st.tag.text, LW - 10 - (st.tag.text.length * 8 + 16), 10, st.tag.alpha);
+      tag(c, 'hacia la orina →', g.x1 - 150, K.LUM_B - 32, .9);
+      if (st.tag && st.tag.alpha > .01) tag(c, st.tag.text, g.x1 - 10 - (st.tag.text.length * 8 + 16), 10, st.tag.alpha);
     }
 
     function setStep(n) {
@@ -561,13 +583,39 @@ window.NHCelula = window.NHCelula || (function () {
       caption.textContent = steps[step].caption;
     }
     stepBtns.forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setStep(+b.dataset.step); b.blur(); }));
-    root.querySelector('.ga-body').addEventListener('click', () => setStep(step < last ? step + 1 : 0));
+    // Ampliar un panel a todo el ancho; pestañas para cambiar de panel sin volver a la vista doble
+    let zoom = null;
+    const body = root.querySelector('.ga-body');
+    const figs = [...root.querySelectorAll('.ga-panel')];
+    const zoombar = document.createElement('div');
+    zoombar.className = 'ga-zoombar';
+    zoombar.innerHTML = `<div class="ga-tabs" role="tablist">${cfg.panels.map((_, i) => `<button class="ga-tab" type="button" role="tab" data-i="${i}"></button>`).join('')}</div><button class="ga-unzoom" type="button">× Ver ambos</button>`;
+    const tabs = [...zoombar.querySelectorAll('.ga-tab')];
+    tabs.forEach((t, i) => { t.textContent = cfg.panels[i].label; t.addEventListener('click', e => { e.stopPropagation(); setZoom(i); t.blur(); }); });
+    zoombar.querySelector('.ga-unzoom').addEventListener('click', e => { e.stopPropagation(); setZoom(null); });
+    function setZoom(i) {
+      zoom = i;
+      body.classList.toggle('zoomed', i != null);
+      figs.forEach((f, j) => f.classList.toggle('is-zoomed', j === i));
+      if (i != null) {
+        figs[i].querySelector('.ga-panel-head').prepend(zoombar);
+        tabs.forEach((t, j) => t.setAttribute('aria-selected', String(j === i)));
+      } else zoombar.remove();
+      panels.forEach(p => { p.geom = null; });
+    }
+    figs.forEach((f, i) => {
+      f.addEventListener('click', () => { if (zoom == null) setZoom(i); });
+      const cv = f.querySelector('.ga-canvas');
+      cv.addEventListener('keydown', e => { if ((e.key === 'Enter') && zoom == null) { e.preventDefault(); e.stopPropagation(); setZoom(i); } });
+    });
+    root.gaZoom = setZoom;
 
     // Teclas del deck: la flecha avanza los pasos antes de pasar al próximo slide
     window.addEventListener('keydown', e => {
       if (!root.classList.contains('active')) return;
       const fwd = e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown';
       const back = e.key === 'ArrowLeft' || e.key === 'PageUp';
+      if (e.key === 'Escape' && zoom != null) { e.preventDefault(); e.stopImmediatePropagation(); setZoom(null); return; }
       if (fwd && step < last) { e.preventDefault(); e.stopImmediatePropagation(); setStep(step + 1); }
       else if (back && step > 0) { e.preventDefault(); e.stopImmediatePropagation(); setStep(step - 1); }
     }, true);
@@ -584,7 +632,7 @@ window.NHCelula = window.NHCelula || (function () {
       if (root.classList.contains('active')) {
         if (!running) { setStep(0); panels.forEach(p => { p.aL = GL.map(() => 0); p.aI = GI.map(() => 0); p.aF = FREE_INS.map(() => 0); p.aG = GLP.map(() => 0); p.aM = MET.map(() => 0); p.aU = null; p.aD = null; }); }
         start();
-      } else stop();
+      } else { stop(); if (zoom != null) setZoom(null); }
     }
     new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['class'] });
     window.addEventListener('resize', () => panels.forEach(p => p.geom = null));
