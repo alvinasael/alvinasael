@@ -35,6 +35,13 @@ NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativ
 
 ====
 SLIDE: 6
+TIPO: Animación
+INSIGHT: Qué hace un medicamento SGLT2
+DATOS: glucosa-sglt2
+NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativa, valores aproximados
+
+====
+SLIDE: 7
 TIPO: Tabla
 INSIGHT: Los números del diagnóstico
 DATOS: Prueba|Prediabetes|Diabetes

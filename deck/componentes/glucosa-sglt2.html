@@ -1,0 +1,53 @@
+<div class="slide-page slide-anim" data-index="{{INDEX}}" data-titulo="{{TITULO}}" data-fuente="{{FUENTE}}">
+  <script>{{INCLUIR:_motor-celula.js}}</script>
+  <script>
+  (function () {
+    const root = document.currentScript.closest('.slide-page');
+    const { prog, lerp, easeOut } = NHCelula;
+
+    // Escena del riñón. El SGLT2 no depende de la insulina: bloquea la recuperación
+    // de glucosa en el túbulo y esa glucosa sale en la orina.
+    const base = t => ({ G: 210, filtrate: 9, reabsorb: { elapsed: t, every: .55 }, urine: .15 });
+
+    NHCelula.mount(root, {
+      scene: 'rinon',
+      legend: ['glucosa', 'sglt2', 'isglt2'],
+      steps: [
+        { label: 'El riñón recupera', caption: 'El riñón filtra la sangre y la glucosa pasa al túbulo. Los transportadores SGLT2 la recogen y la devuelven a la sangre: casi nada se va en la orina.' },
+        { label: 'Se toma el SGLT2', caption: 'El medicamento SGLT2 se toma en pastillas una vez al día. Llega al túbulo y tapa los transportadores SGLT2.' },
+        { label: 'Sale por la orina', caption: 'Con los SGLT2 tapados, la glucosa sigue de largo y sale en la orina. Cada día se eliminan unos 60 a 80 gramos de glucosa.' },
+        { label: 'Baja la glucosa', caption: 'La glucosa en sangre baja sin depender de la insulina. También protege el corazón y los riñones. Hay que tomar agua y cuidar la higiene íntima para evitar infecciones por hongos.' },
+      ],
+      panels: [
+        {
+          label: 'Diabetes tipo 2 · sin SGLT2', tone: 'amber', labels: true, meters: ['urine'],
+          aria: 'Ilustración: túbulo del riñón de una persona con diabetes tipo 2 sin medicamento SGLT2',
+          state: (s, t) => Object.assign(base(t), s === 3 ? { G: lerp(210, 206, easeOut(prog(t, .5, 10))) } : {}),
+        },
+        {
+          label: 'Diabetes tipo 2 · con SGLT2', tone: 'green', meters: ['urine'],
+          aria: 'Ilustración: túbulo del riñón de una persona con diabetes tipo 2 que toma un medicamento SGLT2',
+          state: (s, t) => {
+            if (s === 0) return base(t);
+            if (s === 1) return Object.assign(base(t), {
+              drug: Math.round(8 * prog(t, .2, 2)),
+              block: [0, 1, 2, 3].map(i => prog(t, 1.2 + i * .45, 1.6)),
+              tag: { text: 'Medicamento SGLT2', alpha: prog(t, .2, .6) },
+            });
+            if (s === 2) return {
+              G: 210, drug: 8, block: [1, 1, 1, 1], reabsorb: null,
+              filtrate: Math.round(lerp(9, 22, prog(t, .3, 4))),
+              urine: lerp(.15, .9, prog(t, .5, 4)),
+            };
+            return {
+              G: lerp(210, 168, easeOut(prog(t, .5, 9))), drug: 8, block: [1, 1, 1, 1], reabsorb: null,
+              filtrate: Math.round(lerp(22, 17, prog(t, .5, 9))),
+              urine: lerp(.9, .75, prog(t, .5, 9)),
+            };
+          },
+        },
+      ],
+    });
+  })();
+  </script>
+</div>

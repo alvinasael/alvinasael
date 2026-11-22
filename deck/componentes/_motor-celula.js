@@ -3,6 +3,7 @@
  * Cada componente llama NHCelula.mount(root, cfg) con su propia historia por pasos.
  *
  * cfg = {
+ *   scene: 'musculo' (por defecto) | 'rinon',
  *   receptors: [x...],             // posiciones de receptores de insulina (opcional)
  *   legend: ['glucosa','insulina','receptor','glut4'],
  *   steps: [{ label, caption }],   // 4 pasos recomendados
@@ -12,6 +13,7 @@
  *                                   signal:{r,a}|null, uptake:{elapsed,every}|null,
  *                                   liver:0..1, stomach:0..1, appetite:0..1,
  *                                   tag:{text,alpha}|null }) }]
+ *   Escena 'rinon': state => ({ G, filtrate, drug, block:[0..1 x4], reabsorb:{elapsed,every}|null, urine:0..1, tag })
  * }
  */
 window.NHCelula = window.NHCelula || (function () {
@@ -82,7 +84,11 @@ window.NHCelula = window.NHCelula || (function () {
   };
   LEGEND.glp1 = ['Medicamento GLP-1', '<path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0" stroke="#3D5C4F" stroke-width="4.5" stroke-linecap="round" fill="none"/><path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0" stroke="#D4E4DD" stroke-width="1.6" stroke-linecap="round" fill="none"/>'];
   LEGEND.metformina = ['Metformina', '<path d="M3 15l4-5 5 5 5-5 4 5" stroke="#6B6760" stroke-width="1.8" fill="none"/><circle cx="3" cy="15" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/><circle cx="7" cy="10" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/><circle cx="12" cy="15" r="2.4" fill="#6B6760"/><circle cx="17" cy="10" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/><circle cx="21" cy="15" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/>'];
+  LEGEND.sglt2 = ['Transportador SGLT2', '<rect x="7" y="4" width="10" height="16" rx="4" fill="#8A857D"/><path d="M9.5 4c0 3 5 3 5 0" fill="#EDE8DF"/>'];
+  LEGEND.isglt2 = ['Medicamento SGLT2', '<polygon points="9,6 13,8.5 13,13.5 9,16 5,13.5 5,8.5" fill="#EDE8DF" stroke="#4A4741" stroke-width="1.5"/><circle cx="16.5" cy="9" r="3" fill="#4A4741"/><circle cx="20" cy="15" r="3" fill="#4A4741"/><path d="M13 10l1.5-.5M18 11.5l1 1.5" stroke="#4A4741" stroke-width="1.5"/>'];
   const METERS = {
+    urine: { label: 'Glucosa que se va en la orina', words: ['poca', 'moderada', 'mucha'],
+             svg: '<path d="M20 3c5 7 9 12 9 17a9 9 0 0 1-18 0c0-5 4-10 9-17Z" fill="#D9C27A"/>' },
     liver: { label: 'Hígado soltando glucosa', words: ['poca', 'moderada', 'mucha'],
              svg: '<path d="M3 11c5-6 24-8 33-3 3 2 1 8-4 11-7 5-17 8-23 7-6-1-9-9-6-15Z" fill="#A66F5E" opacity=".8"/>' },
     stomach: { label: 'Estómago vaciándose', words: ['lento', 'medio', 'rápido'],
@@ -219,6 +225,69 @@ window.NHCelula = window.NHCelula || (function () {
     });
     c.restore();
   }
+  // ── Escena del riñón: túbulo (arriba), célula del túbulo (medio), capilar (abajo) ──
+  const K = { LUM_B: 112, APICAL: 122, BASAL: 236, CAP_T: 262, CAP_L: 274, SGLT: [90, 230, 370, 510] };
+  function drawStaticKidney(c, g) {
+    const X0 = g.x0 - 4, X1 = g.x1 + 4;
+    let gr = c.createLinearGradient(0, g.y0, 0, K.LUM_B);
+    gr.addColorStop(0, '#F5EFDC'); gr.addColorStop(1, '#EADFC0');
+    c.fillStyle = gr; c.fillRect(X0, g.y0, X1 - X0, K.LUM_B - g.y0);
+    // células del túbulo
+    gr = c.createLinearGradient(0, K.APICAL, 0, K.BASAL);
+    gr.addColorStop(0, '#F1E7DC'); gr.addColorStop(1, '#E6D8C9');
+    c.fillStyle = gr; c.fillRect(X0, K.LUM_B, X1 - X0, K.BASAL - K.LUM_B);
+    // borde en cepillo (microvellosidades)
+    c.strokeStyle = '#CDB8A4'; c.lineWidth = 2; c.lineCap = 'round';
+    c.beginPath();
+    for (let x = Math.floor(X0 / 5) * 5; x <= X1; x += 5) { c.moveTo(x, K.APICAL - 1); c.lineTo(x, K.LUM_B + 1 + ((x / 5) % 2) * 2); }
+    c.stroke();
+    c.strokeStyle = '#B9A08C'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(X0, K.APICAL); c.lineTo(X1, K.APICAL); c.moveTo(X0, K.BASAL); c.lineTo(X1, K.BASAL); c.stroke();
+    // límites entre células y núcleos
+    for (let x = Math.floor(X0 / 140) * 140 - 20; x < X1; x += 140) {
+      c.strokeStyle = '#CDB3A0'; c.lineWidth = 1.6;
+      c.beginPath(); c.moveTo(x + 160, K.APICAL); c.bezierCurveTo(x + 166, 160, x + 154, 200, x + 160, K.BASAL); c.stroke();
+      c.fillStyle = '#BFA18E'; c.globalAlpha = .55;
+      c.beginPath(); c.ellipse(x + 90, 196, 22, 13, 0, 0, 6.283); c.fill(); c.globalAlpha = 1;
+    }
+    // intersticio y capilar
+    c.fillStyle = '#F7F3ED'; c.fillRect(X0, K.BASAL + 1, X1 - X0, K.CAP_T - K.BASAL - 1);
+    c.fillStyle = C.wall; c.fillRect(X0, K.CAP_T, X1 - X0, K.CAP_L - K.CAP_T);
+    c.fillStyle = C.wallHi; c.fillRect(X0, K.CAP_L - 3, X1 - X0, 3);
+    gr = c.createLinearGradient(0, K.CAP_L, 0, g.y1);
+    gr.addColorStop(0, C.plasmaBot); gr.addColorStop(1, C.plasmaTop);
+    c.fillStyle = gr; c.fillRect(X0, K.CAP_L, X1 - X0, g.y1 - K.CAP_L);
+    // GLUT2 en la cara basal (salida hacia la sangre)
+    K.SGLT.forEach(x => {
+      c.fillStyle = C.glutHi; c.beginPath();
+      c.roundRect ? c.roundRect(x - 9, K.BASAL - 9, 8, 18, 4) : c.rect(x - 9, K.BASAL - 9, 8, 18); c.fill();
+      c.beginPath(); c.roundRect ? c.roundRect(x + 1, K.BASAL - 9, 8, 18, 4) : c.rect(x + 1, K.BASAL - 9, 8, 18); c.fill();
+    });
+  }
+  function sglt2(c, x, blocked) {
+    const y = K.APICAL;
+    c.save();
+    c.fillStyle = blocked > .5 ? '#B8AFA3' : '#8A857D';
+    c.beginPath(); c.roundRect ? c.roundRect(x - 11, y - 14, 22, 28, 8) : c.rect(x - 11, y - 14, 22, 28); c.fill();
+    c.fillStyle = '#EADFC0'; c.beginPath(); c.ellipse(x, y - 14, 6, 6, 0, 0, Math.PI); c.fill();   // bolsillo de unión
+    c.restore();
+  }
+  function gliflozin(c, x, y, rot, a) {
+    if (a <= .01) return;
+    c.save(); c.globalAlpha = a; c.translate(x, y); c.rotate(rot);
+    c.strokeStyle = '#4A4741'; c.lineWidth = 1.6; c.lineJoin = 'round';
+    c.beginPath(); c.moveTo(5.2, -1); c.lineTo(9, -3); c.moveTo(13, 1); c.lineTo(15, 5); c.stroke();
+    c.beginPath();
+    for (let i = 0; i < 6; i++) { const t = i * Math.PI / 3 - Math.PI / 2; const px = Math.cos(t) * 6, py = Math.sin(t) * 6; i ? c.lineTo(px, py) : c.moveTo(px, py); }
+    c.closePath(); c.fillStyle = '#EDE8DF'; c.fill(); c.stroke();
+    c.fillStyle = '#4A4741';
+    c.beginPath(); c.arc(11.5, -3.5, 3.6, 0, 6.283); c.fill();
+    c.beginPath(); c.arc(16, 7, 3.6, 0, 6.283); c.fill();
+    c.restore();
+  }
+  const GU = Array.from({ length: 24 }, () => ({ x0: R() * 760, y: 12 + R() * 88, rot: R() * 6.28, v: 26 + R() * 10, spin: (R() - .5) * .6 }));
+  const DRUG = Array.from({ length: 8 }, () => ({ x0: R() * 760, y: 14 + R() * 84, rot: R() * 6.28, v: 22 + R() * 8 }));
+
   function rbc(c, x, y, s, tilt, a) {
     c.save(); c.globalAlpha = a; c.translate(x, y); c.rotate(tilt); c.scale(s, s);
     const gr = c.createRadialGradient(0, 0, 2, 0, 0, 25);
@@ -320,7 +389,7 @@ window.NHCelula = window.NHCelula || (function () {
       const bg = document.createElement('canvas'); bg.width = p.canvas.width; bg.height = p.canvas.height;
       const b = bg.getContext('2d');
       b.setTransform(dpr * s, 0, 0, dpr * s, dpr * ox, dpr * oy);
-      drawStatic(b, g);
+      (cfg.scene === 'rinon' ? drawStaticKidney : drawStatic)(b, g);
       p.bg = bg;
       return true;
     }
@@ -345,6 +414,8 @@ window.NHCelula = window.NHCelula || (function () {
         m.bars.forEach((b, i) => b.classList.toggle('on', i < n));
         if (m.txt) m.txt.textContent = METERS[m.k].words[n >= 4 ? 2 : n >= 2 ? 1 : 0];
       });
+
+      if (cfg.scene === 'rinon') { kidneyFrame(p, c, g, st, dt, wrap, k); return; }
 
       // Luz del capilar
       c.save(); c.beginPath(); c.rect(g.x0, g.y0, g.x1 - g.x0, LUMEN_B - g.y0); c.clip();
@@ -432,6 +503,58 @@ window.NHCelula = window.NHCelula || (function () {
       if (st.tag && st.tag.alpha > .01) tag(c, st.tag.text, LW - 10 - (st.tag.text.length * 8 + 16), 10, st.tag.alpha);
     }
 
+    function kidneyFrame(p, c, g, st, dt, wrap, k) {
+      p.aU = p.aU || GU.map(() => 0); p.aD = p.aD || DRUG.map(() => 0);
+      const G = st.G;
+      // sangre del capilar (abajo)
+      c.save(); c.beginPath(); c.rect(g.x0, K.CAP_L, g.x1 - g.x0, g.y1 - K.CAP_L); c.clip();
+      RBC.forEach(r => rbc(c, wrap(r.x0 + r.v * clock), 292 + (r.y - 26) * 1.05 + Math.sin(clock * .8 + r.x0) * 2, r.s, r.tilt, r.s < .85 ? .5 : 1));
+      const nL = Math.round((G - 60) / 8);
+      GL.forEach((m, i) => { p.aL[i] = lerp(p.aL[i], i < nL ? 1 : 0, k); glucose(c, wrap(m.x0 + m.v * clock), 284 + (m.y - 14) * .95, m.rot + clock * m.spin, p.aL[i]); });
+      c.restore();
+      // túbulo (arriba): glucosa filtrada y medicamento
+      c.save(); c.beginPath(); c.rect(g.x0, g.y0, g.x1 - g.x0, K.LUM_B - g.y0); c.clip();
+      const nU = st.filtrate || 0;
+      GU.forEach((m, i) => { p.aU[i] = lerp(p.aU[i], i < nU ? 1 : 0, k); glucose(c, wrap(m.x0 + m.v * clock), m.y, m.rot + clock * m.spin, p.aU[i]); });
+      const nD = st.drug || 0;
+      DRUG.forEach((m, i) => { p.aD[i] = lerp(p.aD[i], i < nD ? 1 : 0, Math.min(1, dt * 1.4)); gliflozin(c, wrap(m.x0 + m.v * clock), m.y, m.rot + clock * .3, p.aD[i]); });
+      c.restore();
+      // transportadores SGLT2 y medicamento que se une
+      const block = st.block || [0, 0, 0, 0];
+      K.SGLT.forEach((x, i) => {
+        const b = block[i] || 0;
+        sglt2(c, x, b);
+        if (b > 0) {
+          const e = ease(Math.min(1, b)), sx = x - 90, sy = 40 + i * 12, ex = x - 4, ey = K.APICAL - 16;
+          gliflozin(c, lerp(sx, ex, e), lerp(sy, ey, e) - Math.sin(e * Math.PI) * 18, lerp(0, -.4, e), clamp(b / .15, 0, 1));
+        }
+      });
+      // glucosa que el riñón recupera: túbulo → SGLT2 → célula → GLUT2 → sangre
+      if (st.reabsorb && st.reabsorb.elapsed >= 0) {
+        const open = K.SGLT.map((_, i) => i).filter(i => (block[i] || 0) < .5);
+        const dur = 2.6, every = st.reabsorb.every, el = st.reabsorb.elapsed;
+        const n = Math.floor(el / every) + 1;
+        if (open.length) for (let q = Math.max(0, n - Math.ceil(dur / every) - 1); q < n; q++) {
+          const age = el - q * every; if (age < 0 || age > dur) continue;
+          const x0 = K.SGLT[open[q % open.length]];
+          const sx = x0 - 60 + hash(q, 1) * 40, sy = 30 + hash(q, 2) * 60, ex = x0 + (hash(q, 3) - .5) * 70, ey = 300 + hash(q, 4) * 40;
+          const t = age / dur; let x, y;
+          if (t < .3) { const e = ease(t / .3); x = lerp(sx, x0, e); y = lerp(sy, K.APICAL - 4, e); }
+          else if (t < .7) { const e = ease((t - .3) / .4); x = x0 + Math.sin(e * 3) * 6; y = lerp(K.APICAL - 4, K.BASAL, e); }
+          else { const e = easeOut((t - .7) / .3); x = lerp(x0, ex, e); y = lerp(K.BASAL, ey, e); }
+          const a = t < .08 ? t / .08 : t > .88 ? 1 - (t - .88) / .12 : 1;
+          glucose(c, x, y, q + t * 2, a);
+        }
+      }
+      if (p.P.labels) {
+        tag(c, 'Túbulo del riñón (orina)', 10, 10);
+        tag(c, 'Célula del riñón', 10, 150);
+        tag(c, 'Sangre (capilar)', 10, LH - 34);
+      }
+      tag(c, 'hacia la orina →', LW - 150, K.LUM_B - 32, .9);
+      if (st.tag && st.tag.alpha > .01) tag(c, st.tag.text, LW - 10 - (st.tag.text.length * 8 + 16), 10, st.tag.alpha);
+    }
+
     function setStep(n) {
       step = clamp(n, 0, last); stepT = 0;
       stepBtns.forEach((b, i) => b.dataset.state = i < step ? 'done' : i === step ? 'current' : 'todo');
@@ -459,7 +582,7 @@ window.NHCelula = window.NHCelula || (function () {
     function stop() { running = false; cancelAnimationFrame(raf); }
     function sync() {
       if (root.classList.contains('active')) {
-        if (!running) { setStep(0); panels.forEach(p => { p.aL = GL.map(() => 0); p.aI = GI.map(() => 0); p.aF = FREE_INS.map(() => 0); p.aG = GLP.map(() => 0); p.aM = MET.map(() => 0); }); }
+        if (!running) { setStep(0); panels.forEach(p => { p.aL = GL.map(() => 0); p.aI = GI.map(() => 0); p.aF = FREE_INS.map(() => 0); p.aG = GLP.map(() => 0); p.aM = MET.map(() => 0); p.aU = null; p.aD = null; }); }
         start();
       } else stop();
     }
