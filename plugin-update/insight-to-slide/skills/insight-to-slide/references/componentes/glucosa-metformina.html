@@ -1,0 +1,72 @@
+<div class="slide-page slide-anim" data-index="{{INDEX}}" data-titulo="{{TITULO}}" data-fuente="{{FUENTE}}">
+  <script>{{INCLUIR:_motor-celula.js}}</script>
+  <script>
+  (function () {
+    const root = document.currentScript.closest('.slide-page');
+    const { prog, lerp, ease, easeOut } = NHCelula;
+
+    // Mismo punto de partida que insulina y GLP-1. La metformina no agrega insulina:
+    // los receptores ocupados son los mismos; mejora la señal y, sobre todo, frena al hígado.
+    const RECEPTORS = [110, 215, 320, 425, 530];
+    const BASE_REC = [1, 0, 1, 0, 0];
+    const BASE_FUSE = [0, 0, 1, 0];
+    const weak = { glow: .25, signal: { r: 26, a: .3 } };
+
+    NHCelula.mount(root, {
+      receptors: RECEPTORS,
+      legend: ['glucosa', 'insulina', 'metformina', 'receptor', 'glut4'],
+      steps: [
+        { label: 'En ayunas', caption: 'La metformina se toma en pastillas con las comidas. Su efecto principal es en el hígado: hace que suelte menos glucosa, sobre todo de noche.' },
+        { label: 'Come el plato', caption: 'Las dos comen el mismo plato. La glucosa sube en ambas, pero la persona con metformina parte de más abajo.' },
+        { label: 'Mejor respuesta', caption: 'La metformina también ayuda a que la señal dentro de la célula funcione un poco mejor. No agrega insulina: aprovecha mejor la que ya hay.' },
+        { label: 'Baja la glucosa', caption: 'La glucosa baja más y el hígado suelta menos. Por sí sola casi no causa bajones. Al principio puede dar molestias de estómago; tomarla con comida ayuda.' },
+      ],
+      panels: [
+        {
+          label: 'Diabetes tipo 2 · sin metformina', tone: 'amber', labels: true, meters: ['liver'],
+          aria: 'Ilustración: célula muscular de una persona con diabetes tipo 2 sin metformina',
+          state: (s, t) => Object.assign({
+            G: s === 0 ? 156 : s === 1 ? lerp(156, 232, ease(prog(t, 0, 4))) : s === 2 ? 232 : lerp(232, 224, easeOut(prog(t, .5, 10))),
+            freeIns: s === 0 ? 2 : 3,
+            rec: BASE_REC, fuse: BASE_FUSE,
+            uptake: { elapsed: t, every: 2.8 },
+            liver: .85,
+          }, weak),
+        },
+        {
+          label: 'Diabetes tipo 2 · con metformina', tone: 'green', meters: ['liver'],
+          aria: 'Ilustración: célula muscular de una persona con diabetes tipo 2 en tratamiento con metformina',
+          state: (s, t) => {
+            const metf = Math.round(8 * prog(t + (s > 0 ? 99 : 0), .2, 2));
+            if (s === 0) return Object.assign({
+              G: lerp(156, 128, easeOut(prog(t, 1.2, 7))), freeIns: 2, metf,
+              rec: BASE_REC, fuse: BASE_FUSE, uptake: { elapsed: t, every: 2.8 },
+              liver: lerp(.85, .45, prog(t, 1, 4)),
+              tag: { text: 'Metformina', alpha: prog(t, .2, .6) },
+            }, weak);
+            if (s === 1) return Object.assign({
+              G: lerp(128, 196, ease(prog(t, 0, 4))), freeIns: 3, metf,
+              rec: BASE_REC, fuse: BASE_FUSE, uptake: { elapsed: t, every: 2.8 },
+              liver: .45,
+            }, weak);
+            if (s === 2) return {
+              G: 196, freeIns: 3, metf,
+              rec: BASE_REC, fuse: [0, prog(t, 2.2, 2), 1, 0],
+              glow: lerp(.25, .55, prog(t, .8, 1.5)),
+              signal: { r: lerp(26, 40, prog(t, .8, 2)), a: lerp(.3, .4, prog(t, .8, 2)) },
+              uptake: { elapsed: t, every: t < 4.5 ? 2.8 : 1.5 },
+              liver: .45,
+            };
+            return {
+              G: lerp(196, 152, easeOut(prog(t, .5, 9))), freeIns: 3, metf,
+              rec: BASE_REC, fuse: [0, 1, 1, 0], glow: .55,
+              signal: { r: 40, a: .4 }, uptake: { elapsed: t, every: 1.2 },
+              liver: lerp(.45, .35, prog(t, .5, 5)),
+            };
+          },
+        },
+      ],
+    });
+  })();
+  </script>
+</div>

@@ -1,0 +1,17 @@
+{
+  "name": "insight-to-slide",
+  "version": "0.2.0",
+  "description": "Genera presentaciones HTML educativas para Nutrición.Health a partir de un archivo .txt estructurado. Incluye el generador build-deck-html.js, los layouts de slides, y las reglas del sistema de diseño.",
+  "author": {
+    "name": "Nutrición.Health"
+  },
+  "keywords": [
+    "nutricion",
+    "slides",
+    "html",
+    "presentaciones",
+    "educacion",
+    "animaciones",
+    "diabetes"
+  ]
+}
