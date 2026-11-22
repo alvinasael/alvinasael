@@ -11,7 +11,7 @@ const fs = require('fs'), path = require('path');
   await p.waitForFunction('window.ready === true');
   await p.evaluate(() => Promise.all(['600 62px "Playfair Display"', 'italic 400 42px "Playfair Display"', '400 92px "Playfair Display"', '500 54px "DM Sans"', '600 36px "DM Sans"', '700 28px "DM Sans"', '400 28px "DM Sans"'].map(f => document.fonts.load(f))));
   console.log('fuentes:', await p.evaluate(() => [document.fonts.check('62px "Playfair Display"'), document.fonts.check('54px "DM Sans"')]));
-  const DUR = await p.evaluate('DUR');
+  const DUR = await p.evaluate('window.DUR');
   if (args[0] === '--stills') {
     fs.mkdirSync(path.join(__dirname, 'stills'), { recursive: true });
     for (const t of args[1].split(',')) fs.writeFileSync(path.join(__dirname, 'stills', `t${t}.jpg`), Buffer.from(await p.evaluate(t => frameJPEG(t), +t), 'base64'));
@@ -25,7 +25,7 @@ const fs = require('fs'), path = require('path');
     console.log('audio:', hasMix ? 'voz + música' : 'silencio');
     const done = new Promise(r => ff.on('close', r));
     const N = Math.round(DUR * FPS);
-    for (let i = 0; i < N; i++) { const buf = Buffer.from(await p.evaluate(t => frameJPEG(t), i / FPS), 'base64'); if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r)); if (i % 300 === 0) console.log(`cuadro ${i}/${N}`); }
+    for (let i = 0; i < N; i++) { const buf = Buffer.from(await p.evaluate(t => frameJPEG(t), i / FPS), 'base64'); if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r)); if (i % 60 === 0) console.log(`cuadro ${i}/${N}  ${new Date().toISOString().slice(11,19)}`); }
     ff.stdin.end(); await done; console.log('listo:', out);
   }
   console.log('errores:', errs.length ? errs : 'ninguno'); await b.close();
