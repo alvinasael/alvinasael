@@ -616,8 +616,9 @@ function buildHTML(blocks) {
     #stage:hover #stage-controls { opacity:1; }
     .ctrl-btn { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.5); font-family:var(--sans); font-size:10px; padding:5px 10px; border-radius:5px; cursor:pointer; letter-spacing:.04em; transition:background .15s, color .15s; }
     .ctrl-btn:hover { background:rgba(255,255,255,.12); color:rgba(255,255,255,.85); }
-    #slide-viewport { width:100%; max-width:100%; aspect-ratio:16/9; position:relative; overflow:hidden; border-radius:8px; box-shadow:0 24px 80px rgba(0,0,0,.6); }
-    .slide-page { position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity .3s ease; display:flex; flex-direction:column; font-size:clamp(10px,1.45vw,20px); }
+    /* El slide siempre es 16:9 y cabe completo en la pantalla; todo su contenido escala con su ancho */
+    #slide-viewport { width:min(100%, calc((100vh - var(--progress-h) - 48px) * 16 / 9)); max-width:100%; aspect-ratio:16/9; position:relative; overflow:hidden; border-radius:8px; box-shadow:0 24px 80px rgba(0,0,0,.6); container-type:inline-size; }
+    .slide-page { position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity .3s ease; display:flex; flex-direction:column; font-size:clamp(10px,1.45vw,20px); font-size:1.7cqw; }
     .slide-page * { line-height:1.2; }
     .slide-page.active { opacity:1; pointer-events:auto; }
     #nav-prev, #nav-next { position:absolute; top:50%; transform:translateY(-50%); width:48px; height:80px; background:rgba(255,255,255,.04); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.3); font-size:20px; border-radius:6px; transition:background .15s, color .15s; z-index:5; }
@@ -629,7 +630,7 @@ function buildHTML(blocks) {
     /* PRESENTER MODE */
     body.presenter-mode #progress-bar { display:none; }
     body.presenter-mode #stage { background:#000; padding:0; }
-    body.presenter-mode #slide-viewport { border-radius:0; box-shadow:none; width:100vw; height:100vh; max-width:none; aspect-ratio:unset; }
+    body.presenter-mode #slide-viewport { border-radius:0; box-shadow:none; width:min(100vw, calc(100vh * 16 / 9)); max-width:none; aspect-ratio:16/9; }
     body.presenter-mode #nav-prev, body.presenter-mode #nav-next { display:none; }
 
     /* SLIDE TYPE STYLES */

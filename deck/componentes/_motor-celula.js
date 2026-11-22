@@ -41,7 +41,9 @@ window.NHCelula = window.NHCelula || (function () {
   // ── Estilos (una vez por documento) ─────────────────────────────────────
   const CSS = `
     .slide-anim { background: var(--cream); }
-    .slide-anim .s-header { background: var(--green); padding: 3.2% 6%; display: flex; justify-content: space-between; align-items: center; }
+    /* Encabezado y pie idénticos a los slides de Contenido; el resto se escala a la proporción aprobada */
+    .slide-anim .s-header { background: var(--green); padding: 4% 6%; display: flex; justify-content: space-between; align-items: center; }
+    .slide-anim > .ga-body, .slide-anim > .ga-steps { font-size: .613em; }
     .slide-anim .s-header-title { font-family: var(--serif); font-size: 1.5em; font-weight: 400; color: var(--white); }
     .slide-anim .s-header-brand { font-size: .7em; font-weight: 600; letter-spacing: .08em; color: var(--green-light); }
     .slide-anim .ga-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3%; padding: 2% 6% 0; cursor: pointer; }
@@ -71,14 +73,14 @@ window.NHCelula = window.NHCelula || (function () {
     .slide-anim .ga-panel[data-tone="amber"] .ga-reading b { color: var(--amber); }
     .slide-anim .ga-canvas { flex: 1; min-height: 0; position: relative; border-radius: 6px; overflow: hidden; background: #E4EDE8; box-shadow: inset 0 0 0 1px var(--cream-dark); }
     .slide-anim .ga-canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-    .slide-anim .ga-meters { display: flex; flex-wrap: wrap; gap: .3em 1.8em; }
+    .slide-anim .ga-meters { display: flex; flex-wrap: nowrap; gap: .3em 1.8em; height: 1.6em; align-items: center; overflow: hidden; }
     .slide-anim .ga-meter { display: flex; align-items: center; gap: .6em; font-size: .66em; color: var(--charcoal-60); white-space: nowrap; }
     .slide-anim .ga-meter svg { width: 1.9em; height: 1.4em; flex: none; }
     .slide-anim .ga-meter-bars { display: inline-flex; gap: .22em; }
     .slide-anim .ga-meter-bars i { width: 1em; height: .9em; border-radius: 2px; background: var(--cream-dark); transition: background .3s; }
     .slide-anim .ga-meter-bars i.on { background: var(--charcoal-60); }
     .slide-anim .ga-meter-txt { color: var(--charcoal); font-weight: 600; }
-    .slide-anim .ga-legend { display: flex; flex-wrap: wrap; gap: .4em 1.6em; padding: .8em 6% 0; font-size: .7em; color: var(--charcoal-60); }
+    .slide-anim .ga-legend { display: flex; flex-wrap: wrap; gap: .4em 1.6em; padding: .5em 6% 0; font-size: .43em; color: var(--charcoal-60); }
     .slide-anim .ga-legend span { display: inline-flex; align-items: center; gap: .5em; }
     .slide-anim .ga-legend svg { width: 1.7em; height: 1.7em; }
     .slide-anim .ga-steps { padding: 1.2% 6% 1.4%; display: grid; grid-template-columns: auto 1fr; gap: .5em 2.2em; align-items: center; }
@@ -89,9 +91,9 @@ window.NHCelula = window.NHCelula || (function () {
     .slide-anim .ga-step[data-state="current"] { color: var(--charcoal); }
     .slide-anim .ga-step[data-state="current"] i { background: var(--amber); border-color: var(--amber); color: var(--white); }
     .slide-anim .ga-step:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
-    .slide-anim .ga-caption { font-size: .86em; color: var(--charcoal); line-height: 1.4; min-height: 2.8em; display: flex; align-items: center; margin: 0; }
+    .slide-anim .ga-caption { font-size: .86em; color: var(--charcoal); line-height: 1.4; height: 2.8em; overflow: hidden; display: flex; align-items: center; margin: 0; }
     .slide-anim .ga-caption, .slide-anim .ga-caption * { line-height: 1.4; }
-    .slide-anim .s-foot { padding: 1.3% 6%; border-top: 1px solid var(--cream-dark); display: flex; justify-content: space-between; font-size: .62em; color: var(--charcoal-30); }
+    .slide-anim .s-foot { padding: 1.3% 6%; border-top: 1px solid var(--cream-dark); display: flex; justify-content: space-between; font-size: .65em; color: var(--charcoal-30); }
   `;
   const styleEl = document.createElement('style'); styleEl.textContent = CSS; document.head.appendChild(styleEl);
 
@@ -372,7 +374,7 @@ window.NHCelula = window.NHCelula || (function () {
         <figure class="ga-panel" data-tone="${p.tone || 'green'}">
           <figcaption class="ga-panel-head"><span class="ga-label"></span><span class="ga-reading"><b></b>mg/dL</span></figcaption>
           <div class="ga-canvas" tabindex="0" role="button" aria-label="Ampliar este panel"><canvas></canvas></div>
-          ${meterKeys(p).length ? `<div class="ga-meters">${meterKeys(p).map(k => `<div class="ga-meter" data-k="${k}"><svg viewBox="0 0 40 28" aria-hidden="true">${METERS[k].svg}</svg><span>${METERS[k].label}</span><span class="ga-meter-bars">${'<i></i>'.repeat(5)}</span>${meterKeys(p).length === 1 ? '<span class="ga-meter-txt"></span>' : ''}</div>`).join('')}</div>` : ''}
+          ${`<div class="ga-meters">${meterKeys(p).map(k => `<div class="ga-meter" data-k="${k}"><svg viewBox="0 0 40 28" aria-hidden="true">${METERS[k].svg}</svg><span>${METERS[k].label}</span><span class="ga-meter-bars">${'<i></i>'.repeat(5)}</span>${meterKeys(p).length === 1 ? '<span class="ga-meter-txt"></span>' : ''}</div>`).join('')}</div>`}
         </figure>`).join('')}
       </div>
       <div class="ga-legend" aria-hidden="true">${(cfg.legend || Object.keys(LEGEND)).map(k => `<span><svg viewBox="0 0 24 24">${LEGEND[k][1]}</svg>${LEGEND[k][0]}</span>`).join('')}</div>
