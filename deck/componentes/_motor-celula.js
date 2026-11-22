@@ -6,10 +6,12 @@
  *   receptors: [x...],             // posiciones de receptores de insulina (opcional)
  *   legend: ['glucosa','insulina','receptor','glut4'],
  *   steps: [{ label, caption }],   // 4 pasos recomendados
- *   panels: [{ label, tone: 'green'|'amber', labels: bool, liver: bool, aria,
- *              state(step, t) => ({ G, freeIns, rec:[0..1], fuse:[0..1 x4], glow,
+ *   panels: [{ label, tone: 'green'|'amber', labels: bool, aria,
+ *              meters: ['liver','stomach','appetite'],   // indicadores bajo la ilustración
+ *              state(step, t) => ({ G, freeIns, glp1, rec:[0..1], fuse:[0..1 x4], glow,
  *                                   signal:{r,a}|null, uptake:{elapsed,every}|null,
- *                                   liver:0..1, tag:{text,alpha}|null }) }]
+ *                                   liver:0..1, stomach:0..1, appetite:0..1,
+ *                                   tag:{text,alpha}|null }) }]
  * }
  */
 window.NHCelula = window.NHCelula || (function () {
@@ -48,12 +50,13 @@ window.NHCelula = window.NHCelula || (function () {
     .slide-anim .ga-panel[data-tone="amber"] .ga-reading b { color: var(--amber); }
     .slide-anim .ga-canvas { flex: 1; min-height: 0; position: relative; border-radius: 6px; overflow: hidden; background: #E4EDE8; box-shadow: inset 0 0 0 1px var(--cream-dark); }
     .slide-anim .ga-canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-    .slide-anim .ga-liver { display: flex; align-items: center; gap: .8em; font-size: .66em; color: var(--charcoal-60); }
-    .slide-anim .ga-liver svg { width: 2em; height: 1.4em; flex: none; }
-    .slide-anim .ga-liver-bars { display: inline-flex; gap: .25em; }
-    .slide-anim .ga-liver-bars i { width: 1.1em; height: .9em; border-radius: 2px; background: var(--cream-dark); transition: background .4s; }
-    .slide-anim .ga-liver-bars i.on { background: var(--charcoal-60); }
-    .slide-anim .ga-liver-txt { color: var(--charcoal); font-weight: 600; }
+    .slide-anim .ga-meters { display: flex; flex-wrap: wrap; gap: .3em 1.8em; }
+    .slide-anim .ga-meter { display: flex; align-items: center; gap: .6em; font-size: .66em; color: var(--charcoal-60); white-space: nowrap; }
+    .slide-anim .ga-meter svg { width: 1.9em; height: 1.4em; flex: none; }
+    .slide-anim .ga-meter-bars { display: inline-flex; gap: .22em; }
+    .slide-anim .ga-meter-bars i { width: 1em; height: .9em; border-radius: 2px; background: var(--cream-dark); transition: background .3s; }
+    .slide-anim .ga-meter-bars i.on { background: var(--charcoal-60); }
+    .slide-anim .ga-meter-txt { color: var(--charcoal); font-weight: 600; }
     .slide-anim .ga-legend { display: flex; flex-wrap: wrap; gap: .4em 1.6em; padding: .8em 6% 0; font-size: .7em; color: var(--charcoal-60); }
     .slide-anim .ga-legend span { display: inline-flex; align-items: center; gap: .5em; }
     .slide-anim .ga-legend svg { width: 1.7em; height: 1.7em; }
@@ -77,7 +80,15 @@ window.NHCelula = window.NHCelula || (function () {
     receptor: ['Receptor de insulina', '<path d="M9 21V13M15 21V13M9 13 5 5M15 13l4-8" stroke="#2B4038" stroke-width="3" stroke-linecap="round" fill="none"/>'],
     glut4: ['GLUT4, la puerta de la glucosa', '<rect x="5" y="4" width="6" height="16" rx="3" fill="#6B6760"/><rect x="13" y="4" width="6" height="16" rx="3" fill="#6B6760"/>'],
   };
-  const LIVER_SVG = '<svg viewBox="0 0 40 28" aria-hidden="true"><path d="M3 11c5-6 24-8 33-3 3 2 1 8-4 11-7 5-17 8-23 7-6-1-9-9-6-15Z" fill="#A66F5E" opacity=".8"/></svg>';
+  LEGEND.glp1 = ['Medicamento GLP-1', '<path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0" stroke="#3D5C4F" stroke-width="4.5" stroke-linecap="round" fill="none"/><path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0" stroke="#D4E4DD" stroke-width="1.6" stroke-linecap="round" fill="none"/>'];
+  const METERS = {
+    liver: { label: 'Hígado soltando glucosa', words: ['poca', 'moderada', 'mucha'],
+             svg: '<path d="M3 11c5-6 24-8 33-3 3 2 1 8-4 11-7 5-17 8-23 7-6-1-9-9-6-15Z" fill="#A66F5E" opacity=".8"/>' },
+    stomach: { label: 'Estómago vaciándose', words: ['lento', 'medio', 'rápido'],
+               svg: '<path d="M14 2c0 6 2 8 8 8 9 0 14 5 13 11-1 5-7 6-12 4-5-2-8 1-12 1-4 0-6-3-5-6 2-5 6-6 6-12V2Z" fill="#C9A08E"/>' },
+    appetite: { label: 'Apetito', words: ['bajo', 'medio', 'alto'],
+                svg: '<path d="M20 25c-9 0-15-4-15-11C5 7 11 3 18 3c3 0 5 1 7 1 6 0 11 4 11 10 0 7-6 11-16 11Z" fill="#B8AFA3"/><path d="M12 9c3 1 3 5 0 6M20 7c-2 3 0 6 3 6M27 10c-2 2-1 6 2 6" stroke="#8A857D" stroke-width="1.6" fill="none" stroke-linecap="round"/>' },
+  };
 
   // ── Utilidades deterministas ────────────────────────────────────────────
   function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -96,6 +107,7 @@ window.NHCelula = window.NHCelula || (function () {
   const GI = Array.from({ length: 14 }, () => { const x = 24 + R() * 592; return { x, y: 150 + R() * (yM(x) - 172), ph: R() * 6.28, ph2: R() * 6.28, rot: R() * 6.28 }; });
   const FIBERS = Array.from({ length: 7 }, () => ({ x: -40 + R() * 680, y: 150 + R() * 70, len: 120 + R() * 160, amp: 3 + R() * 5, k: .03 + R() * .03, a: (R() - .5) * .35 }));
   const FREE_INS = Array.from({ length: 12 }, () => ({ x0: R() * 760, y: 18 + R() * 92, v: 18 + R() * 8, rot: R() * 6.28 }));
+  const GLP = Array.from({ length: 8 }, () => ({ x0: R() * 760, y: 20 + R() * 88, v: 14 + R() * 6, rot: (R() - .5) * 1.2, ph: R() * 6.28 }));
 
   // ── Capa estática ───────────────────────────────────────────────────────
   function drawStatic(c, g) {
@@ -184,6 +196,15 @@ window.NHCelula = window.NHCelula || (function () {
     blob(-3.5, 1, 5.2, C.insA); blob(3, -2, 4.6, C.insB); blob(2.5, 4, 3.6, C.insA);
     c.restore();
   }
+  function glp1(c, x, y, rot, a, ph) {
+    if (a <= .01) return;
+    c.save(); c.globalAlpha = a; c.translate(x, y); c.rotate(rot);
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    const path = () => { c.beginPath(); for (let i = 0; i <= 28; i++) { const px = -14 + i, py = Math.sin(i * .68 + ph) * 4.2; i ? c.lineTo(px, py) : c.moveTo(px, py); } };
+    path(); c.strokeStyle = '#3D5C4F'; c.lineWidth = 5.2; c.stroke();
+    path(); c.strokeStyle = '#D4E4DD'; c.lineWidth = 1.8; c.stroke();
+    c.restore();
+  }
   function rbc(c, x, y, s, tilt, a) {
     c.save(); c.globalAlpha = a; c.translate(x, y); c.rotate(tilt); c.scale(s, s);
     const gr = c.createRadialGradient(0, 0, 2, 0, 0, 25);
@@ -231,6 +252,8 @@ window.NHCelula = window.NHCelula || (function () {
     c.restore();
   }
 
+  const meterKeys = p => p.meters || (p.liver ? ['liver'] : []);
+
   // ── Montaje de un slide ─────────────────────────────────────────────────
   function mount(root, cfg) {
     if (!root || root.dataset.gaReady) return;
@@ -245,7 +268,7 @@ window.NHCelula = window.NHCelula || (function () {
         <figure class="ga-panel" data-tone="${p.tone || 'green'}">
           <figcaption class="ga-panel-head"><span class="ga-label"></span><span class="ga-reading"><b></b>mg/dL</span></figcaption>
           <div class="ga-canvas"><canvas></canvas></div>
-          ${p.liver ? `<div class="ga-liver">${LIVER_SVG}<span>Hígado soltando glucosa</span><span class="ga-liver-bars">${'<i></i>'.repeat(5)}</span><span class="ga-liver-txt"></span></div>` : ''}
+          ${meterKeys(p).length ? `<div class="ga-meters">${meterKeys(p).map(k => `<div class="ga-meter" data-k="${k}"><svg viewBox="0 0 40 28" aria-hidden="true">${METERS[k].svg}</svg><span>${METERS[k].label}</span><span class="ga-meter-bars">${'<i></i>'.repeat(5)}</span>${meterKeys(p).length === 1 ? '<span class="ga-meter-txt"></span>' : ''}</div>`).join('')}</div>` : ''}
         </figure>`).join('')}
       </div>
       <div class="ga-legend" aria-hidden="true">${(cfg.legend || Object.keys(LEGEND)).map(k => `<span><svg viewBox="0 0 24 24">${LEGEND[k][1]}</svg>${LEGEND[k][0]}</span>`).join('')}</div>
@@ -267,8 +290,8 @@ window.NHCelula = window.NHCelula || (function () {
       const canvas = fig.querySelector('canvas');
       canvas.setAttribute('aria-label', P.aria || P.label);
       return { P, canvas, ctx: canvas.getContext('2d'), out: fig.querySelector('.ga-reading b'),
-               bars: [...fig.querySelectorAll('.ga-liver-bars i')], liverTxt: fig.querySelector('.ga-liver-txt'),
-               aL: GL.map(() => 0), aI: GI.map(() => 0), aF: FREE_INS.map(() => 0), shown: null, liverShown: null, geom: null, bg: null };
+               meters: [...fig.querySelectorAll('.ga-meter')].map(m => ({ k: m.dataset.k, bars: [...m.querySelectorAll('i')], txt: m.querySelector('.ga-meter-txt'), shown: null })),
+               aL: GL.map(() => 0), aI: GI.map(() => 0), aF: FREE_INS.map(() => 0), aG: GLP.map(() => 0), shown: null, geom: null, bg: null };
     });
 
     function layout(p) {
@@ -300,14 +323,14 @@ window.NHCelula = window.NHCelula || (function () {
 
       const G = st.G;
       if (p.shown !== Math.round(G)) { p.shown = Math.round(G); p.out.textContent = p.shown; }
-      if (p.bars.length && st.liver != null) {
-        const n = Math.round(st.liver * 5);
-        if (p.liverShown !== n) {
-          p.liverShown = n;
-          p.bars.forEach((b, i) => b.classList.toggle('on', i < n));
-          p.liverTxt.textContent = n >= 4 ? 'mucha' : n >= 2 ? 'moderada' : 'poca';
-        }
-      }
+      p.meters.forEach(m => {
+        const v = st[m.k]; if (v == null) return;
+        const n = Math.round(v * 5);
+        if (m.shown === n) return;
+        m.shown = n;
+        m.bars.forEach((b, i) => b.classList.toggle('on', i < n));
+        if (m.txt) m.txt.textContent = METERS[m.k].words[n >= 4 ? 2 : n >= 2 ? 1 : 0];
+      });
 
       // Luz del capilar
       c.save(); c.beginPath(); c.rect(g.x0, g.y0, g.x1 - g.x0, LUMEN_B - g.y0); c.clip();
@@ -316,6 +339,8 @@ window.NHCelula = window.NHCelula || (function () {
       GL.forEach((m, i) => { p.aL[i] = lerp(p.aL[i], i < nL ? 1 : 0, k); glucose(c, wrap(m.x0 + m.v * clock), m.y + Math.sin(clock + i) * 2, m.rot + clock * m.spin, p.aL[i]); });
       const nF = st.freeIns || 0;
       FREE_INS.forEach((m, i) => { p.aF[i] = lerp(p.aF[i], i < nF ? 1 : 0, Math.min(1, dt * 1.4)); insulin(c, wrap(m.x0 + m.v * clock), m.y, m.rot + clock * .3, p.aF[i]); });
+      const nG = st.glp1 || 0;
+      GLP.forEach((m, i) => { p.aG[i] = lerp(p.aG[i], i < nG ? 1 : 0, Math.min(1, dt * 1.4)); glp1(c, wrap(m.x0 + m.v * clock), m.y + Math.sin(clock * .7 + m.ph) * 3, m.rot, p.aG[i], m.ph + clock * 2); });
       c.restore();
 
       // Intersticio
@@ -418,7 +443,7 @@ window.NHCelula = window.NHCelula || (function () {
     function stop() { running = false; cancelAnimationFrame(raf); }
     function sync() {
       if (root.classList.contains('active')) {
-        if (!running) { setStep(0); panels.forEach(p => { p.aL = GL.map(() => 0); p.aI = GI.map(() => 0); p.aF = FREE_INS.map(() => 0); }); }
+        if (!running) { setStep(0); panels.forEach(p => { p.aL = GL.map(() => 0); p.aI = GI.map(() => 0); p.aF = FREE_INS.map(() => 0); p.aG = GLP.map(() => 0); }); }
         start();
       } else stop();
     }
