@@ -8,7 +8,7 @@
  *   steps: [{ label, caption }],   // 4 pasos recomendados
  *   panels: [{ label, tone: 'green'|'amber', labels: bool, aria,
  *              meters: ['liver','stomach','appetite'],   // indicadores bajo la ilustración
- *              state(step, t) => ({ G, freeIns, glp1, rec:[0..1], fuse:[0..1 x4], glow,
+ *              state(step, t) => ({ G, freeIns, glp1, metf, rec:[0..1], fuse:[0..1 x4], glow,
  *                                   signal:{r,a}|null, uptake:{elapsed,every}|null,
  *                                   liver:0..1, stomach:0..1, appetite:0..1,
  *                                   tag:{text,alpha}|null }) }]
@@ -81,6 +81,7 @@ window.NHCelula = window.NHCelula || (function () {
     glut4: ['GLUT4, la puerta de la glucosa', '<rect x="5" y="4" width="6" height="16" rx="3" fill="#6B6760"/><rect x="13" y="4" width="6" height="16" rx="3" fill="#6B6760"/>'],
   };
   LEGEND.glp1 = ['Medicamento GLP-1', '<path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0" stroke="#3D5C4F" stroke-width="4.5" stroke-linecap="round" fill="none"/><path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0" stroke="#D4E4DD" stroke-width="1.6" stroke-linecap="round" fill="none"/>'];
+  LEGEND.metformina = ['Metformina', '<path d="M3 15l4-5 5 5 5-5 4 5" stroke="#6B6760" stroke-width="1.8" fill="none"/><circle cx="3" cy="15" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/><circle cx="7" cy="10" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/><circle cx="12" cy="15" r="2.4" fill="#6B6760"/><circle cx="17" cy="10" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/><circle cx="21" cy="15" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/>'];
   const METERS = {
     liver: { label: 'Hígado soltando glucosa', words: ['poca', 'moderada', 'mucha'],
              svg: '<path d="M3 11c5-6 24-8 33-3 3 2 1 8-4 11-7 5-17 8-23 7-6-1-9-9-6-15Z" fill="#A66F5E" opacity=".8"/>' },
@@ -107,6 +108,7 @@ window.NHCelula = window.NHCelula || (function () {
   const GI = Array.from({ length: 14 }, () => { const x = 24 + R() * 592; return { x, y: 150 + R() * (yM(x) - 172), ph: R() * 6.28, ph2: R() * 6.28, rot: R() * 6.28 }; });
   const FIBERS = Array.from({ length: 7 }, () => ({ x: -40 + R() * 680, y: 150 + R() * 70, len: 120 + R() * 160, amp: 3 + R() * 5, k: .03 + R() * .03, a: (R() - .5) * .35 }));
   const FREE_INS = Array.from({ length: 12 }, () => ({ x0: R() * 760, y: 18 + R() * 92, v: 18 + R() * 8, rot: R() * 6.28 }));
+  const MET = Array.from({ length: 10 }, () => ({ x0: R() * 760, y: 16 + R() * 92, v: 20 + R() * 8, rot: R() * 6.28, spin: (R() - .5) * .8 }));
   const GLP = Array.from({ length: 8 }, () => ({ x0: R() * 760, y: 20 + R() * 88, v: 14 + R() * 6, rot: (R() - .5) * 1.2, ph: R() * 6.28 }));
 
   // ── Capa estática ───────────────────────────────────────────────────────
@@ -205,6 +207,18 @@ window.NHCelula = window.NHCelula || (function () {
     path(); c.strokeStyle = '#D4E4DD'; c.lineWidth = 1.8; c.stroke();
     c.restore();
   }
+  function metformin(c, x, y, rot, a) {
+    if (a <= .01) return;
+    c.save(); c.globalAlpha = a; c.translate(x, y); c.rotate(rot);
+    const pts = [[-10, 3], [-5, -3], [0, 3], [5, -3], [10, 3]];
+    c.strokeStyle = '#6B6760'; c.lineWidth = 1.8; c.lineJoin = 'round';
+    c.beginPath(); pts.forEach(([px, py], i) => i ? c.lineTo(px, py) : c.moveTo(px, py)); c.moveTo(-5, -3); c.lineTo(-5, -9); c.moveTo(5, -3); c.lineTo(5, -9); c.stroke();
+    [[-5, -9], [5, -9]].concat(pts).forEach(([px, py], i) => {
+      c.beginPath(); c.arc(px, py, 2.6, 0, 6.283);
+      c.fillStyle = i === 4 ? '#6B6760' : '#EDE8DF'; c.fill(); c.lineWidth = 1.3; c.stroke();
+    });
+    c.restore();
+  }
   function rbc(c, x, y, s, tilt, a) {
     c.save(); c.globalAlpha = a; c.translate(x, y); c.rotate(tilt); c.scale(s, s);
     const gr = c.createRadialGradient(0, 0, 2, 0, 0, 25);
@@ -291,7 +305,7 @@ window.NHCelula = window.NHCelula || (function () {
       canvas.setAttribute('aria-label', P.aria || P.label);
       return { P, canvas, ctx: canvas.getContext('2d'), out: fig.querySelector('.ga-reading b'),
                meters: [...fig.querySelectorAll('.ga-meter')].map(m => ({ k: m.dataset.k, bars: [...m.querySelectorAll('i')], txt: m.querySelector('.ga-meter-txt'), shown: null })),
-               aL: GL.map(() => 0), aI: GI.map(() => 0), aF: FREE_INS.map(() => 0), aG: GLP.map(() => 0), shown: null, geom: null, bg: null };
+               aL: GL.map(() => 0), aI: GI.map(() => 0), aF: FREE_INS.map(() => 0), aG: GLP.map(() => 0), aM: MET.map(() => 0), shown: null, geom: null, bg: null };
     });
 
     function layout(p) {
@@ -339,6 +353,8 @@ window.NHCelula = window.NHCelula || (function () {
       GL.forEach((m, i) => { p.aL[i] = lerp(p.aL[i], i < nL ? 1 : 0, k); glucose(c, wrap(m.x0 + m.v * clock), m.y + Math.sin(clock + i) * 2, m.rot + clock * m.spin, p.aL[i]); });
       const nF = st.freeIns || 0;
       FREE_INS.forEach((m, i) => { p.aF[i] = lerp(p.aF[i], i < nF ? 1 : 0, Math.min(1, dt * 1.4)); insulin(c, wrap(m.x0 + m.v * clock), m.y, m.rot + clock * .3, p.aF[i]); });
+      const nM = st.metf || 0;
+      MET.forEach((m, i) => { p.aM[i] = lerp(p.aM[i], i < nM ? 1 : 0, Math.min(1, dt * 1.4)); metformin(c, wrap(m.x0 + m.v * clock), m.y, m.rot + clock * m.spin, p.aM[i]); });
       const nG = st.glp1 || 0;
       GLP.forEach((m, i) => { p.aG[i] = lerp(p.aG[i], i < nG ? 1 : 0, Math.min(1, dt * 1.4)); glp1(c, wrap(m.x0 + m.v * clock), m.y + Math.sin(clock * .7 + m.ph) * 3, m.rot, p.aG[i], m.ph + clock * 2); });
       c.restore();
@@ -443,7 +459,7 @@ window.NHCelula = window.NHCelula || (function () {
     function stop() { running = false; cancelAnimationFrame(raf); }
     function sync() {
       if (root.classList.contains('active')) {
-        if (!running) { setStep(0); panels.forEach(p => { p.aL = GL.map(() => 0); p.aI = GI.map(() => 0); p.aF = FREE_INS.map(() => 0); p.aG = GLP.map(() => 0); }); }
+        if (!running) { setStep(0); panels.forEach(p => { p.aL = GL.map(() => 0); p.aI = GI.map(() => 0); p.aF = FREE_INS.map(() => 0); p.aG = GLP.map(() => 0); p.aM = MET.map(() => 0); }); }
         start();
       } else stop();
     }

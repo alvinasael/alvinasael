@@ -22,12 +22,19 @@ NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativ
 ====
 SLIDE: 4
 TIPO: Animación
+INSIGHT: Qué hace la metformina
+DATOS: glucosa-metformina
+NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativa, valores aproximados
+
+====
+SLIDE: 5
+TIPO: Animación
 INSIGHT: Qué hace un medicamento GLP-1
 DATOS: glucosa-glp1
 NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativa, valores aproximados
 
 ====
-SLIDE: 5
+SLIDE: 6
 TIPO: Tabla
 INSIGHT: Los números del diagnóstico
 DATOS: Prueba|Prediabetes|Diabetes

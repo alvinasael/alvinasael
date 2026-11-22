@@ -229,10 +229,14 @@
 </div>
 <div class="slide-nav-item" onclick="goTo(3)">
   <span class="slide-nav-num">04</span>
-  <span class="slide-nav-title">Qué hace un medicamento GLP-1<span class="slide-nav-type">Animación</span></span>
+  <span class="slide-nav-title">Qué hace la metformina<span class="slide-nav-type">Animación</span></span>
 </div>
 <div class="slide-nav-item" onclick="goTo(4)">
   <span class="slide-nav-num">05</span>
+  <span class="slide-nav-title">Qué hace un medicamento GLP-1<span class="slide-nav-type">Animación</span></span>
+</div>
+<div class="slide-nav-item" onclick="goTo(5)">
+  <span class="slide-nav-num">06</span>
   <span class="slide-nav-title">Los números del diagnóstico<span class="slide-nav-type">Tabla</span></span>
 </div></div>
       <div class="sidebar-footer">
@@ -274,7 +278,7 @@
  *   steps: [{ label, caption }],   // 4 pasos recomendados
  *   panels: [{ label, tone: 'green'|'amber', labels: bool, aria,
  *              meters: ['liver','stomach','appetite'],   // indicadores bajo la ilustración
- *              state(step, t) => ({ G, freeIns, glp1, rec:[0..1], fuse:[0..1 x4], glow,
+ *              state(step, t) => ({ G, freeIns, glp1, metf, rec:[0..1], fuse:[0..1 x4], glow,
  *                                   signal:{r,a}|null, uptake:{elapsed,every}|null,
  *                                   liver:0..1, stomach:0..1, appetite:0..1,
  *                                   tag:{text,alpha}|null }) }]
@@ -347,6 +351,7 @@ window.NHCelula = window.NHCelula || (function () {
     glut4: ['GLUT4, la puerta de la glucosa', '<rect x="5" y="4" width="6" height="16" rx="3" fill="#6B6760"/><rect x="13" y="4" width="6" height="16" rx="3" fill="#6B6760"/>'],
   };
   LEGEND.glp1 = ['Medicamento GLP-1', '<path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0" stroke="#3D5C4F" stroke-width="4.5" stroke-linecap="round" fill="none"/><path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0" stroke="#D4E4DD" stroke-width="1.6" stroke-linecap="round" fill="none"/>'];
+  LEGEND.metformina = ['Metformina', '<path d="M3 15l4-5 5 5 5-5 4 5" stroke="#6B6760" stroke-width="1.8" fill="none"/><circle cx="3" cy="15" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/><circle cx="7" cy="10" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/><circle cx="12" cy="15" r="2.4" fill="#6B6760"/><circle cx="17" cy="10" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/><circle cx="21" cy="15" r="2.4" fill="#EDE8DF" stroke="#6B6760" stroke-width="1.4"/>'];
   const METERS = {
     liver: { label: 'Hígado soltando glucosa', words: ['poca', 'moderada', 'mucha'],
              svg: '<path d="M3 11c5-6 24-8 33-3 3 2 1 8-4 11-7 5-17 8-23 7-6-1-9-9-6-15Z" fill="#A66F5E" opacity=".8"/>' },
@@ -373,6 +378,7 @@ window.NHCelula = window.NHCelula || (function () {
   const GI = Array.from({ length: 14 }, () => { const x = 24 + R() * 592; return { x, y: 150 + R() * (yM(x) - 172), ph: R() * 6.28, ph2: R() * 6.28, rot: R() * 6.28 }; });
   const FIBERS = Array.from({ length: 7 }, () => ({ x: -40 + R() * 680, y: 150 + R() * 70, len: 120 + R() * 160, amp: 3 + R() * 5, k: .03 + R() * .03, a: (R() - .5) * .35 }));
   const FREE_INS = Array.from({ length: 12 }, () => ({ x0: R() * 760, y: 18 + R() * 92, v: 18 + R() * 8, rot: R() * 6.28 }));
+  const MET = Array.from({ length: 10 }, () => ({ x0: R() * 760, y: 16 + R() * 92, v: 20 + R() * 8, rot: R() * 6.28, spin: (R() - .5) * .8 }));
   const GLP = Array.from({ length: 8 }, () => ({ x0: R() * 760, y: 20 + R() * 88, v: 14 + R() * 6, rot: (R() - .5) * 1.2, ph: R() * 6.28 }));
 
   // ── Capa estática ───────────────────────────────────────────────────────
@@ -471,6 +477,18 @@ window.NHCelula = window.NHCelula || (function () {
     path(); c.strokeStyle = '#D4E4DD'; c.lineWidth = 1.8; c.stroke();
     c.restore();
   }
+  function metformin(c, x, y, rot, a) {
+    if (a <= .01) return;
+    c.save(); c.globalAlpha = a; c.translate(x, y); c.rotate(rot);
+    const pts = [[-10, 3], [-5, -3], [0, 3], [5, -3], [10, 3]];
+    c.strokeStyle = '#6B6760'; c.lineWidth = 1.8; c.lineJoin = 'round';
+    c.beginPath(); pts.forEach(([px, py], i) => i ? c.lineTo(px, py) : c.moveTo(px, py)); c.moveTo(-5, -3); c.lineTo(-5, -9); c.moveTo(5, -3); c.lineTo(5, -9); c.stroke();
+    [[-5, -9], [5, -9]].concat(pts).forEach(([px, py], i) => {
+      c.beginPath(); c.arc(px, py, 2.6, 0, 6.283);
+      c.fillStyle = i === 4 ? '#6B6760' : '#EDE8DF'; c.fill(); c.lineWidth = 1.3; c.stroke();
+    });
+    c.restore();
+  }
   function rbc(c, x, y, s, tilt, a) {
     c.save(); c.globalAlpha = a; c.translate(x, y); c.rotate(tilt); c.scale(s, s);
     const gr = c.createRadialGradient(0, 0, 2, 0, 0, 25);
@@ -557,7 +575,7 @@ window.NHCelula = window.NHCelula || (function () {
       canvas.setAttribute('aria-label', P.aria || P.label);
       return { P, canvas, ctx: canvas.getContext('2d'), out: fig.querySelector('.ga-reading b'),
                meters: [...fig.querySelectorAll('.ga-meter')].map(m => ({ k: m.dataset.k, bars: [...m.querySelectorAll('i')], txt: m.querySelector('.ga-meter-txt'), shown: null })),
-               aL: GL.map(() => 0), aI: GI.map(() => 0), aF: FREE_INS.map(() => 0), aG: GLP.map(() => 0), shown: null, geom: null, bg: null };
+               aL: GL.map(() => 0), aI: GI.map(() => 0), aF: FREE_INS.map(() => 0), aG: GLP.map(() => 0), aM: MET.map(() => 0), shown: null, geom: null, bg: null };
     });
 
     function layout(p) {
@@ -605,6 +623,8 @@ window.NHCelula = window.NHCelula || (function () {
       GL.forEach((m, i) => { p.aL[i] = lerp(p.aL[i], i < nL ? 1 : 0, k); glucose(c, wrap(m.x0 + m.v * clock), m.y + Math.sin(clock + i) * 2, m.rot + clock * m.spin, p.aL[i]); });
       const nF = st.freeIns || 0;
       FREE_INS.forEach((m, i) => { p.aF[i] = lerp(p.aF[i], i < nF ? 1 : 0, Math.min(1, dt * 1.4)); insulin(c, wrap(m.x0 + m.v * clock), m.y, m.rot + clock * .3, p.aF[i]); });
+      const nM = st.metf || 0;
+      MET.forEach((m, i) => { p.aM[i] = lerp(p.aM[i], i < nM ? 1 : 0, Math.min(1, dt * 1.4)); metformin(c, wrap(m.x0 + m.v * clock), m.y, m.rot + clock * m.spin, p.aM[i]); });
       const nG = st.glp1 || 0;
       GLP.forEach((m, i) => { p.aG[i] = lerp(p.aG[i], i < nG ? 1 : 0, Math.min(1, dt * 1.4)); glp1(c, wrap(m.x0 + m.v * clock), m.y + Math.sin(clock * .7 + m.ph) * 3, m.rot, p.aG[i], m.ph + clock * 2); });
       c.restore();
@@ -709,7 +729,7 @@ window.NHCelula = window.NHCelula || (function () {
     function stop() { running = false; cancelAnimationFrame(raf); }
     function sync() {
       if (root.classList.contains('active')) {
-        if (!running) { setStep(0); panels.forEach(p => { p.aL = GL.map(() => 0); p.aI = GI.map(() => 0); p.aF = FREE_INS.map(() => 0); p.aG = GLP.map(() => 0); }); }
+        if (!running) { setStep(0); panels.forEach(p => { p.aL = GL.map(() => 0); p.aI = GI.map(() => 0); p.aF = FREE_INS.map(() => 0); p.aG = GLP.map(() => 0); p.aM = MET.map(() => 0); }); }
         start();
       } else stop();
     }
@@ -858,7 +878,81 @@ window.NHCelula = window.NHCelula || (function () {
 </div>
 
 
-<div class="slide-page slide-anim" data-index="3" data-titulo="Qué hace un medicamento GLP-1" data-fuente="ADA, Standards of Care in Diabetes 2025">
+<div class="slide-page slide-anim" data-index="3" data-titulo="Qué hace la metformina" data-fuente="ADA, Standards of Care in Diabetes 2025">
+  <script></script>
+  <script>
+  (function () {
+    const root = document.currentScript.closest('.slide-page');
+    const { prog, lerp, ease, easeOut } = NHCelula;
+
+    // Mismo punto de partida que insulina y GLP-1. La metformina no agrega insulina:
+    // los receptores ocupados son los mismos; mejora la señal y, sobre todo, frena al hígado.
+    const RECEPTORS = [110, 215, 320, 425, 530];
+    const BASE_REC = [1, 0, 1, 0, 0];
+    const BASE_FUSE = [0, 0, 1, 0];
+    const weak = { glow: .25, signal: { r: 26, a: .3 } };
+
+    NHCelula.mount(root, {
+      receptors: RECEPTORS,
+      legend: ['glucosa', 'insulina', 'metformina', 'receptor', 'glut4'],
+      steps: [
+        { label: 'En ayunas', caption: 'La metformina se toma en pastillas con las comidas. Su efecto principal es en el hígado: hace que suelte menos glucosa, sobre todo de noche.' },
+        { label: 'Come el plato', caption: 'Las dos comen el mismo plato. La glucosa sube en ambas, pero la persona con metformina parte de más abajo.' },
+        { label: 'Mejor respuesta', caption: 'La metformina también ayuda a que la señal dentro de la célula funcione un poco mejor. No agrega insulina: aprovecha mejor la que ya hay.' },
+        { label: 'Baja la glucosa', caption: 'La glucosa baja más y el hígado suelta menos. Por sí sola casi no causa bajones. Al principio puede dar molestias de estómago; tomarla con comida ayuda.' },
+      ],
+      panels: [
+        {
+          label: 'Diabetes tipo 2 · sin metformina', tone: 'amber', labels: true, meters: ['liver'],
+          aria: 'Ilustración: célula muscular de una persona con diabetes tipo 2 sin metformina',
+          state: (s, t) => Object.assign({
+            G: s === 0 ? 156 : s === 1 ? lerp(156, 232, ease(prog(t, 0, 4))) : s === 2 ? 232 : lerp(232, 224, easeOut(prog(t, .5, 10))),
+            freeIns: s === 0 ? 2 : 3,
+            rec: BASE_REC, fuse: BASE_FUSE,
+            uptake: { elapsed: t, every: 2.8 },
+            liver: .85,
+          }, weak),
+        },
+        {
+          label: 'Diabetes tipo 2 · con metformina', tone: 'green', meters: ['liver'],
+          aria: 'Ilustración: célula muscular de una persona con diabetes tipo 2 en tratamiento con metformina',
+          state: (s, t) => {
+            const metf = Math.round(8 * prog(t + (s > 0 ? 99 : 0), .2, 2));
+            if (s === 0) return Object.assign({
+              G: lerp(156, 128, easeOut(prog(t, 1.2, 7))), freeIns: 2, metf,
+              rec: BASE_REC, fuse: BASE_FUSE, uptake: { elapsed: t, every: 2.8 },
+              liver: lerp(.85, .45, prog(t, 1, 4)),
+              tag: { text: 'Metformina', alpha: prog(t, .2, .6) },
+            }, weak);
+            if (s === 1) return Object.assign({
+              G: lerp(128, 196, ease(prog(t, 0, 4))), freeIns: 3, metf,
+              rec: BASE_REC, fuse: BASE_FUSE, uptake: { elapsed: t, every: 2.8 },
+              liver: .45,
+            }, weak);
+            if (s === 2) return {
+              G: 196, freeIns: 3, metf,
+              rec: BASE_REC, fuse: [0, prog(t, 2.2, 2), 1, 0],
+              glow: lerp(.25, .55, prog(t, .8, 1.5)),
+              signal: { r: lerp(26, 40, prog(t, .8, 2)), a: lerp(.3, .4, prog(t, .8, 2)) },
+              uptake: { elapsed: t, every: t < 4.5 ? 2.8 : 1.5 },
+              liver: .45,
+            };
+            return {
+              G: lerp(196, 152, easeOut(prog(t, .5, 9))), freeIns: 3, metf,
+              rec: BASE_REC, fuse: [0, 1, 1, 0], glow: .55,
+              signal: { r: 40, a: .4 }, uptake: { elapsed: t, every: 1.2 },
+              liver: lerp(.45, .35, prog(t, .5, 5)),
+            };
+          },
+        },
+      ],
+    });
+  })();
+  </script>
+</div>
+
+
+<div class="slide-page slide-anim" data-index="4" data-titulo="Qué hace un medicamento GLP-1" data-fuente="ADA, Standards of Care in Diabetes 2025">
   <script></script>
   <script>
   (function () {
@@ -937,7 +1031,7 @@ window.NHCelula = window.NHCelula || (function () {
 </div>
 
 
-<div class="slide-page slide-table" data-index="4">
+<div class="slide-page slide-table" data-index="5">
   <div class="s-tbl-header">
     <div class="s-tbl-title">Los números del diagnóstico</div>
     
@@ -960,7 +1054,7 @@ window.NHCelula = window.NHCelula || (function () {
   </div>
   <script>
   typeof Chart !== 'undefined' && (Chart.defaults.font.family = "'DM Sans', system-ui, sans-serif");
-  const TOTAL = 5;
+  const TOTAL = 6;
   let current = 0;
   const pages   = document.querySelectorAll(".slide-page");
   const items   = document.querySelectorAll(".slide-nav-item");
