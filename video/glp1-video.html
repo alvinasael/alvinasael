@@ -34,7 +34,7 @@ const HX = Array.from({ length: 7 }, () => ({ x0: R() * 1300, y: 580 + R() * 260
 
 // ── Guion: texto en pantalla ──────────────────────────────────────────────
 const CAPS = [
-  [0, 6, 'Tu cuerpo ya produce GLP-1. Cada vez que comes, tu intestino lo suelta.', 1],
+  [0, 6, '¿Sabías que tu cuerpo ya produce GLP-1? Cada vez que comes, tu intestino lo suelta.', 1],
   [6, 13, 'Es una hormona mensajera: avisa que llegó comida. Pero la natural dura apenas unos minutos.'],
   [13, 20, 'El medicamento GLP-1 es una copia que dura mucho más. Por eso muchas se aplican una vez por semana.'],
   [20, 27, 'Al páncreas le dice: suelta insulina, pero solo cuando la glucosa está alta.'],
@@ -136,6 +136,13 @@ function drawBody(lit, t) {
   glow('liver', L => { organPath('liver'); c.fillStyle = K.liver; c.fill(); if (L > 0) { c.shadowColor = 'transparent'; c.strokeStyle = `rgba(196,131,43,${L})`; c.lineWidth = 5; c.stroke(); } });
   glow('brain', L => { organPath('brain'); c.fillStyle = K.brain; c.fill(); c.shadowColor = 'transparent'; c.strokeStyle = 'rgba(120,80,68,.45)'; c.lineWidth = 3; c.beginPath(); c.moveTo(540, 258); c.bezierCurveTo(530, 290, 552, 320, 540, 360); c.moveTo(490, 300); c.quadraticCurveTo(510, 312, 505, 335); c.moveTo(592, 296); c.quadraticCurveTo(572, 312, 580, 338); c.stroke(); if (L > 0) { organPath('brain'); c.strokeStyle = `rgba(196,131,43,${L})`; c.lineWidth = 5; c.stroke(); } });
 }
+// Cámara: acercamiento suave al órgano que recibe el mensaje
+const FOC = o => [540 + .4 * (ORG[o][0] - 540), 720 + .4 * (ORG[o][1] - 720), 1.14];
+const CAMK = [[0, 540, 720, 1], [20.3, 540, 720, 1], [21.3, ...FOC('pancreas')], [26.9, ...FOC('pancreas')], [27.9, ...FOC('liver')], [31.9, ...FOC('liver')],
+  [32.9, ...FOC('stomach')], [36.9, ...FOC('stomach')], [37.9, ...FOC('brain')], [41.2, ...FOC('brain')], [42, 540, 720, 1]];
+function cam(t) { let i = 0; while (i < CAMK.length - 2 && t >= CAMK[i + 1][0]) i++; const a = CAMK[i], b = CAMK[i + 1], u = ease(clamp((t - a[0]) / (b[0] - a[0]), 0, 1)); return [lerp(a[1], b[1], u), lerp(a[2], b[2], u), lerp(a[3], b[3], u)]; }
+let CARDQ = [];
+const qcard = (...a) => CARDQ.push(a);
 // partículas emitidas a un ritmo antes y otro después de un momento (determinista)
 function births(t, s0, tArr, fast, slow, life) { const out = []; let k = 0; for (let b = s0; b < Math.min(t, tArr); b += fast, k++) if (t - b < life) out.push([(t - b) / life, k]); if (slow) for (let b = tArr + slow * .4; b < t; b += slow, k++) if (t - b < life) out.push([(t - b) / life, k]); return out; }
 // mensajero que viaja hasta un órgano
@@ -143,6 +150,14 @@ function messenger(t, t0, from, to) { const p = prog(t, t0, 1.7); if (p <= 0 || 
 
 // ── Escenas ───────────────────────────────────────────────────────────────
 function sceneBodyFull(t) {
+  const [ccx, ccy, ck] = cam(t), mx = x => 540 + (x - ccx) * ck, my = y => 720 + (y - ccy) * ck;
+  CARDQ = [];
+  c.save(); c.translate(540, 720); c.scale(ck, ck); c.translate(-ccx, -ccy);
+  sceneBodyInner(t);
+  c.restore();
+  CARDQ.forEach(([n, e, x, y, ax, ay, a]) => card(n, e, x, y, mx(ax), my(ay), a));
+}
+function sceneBodyInner(t) {
   const lit = { gut: win(t, 2.6, 6.4), pancreas: t >= 20 ? lerp(.55, 1, win(t, 21.6, 27, .5)) * prog(t, 21.6, .5) : 0, liver: prog(t, 28.6, .5) * lerp(.55, 1, win(t, 28.6, 32, .5)), stomach: prog(t, 33.6, .5) * lerp(.55, 1, win(t, 33.6, 37, .5)), brain: prog(t, 38.6, .5) };
   drawBody(lit, t);
   if (t < 7) {   // 0–6 s: el plato y el intestino
@@ -152,25 +167,25 @@ function sceneBodyFull(t) {
     const f = prog(t, .9, 2.6);   // bocado que baja
     if (f > 0 && f < 1) { const pts = [[300, 330], [520, 400], [545, 520], [574, 656], [640, 760], [600, 850], [560, 940], [540, 965]]; const u = ease(f) * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(u)), v = u - i; c.fillStyle = K.amber; c.beginPath(); c.arc(lerp(pts[i][0], pts[i + 1][0], v), lerp(pts[i][1], pts[i + 1][1], v), 13, 0, 6.283); c.fill(); }
     births(t, 3.4, 99, .42, 0, 2.6).forEach(([a, k]) => { const ang = -Math.PI / 2 + ((k % 5) - 2) * .5, d = easeOut(a) * 330; helix(540 + Math.cos(ang) * d * 1.25, 1010 + Math.sin(ang) * d, 3, ang + Math.PI / 2 + Math.sin(t * 2 + k) * .3, a < .15 ? a / .15 : 1 - prog(a, .7, .3), t * 6 + k); });
-    card('Intestino', 'suelta GLP-1', 190, 1100, 430, 1040, prog(t, 3.2, .5));
+    qcard('Intestino', 'suelta GLP-1', 190, 1100, 430, 1040, prog(t, 3.2, .5));
   }
   if (t >= 19.5) {
     const from = [40, 620];
     // Páncreas
     messenger(t, 20.2, from, ORG.pancreas);
     if (t > 21.8 && t < 42.6) births(t, 21.8, 99, .5, 0, 1.8).forEach(([a, k]) => { const ang = -.5 + ((k % 4) - 1.5) * .28, d = easeOut(a) * 190; insulin(600 + Math.cos(ang) * d, 870 + Math.sin(ang) * d - 20 * a, 2.4, k, (a < .15 ? a / .15 : 1 - prog(a, .65, .35)) * (t < 27 ? 1 : .0)); });
-    card('Páncreas', 'más insulina', 880, 960, 690, 860, win(t, 22, 42.5));
+    qcard('Páncreas', 'más insulina', 880, 960, 690, 860, win(t, 22, 42.5));
     // Hígado
     messenger(t, 27.2, from, ORG.liver);
     if (t > 26.6 && t < 32.4) births(t, 26.6, 28.9, .42, 1.7, 2).forEach(([a, k]) => { const ang = Math.PI + .5 - ((k % 3) - 1) * .35, d = easeOut(a) * 200; hex(430 + Math.cos(ang) * d, 720 + Math.sin(ang) * d, 2.6, k + a, a < .15 ? a / .15 : 1 - prog(a, .65, .35)); });
-    card('Hígado', 'menos azúcar', 196, 560, 400, 700, win(t, 29, 42.5));
+    qcard('Hígado', 'menos azúcar', 196, 560, 400, 700, win(t, 29, 42.5));
     // Estómago
     messenger(t, 32.2, from, ORG.stomach);
     if (t > 31.6 && t < 37.4) births(t, 31.6, 33.9, .34, 1.4, 1.5).forEach(([a]) => { c.save(); c.globalAlpha *= a < .15 ? a / .15 : 1 - prog(a, .7, .3); c.fillStyle = K.amber; c.beginPath(); c.arc(lerp(596, 545, a), lerp(848, 962, ease(a)), 10, 0, 6.283); c.fill(); c.restore(); });
-    card('Estómago', 'más despacio', 900, 690, 700, 750, win(t, 34, 42.5));
+    qcard('Estómago', 'más despacio', 900, 690, 700, 750, win(t, 34, 42.5));
     // Cerebro
     messenger(t, 37.2, from, ORG.brain);
-    card('Cerebro', 'menos apetito', 870, 250, 612, 310, win(t, 39, 42.5));
+    qcard('Cerebro', 'menos apetito', 870, 250, 612, 310, win(t, 39, 42.5));
   }
 }
 function sceneVessel(t) {
@@ -224,8 +239,8 @@ function sceneConverge(t) {
   const chA = 1 - prog(t, 67, .6);
   if (chA > 0) {
     c.save(); c.globalAlpha *= chA * prog(t, 43, .6);
-    const x0 = 130, x1 = 950, yT = 830, yB = 1200, Y = v => yB - (v - 80) / 170 * (yB - yT);
-    c.fillStyle = K.white; rr(70, 770, 940, 480, 28); c.fill();
+    const x0 = 130, x1 = 950, yT = 800, yB = 1140, Y = v => yB - (v - 80) / 170 * (yB - yT);
+    c.fillStyle = K.white; rr(70, 740, 940, 450, 28); c.fill();
     c.fillStyle = K.greenPale; c.fillRect(x0, Y(180), x1 - x0, Y(80) - Y(180));
     c.font = `500 24px ${SANS}`; c.fillStyle = K.greenMid; c.textAlign = 'right'; c.textBaseline = 'alphabetic'; c.fillText('Meta después de comer: menos de 180', x1 - 12, Y(80) - 14);
     c.strokeStyle = K.char30; c.lineWidth = 2; c.setLineDash([6, 8]); c.beginPath(); c.moveTo(lerp(x0, x1, .2), yT); c.lineTo(lerp(x0, x1, .2), yB); c.stroke(); c.setLineDash([]);
@@ -248,7 +263,7 @@ function sceneConverge(t) {
     link(A.l, [x0 + 50, Y(par.base) - 60], 51.2, stage === 2);
     link(A.s, [lerp(x0, x1, par.uc + par.w * 1.1), Y(lerp(par.base, par.peak, .45)) - 8], 56.2, stage === 3);
     c.restore();
-    pill('Glucosa más estable  ·  A1c más baja', 540, 1290, win(t, 62, 67.2), K.green, K.white, 34);
+    pill('Glucosa más estable  ·  A1c más baja', 540, 704, win(t, 62, 67.2), K.green, K.white, 34);
   }
   const all = t >= 61 && t < 67, st = t < 61 ? stage : 0;
   badge(1, A.p, st === 1 || all); badge(2, A.l, st === 2 || all); badge(3, A.s, st === 3 || all);
@@ -267,7 +282,10 @@ function captions(t) {
   CAPS.forEach(([a, b, text, strong]) => { const al = win(t, a + .05, b, .35); if (al <= 0) return;
     c.save(); c.globalAlpha = al; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
     c.font = strong ? `600 62px ${SERIF}` : `500 54px ${SANS}`; c.fillStyle = strong ? K.green : K.char;
-    const lines = wrap(text, 900), lh = strong ? 80 : 72, y0 = 1540 - (lines.length - 1) * lh / 2 + (1 - easeOut(prog(t, a, .5))) * 20;
+    const lines = wrap(text, 820), lh = strong ? 80 : 72, y0 = 1410 - (lines.length - 1) * lh / 2 + (1 - easeOut(prog(t, a, .5))) * 20;
+    const bw = Math.max(...lines.map(l => c.measureText(l).width)) + 80, top = y0 - lh * .8, bh = lines.length * lh + 26;
+    c.fillStyle = 'rgba(247,243,237,.9)'; rr(540 - bw / 2, top, bw, bh, 26); c.fill();
+    c.fillStyle = strong ? K.green : K.char;
     lines.forEach((l, i) => c.fillText(l, 540, y0 + i * lh)); c.restore(); });
 }
 function renderAt(t) {
@@ -279,7 +297,9 @@ function renderAt(t) {
   if (aBody2 > 0) { c.save(); c.globalAlpha = aBody2; sceneBodyFull(t); c.restore(); }
   if (t >= 42) { c.save(); c.globalAlpha = 1; sceneConverge(t); c.restore(); }
   // encabezado y barra de progreso
-  c.fillStyle = K.creamDark; c.fillRect(0, 0, W, 10); c.fillStyle = K.amber; c.fillRect(0, 0, W * t / DUR, 10);
+  const hb = c.createLinearGradient(0, 0, 0, 170); hb.addColorStop(0, K.cream); hb.addColorStop(.7, 'rgba(247,243,237,.92)'); hb.addColorStop(1, 'rgba(247,243,237,0)');
+  c.fillStyle = hb; c.fillRect(0, 0, W, 170);
+  c.fillStyle = K.creamDark; c.fillRect(0, 0, W, 10); c.fillStyle = K.amber; c.fillRect(0, 0, W * TV / TOTAL, 10);
   c.font = `700 28px ${SANS}`; c.letterSpacing = '4px'; c.fillStyle = K.amber; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillText('NUTRICIÓN.HEALTH', 70, 108); c.letterSpacing = '0px';
   c.font = `500 28px ${SANS}`; c.fillStyle = K.char60; c.textAlign = 'right'; c.fillText('Cómo funciona el GLP-1', W - 70, 108);
   captions(t);
@@ -291,13 +311,18 @@ function renderAt(t) {
     c.font = `italic 400 42px ${SERIF}`; c.fillStyle = K.greenLight; c.fillText('Más allá del consultorio.', 540, 1060);
     c.font = `400 28px ${SANS}`; c.fillStyle = 'rgba(255,255,255,.5)'; c.fillText('Material educativo. No sustituye la consulta con tu médico.', 540, 1760); c.restore(); }
 }
-window.renderAt = renderAt; window.DUR = DUR;
-window.frameJPEG = t => { renderAt(t); return cv.toDataURL('image/jpeg', .93).slice(23); };
+// Montaje con voz: tiempo real del video → tiempo del guion original
+const SEGS = [[0, 6.68, 0, 6], [6.68, 12.54, 6, 13], [12.54, 18.97, 13, 20], [18.97, 23.65, 20, 27], [23.65, 26.65, 27, 32], [26.65, 29.66, 32, 37], [29.66, 32.66, 37, 42], [32.66, 35.8, 42, 46], [35.8, 39.48, 46, 51], [39.48, 42.48, 51, 56], [42.48, 45.59, 56, 61], [45.59, 50.65, 61, 67], [50.65, 55.55, 67, 70.6], [55.55, 59.61, 70.6, 74]], T_END = 59.61, TOTAL = 62.61;
+function tau(tv) { if (tv >= T_END) return 74 + (tv - T_END) / (TOTAL - T_END) * 3; for (const [na, nb, oa, ob] of SEGS) if (tv < nb) return oa + (tv - na) / (nb - na) * (ob - oa); return 74; }
+let TV = 0;
+function renderFrame(tv) { TV = tv; renderAt(tau(tv)); }
+window.renderAt = renderAt; window.renderFrame = renderFrame; window.DUR = TOTAL;
+window.frameJPEG = t => { renderFrame(t); return cv.toDataURL('image/jpeg', .93).slice(23); };
 // Vista previa en tiempo real al abrir el archivo (?t=30 muestra un cuadro fijo)
 document.fonts.ready.then(() => {
   const q = new URLSearchParams(location.search).get('t');
-  if (q != null) { renderAt(+q); window.ready = true; return; }
-  window.ready = true; const s = performance.now(); (function loop(n) { renderAt(((n - s) / 1000) % DUR); requestAnimationFrame(loop); })(s);
+  if (q != null) { renderFrame(+q); window.ready = true; return; }
+  window.ready = true; const s = performance.now(); (function loop(n) { renderFrame(((n - s) / 1000) % TOTAL); requestAnimationFrame(loop); })(s);
 });
 </script>
 </body>

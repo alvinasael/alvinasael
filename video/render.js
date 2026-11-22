@@ -17,11 +17,16 @@ const fs = require('fs'), path = require('path');
     for (const t of args[1].split(',')) fs.writeFileSync(path.join(__dirname, 'stills', `t${t}.jpg`), Buffer.from(await p.evaluate(t => frameJPEG(t), +t), 'base64'));
   } else {
     const out = args[0] || path.join(__dirname, 'glp1-como-funciona.mp4');
-    const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-shortest',
-      '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', '-preset', 'medium', '-c:a', 'aac', '-b:a', '64k', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+    // Audio: voces/mezcla.m4a (python3 mezcla.py) o, si no existe, silencio
+    const mix = path.join(__dirname, 'voces', 'mezcla.m4a'), hasMix = fs.existsSync(mix);
+    const audioIn = hasMix ? ['-i', mix] : ['-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo'];
+    const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-', ...audioIn, '-map', '0:v', '-map', '1:a', '-shortest',
+      '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', '-preset', 'medium', '-c:a', hasMix ? 'copy' : 'aac', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+    console.log('audio:', hasMix ? 'voz + música' : 'silencio');
+    const done = new Promise(r => ff.on('close', r));
     const N = Math.round(DUR * FPS);
     for (let i = 0; i < N; i++) { const buf = Buffer.from(await p.evaluate(t => frameJPEG(t), i / FPS), 'base64'); if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r)); if (i % 300 === 0) console.log(`cuadro ${i}/${N}`); }
-    ff.stdin.end(); await new Promise(r => ff.on('close', r)); console.log('listo:', out);
+    ff.stdin.end(); await done; console.log('listo:', out);
   }
   console.log('errores:', errs.length ? errs : 'ninguno'); await b.close();
 })();
