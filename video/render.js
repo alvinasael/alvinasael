@@ -5,7 +5,7 @@ const { spawn } = require('child_process');
 const fs = require('fs'), path = require('path');
 (async () => {
   const FPS = 30, args = process.argv.slice(2);
-  const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 540, height: 960 } });
+  const b = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] }); const p = await b.newPage({ viewport: { width: 540, height: 960 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto('file://' + path.join(__dirname, 'glp1-video.html') + '?t=0');
   await p.waitForFunction('window.ready === true');

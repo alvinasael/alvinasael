@@ -12,6 +12,8 @@
 </head>
 <body>
 <canvas id="c" width="1080" height="1920"></canvas>
+<script src="vendor/three.min.js"></script>
+<script src="escenas3d.js"></script>
 <script>
 // Video vertical 1080×1920, 77 s. Todo es función del tiempo: renderAt(t) dibuja el cuadro exacto.
 const W = 1080, H = 1920, DUR = 77;
@@ -190,6 +192,7 @@ function sceneBodyInner(t) {
 }
 function sceneVessel(t) {
   const top = 520, bot = 900;
+  if (!window.NH3D) {
   const g = c.createLinearGradient(0, top, 0, bot); g.addColorStop(0, '#EAD5CA'); g.addColorStop(1, '#DDBAAB'); c.fillStyle = g; c.fillRect(0, top, W, bot - top);
   c.fillStyle = '#D6AC9A'; c.fillRect(0, top - 26, W, 26); c.fillRect(0, bot, W, 26); c.fillStyle = '#E6C5B6'; c.fillRect(0, top - 4, W, 4); c.fillRect(0, bot, W, 4);
   const wrapX = x => ((x % 1400) + 1400) % 1400 - 160;
@@ -204,6 +207,7 @@ function sceneVessel(t) {
   });
   c.restore();
   pill('Sangre', 110, top + 46, 1, 'rgba(247,243,237,.92)');
+  }
   // reloj (GLP-1 natural)
   const ca = win(t, 6.3, 13.2);
   if (ca > 0) { c.save(); c.globalAlpha *= ca; c.translate(540, 320); c.fillStyle = K.white; c.strokeStyle = K.char; c.lineWidth = 6; c.beginPath(); c.arc(0, 0, 96, 0, 6.283); c.fill(); c.stroke();
@@ -292,16 +296,26 @@ function renderAt(t) {
   c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; c.shadowColor = 'transparent'; c.letterSpacing = '0px';
   c.fillStyle = K.cream; c.fillRect(0, 0, W, H);
   const aBody1 = t < 6.6 ? 1 - prog(t, 5.7, .6) : 0, aVessel = win(t, 5.9, 20.3, .55), aBody2 = t >= 19.6 && t < 42 ? prog(t, 19.8, .6) : 0;
+  let dk = 0;   // cuánto domina una escena 3D oscura (para el encabezado)
+  if (window.NH3D && t < 20.4) {
+    const aPlato = 1 - prog(t, 2.6, .6), aTunel = prog(t, 2.6, .6) * (1 - prog(t, 5.9, .55));
+    const draw3d = (a, fn) => { if (a <= .01) return; const img = fn(t); c.save(); c.globalAlpha = a; c.drawImage(img, 0, 0); c.restore(); };
+    draw3d(aPlato, NH3D.plato); draw3d(aTunel, NH3D.tunel); draw3d(aVessel, NH3D.vaso);
+    dk = Math.max(aTunel, aVessel);
+    pill('Células del intestino: sueltan GLP-1', 540, 330, win(t, 3.6, 6.1), 'rgba(247,243,237,.94)', K.char, 32);
+  } else if (aBody1 > 0) { c.save(); c.globalAlpha = aBody1; sceneBodyFull(t); c.restore(); }
   if (aVessel > 0) { c.save(); c.globalAlpha = aVessel; sceneVessel(t); c.restore(); }
-  if (aBody1 > 0) { c.save(); c.globalAlpha = aBody1; sceneBodyFull(t); c.restore(); }
   if (aBody2 > 0) { c.save(); c.globalAlpha = aBody2; sceneBodyFull(t); c.restore(); }
   if (t >= 42) { c.save(); c.globalAlpha = 1; sceneConverge(t); c.restore(); }
   // encabezado y barra de progreso
   const hb = c.createLinearGradient(0, 0, 0, 170); hb.addColorStop(0, K.cream); hb.addColorStop(.7, 'rgba(247,243,237,.92)'); hb.addColorStop(1, 'rgba(247,243,237,0)');
-  c.fillStyle = hb; c.fillRect(0, 0, W, 170);
+  c.save(); c.globalAlpha = 1 - dk; c.fillStyle = hb; c.fillRect(0, 0, W, 170); c.restore();
+  if (dk > 0) { const hd = c.createLinearGradient(0, 0, 0, 200); hd.addColorStop(0, 'rgba(30,10,9,.75)'); hd.addColorStop(1, 'rgba(30,10,9,0)'); c.save(); c.globalAlpha = dk; c.fillStyle = hd; c.fillRect(0, 0, W, 200); c.restore(); }
   c.fillStyle = K.creamDark; c.fillRect(0, 0, W, 10); c.fillStyle = K.amber; c.fillRect(0, 0, W * TV / TOTAL, 10);
   c.font = `700 28px ${SANS}`; c.letterSpacing = '4px'; c.fillStyle = K.amber; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillText('NUTRICIÓN.HEALTH', 70, 108); c.letterSpacing = '0px';
-  c.font = `500 28px ${SANS}`; c.fillStyle = K.char60; c.textAlign = 'right'; c.fillText('Cómo funciona el GLP-1', W - 70, 108);
+  c.font = `500 28px ${SANS}`; c.textAlign = 'right';
+  c.save(); c.globalAlpha = 1 - dk; c.fillStyle = K.char60; c.fillText('Cómo funciona el GLP-1', W - 70, 108); c.restore();
+  if (dk > 0) { c.save(); c.globalAlpha = dk; c.fillStyle = K.creamDark; c.fillText('Cómo funciona el GLP-1', W - 70, 108); c.restore(); }
   captions(t);
   // cierre
   const end = prog(t, 74, .7);

@@ -20,6 +20,12 @@ Video vertical (1080×1920), 63 s, voz narrada + música + texto en pantalla.
 | 55.5–59.6 s | Algunos GLP-1 también protegen el corazón y los riñones. |
 | 59.6–62.6 s | Cierre con el logo |
 
+## Escenas 3D (Three.js)
+- **0–6.7 s · Del plato al intestino:** plato de arroz con habichuelas, ensalada y tostones; la cámara baja hasta la comida y entra al intestino, donde las células (puntos ámbar) sueltan GLP-1 (hélices verdes).
+- **6.7–19 s · Viaje por el vaso sanguíneo:** glóbulos rojos en 3D; el GLP-1 natural se deshace y el medicamento (hélice con marca ámbar) se queda. El reloj y el calendario van encima.
+- Código en `escenas3d.js`; Three.js r149 local en `vendor/` (licencia MIT), sin depender de internet.
+- Todo lo demás del video sigue en 2D, con el mismo estilo de los slides.
+
 ## Audio
 - Voz: OpenAI TTS, voz **Nova**, generada con Artificial Studio (`voces/narracion-nova.mp3`).
 - Música: MusicGen, clip de 8 s en bucle con fundido cruzado; baja de volumen cuando habla la voz (`voces/musica.wav`).
