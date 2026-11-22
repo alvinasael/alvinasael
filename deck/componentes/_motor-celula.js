@@ -611,6 +611,12 @@ window.NHCelula = window.NHCelula || (function () {
       cv.addEventListener('keydown', e => { if ((e.key === 'Enter') && zoom == null) { e.preventDefault(); e.stopPropagation(); setZoom(i); } });
     });
     root.gaZoom = setZoom;
+    // El deck llama esto al deslizar o usar sus flechas: true = el paso se consumió aquí
+    root.deckStep = dir => {
+      if (dir > 0 && step < last) { setStep(step + 1); return true; }
+      if (dir < 0 && step > 0) { setStep(step - 1); return true; }
+      return false;
+    };
 
     // Teclas del deck: la flecha avanza los pasos antes de pasar al próximo slide
     window.addEventListener('keydown', e => {

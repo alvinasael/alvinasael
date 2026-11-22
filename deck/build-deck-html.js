@@ -814,8 +814,14 @@ ${slidesHTML}
     btnNext.disabled = current === TOTAL - 1;
   }
   goTo(0);
-  btnPrev.addEventListener("click", () => goTo(current - 1));
-  btnNext.addEventListener("click", () => goTo(current + 1));
+  // Avanzar o retroceder: un slide con pasos (Animación) los consume primero
+  function navigate(dir) {
+    const stepper = pages[current].deckStep;
+    if (stepper && stepper(dir)) return;
+    goTo(current + dir);
+  }
+  btnPrev.addEventListener("click", () => navigate(-1));
+  btnNext.addEventListener("click", () => navigate(1));
 
   document.addEventListener("keydown", e => {
     if (["INPUT","TEXTAREA"].includes(document.activeElement.tagName)) return;
@@ -841,12 +847,20 @@ ${slidesHTML}
     sidebar.classList.toggle("hidden", !sidebarVisible);
   });
 
-  let touchStartX = 0;
+  // Deslizar con un dedo navega; pellizcar o mover la vista con zoom nunca cambia de slide ni de paso
+  let touchStartX = 0, touchStartY = 0, multiTouch = false;
   const vp = document.getElementById("slide-viewport");
-  vp.addEventListener("touchstart", e => { touchStartX = e.touches[0].clientX; }, { passive:true });
+  vp.addEventListener("touchstart", e => {
+    if (e.touches.length > 1) { multiTouch = true; return; }
+    multiTouch = false;
+    touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+  }, { passive:true });
   vp.addEventListener("touchend", e => {
+    if (multiTouch) { if (e.touches.length === 0) multiTouch = false; return; }
+    if (window.visualViewport && window.visualViewport.scale > 1.05) return;
     const dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 50) dx < 0 ? goTo(current + 1) : goTo(current - 1);
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) navigate(dx < 0 ? 1 : -1);
   }, { passive:true });
   ${chartScript}
   </script>
