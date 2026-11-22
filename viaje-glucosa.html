@@ -1,930 +1,739 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>El Viaje de la Glucosa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Simulación educativa: cómo la insulina mueve la glucosa a las células en una persona sana, con prediabetes y con diabetes tipo 2.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@500&display=swap">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@300;600;900&family=DM+Sans:wght@300;400;500&display=swap');
-
+  /* Layout: one column of sections; the simulator is a two-pane panel (scene + glucometer) that stacks on phones. */
   :root {
-    --blood: #c0392b;
-    --vein: #8b1a1a;
-    --glucose: #f39c12;
-    --insulin: #2ecc71;
-    --cell: #2980b9;
-    --bg: #0a0a14;
-    --text: #f0e6d3;
-    --accent: #e74c3c;
+    --bg: #f6f5f8;
+    --surface: #ffffff;
+    --surface-2: #efedf3;
+    --fg: #1d1a24;
+    --muted: #5f5a6b;
+    --line: #dedbe6;
+    --glucose: #c97406;
+    --insulin: #17894e;
+    --danger: #c8372d;
+    --warn: #b36b00;
+    --accent: #d94a2b;
+    --band: rgba(23, 137, 78, 0.10);
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-data: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b0a12; --surface: #15131f; --surface-2: #1d1a29; --fg: #f0e6d3; --muted: #a8a1b3;
+      --line: #2c2839; --glucose: #f5a623; --insulin: #3fd487; --danger: #ff6b5e; --warn: #f0b33c;
+      --accent: #f0703a; --band: rgba(63, 212, 135, 0.10); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b0a12; --surface: #15131f; --surface-2: #1d1a29; --fg: #f0e6d3; --muted: #a8a1b3;
+    --line: #2c2839; --glucose: #f5a623; --insulin: #3fd487; --danger: #ff6b5e; --warn: #f0b33c;
+    --accent: #f0703a; --band: rgba(63, 212, 135, 0.10); color-scheme: dark;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
+  * { box-sizing: border-box; }
   body {
+    margin: 0;
     background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0 3rem;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 3.5rem; }
+  .wrap > *, .sim > * { min-width: 0; }
+
+  /* HERO */
+  header { padding-top: 2.75rem; display: grid; gap: 0.6rem; }
+  .eyebrow {
+    font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500; margin: 0;
+  }
+  h1 {
+    font-family: var(--font-display); font-weight: 900; margin: 0;
+    font-size: clamp(2.2rem, 7vw, 4.2rem); line-height: 1.02; letter-spacing: -0.02em;
+    text-wrap: balance;
+    background: linear-gradient(120deg, var(--glucose), var(--accent) 60%, var(--danger));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .lede { margin: 0; max-width: 60ch; color: var(--muted); font-size: 1.08rem; }
+
+  h2 {
+    font-family: var(--font-display); font-weight: 600; margin: 0;
+    font-size: clamp(1.45rem, 3.6vw, 2rem); line-height: 1.15; text-wrap: balance;
+  }
+  section > .intro { margin: 0.4rem 0 0; color: var(--muted); max-width: 62ch; }
+
+  /* MODE SWITCH */
+  .modes {
+    display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; justify-self: start;
+    background: var(--surface-2); border-radius: 14px; border: 1px solid var(--line);
+  }
+  .mode {
+    font: inherit; font-size: 0.95rem; font-weight: 500; color: var(--muted);
+    background: transparent; border: 0; border-radius: 10px; padding: 0.55rem 1rem;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .mode .pip { width: 9px; height: 9px; border-radius: 50%; background: currentColor; opacity: 0.8; }
+  .mode[data-mode="sana"] .pip { background: var(--insulin); }
+  .mode[data-mode="prediabetes"] .pip { background: var(--warn); }
+  .mode[data-mode="diabetes"] .pip { background: var(--danger); }
+  .mode[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  .mode:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* SIMULATOR */
+  .sim { display: grid; gap: 1rem; margin-top: 1.2rem; }
+  .sim-grid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 1rem; align-items: start; }
+  @media (max-width: 820px) { .sim-grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .scene { min-width: 0; display: grid; gap: 0.75rem; }
+  #scene {
+    width: 100%; height: auto; aspect-ratio: 580 / 360; display: block;
+    border-radius: 18px; background: #0a0812; border: 1px solid var(--line);
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .btn {
+    font: inherit; font-size: 0.92rem; font-weight: 500; cursor: pointer;
+    border-radius: 999px; padding: 0.6rem 1.1rem; border: 1px solid var(--line);
+    background: var(--surface); color: var(--fg); display: inline-flex; align-items: center; gap: 0.45rem;
+  }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--glucose); border-color: transparent; color: #1b1203; }
+  .btn.walk { background: var(--insulin); border-color: transparent; color: #04170c; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn svg { width: 18px; height: 18px; flex: none; }
+
+  /* GLUCOMETER */
+  .meter {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+    padding: 1.1rem 1.1rem 1.2rem; display: grid; gap: 0.85rem;
+  }
+  .meter-screen {
+    background: #0f1a14; color: #d7f5e3; border-radius: 14px; padding: 0.9rem 1rem;
+    display: grid; gap: 0.25rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .meter-top { display: flex; justify-content: space-between; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
+  .reading { display: flex; align-items: baseline; gap: 0.4rem; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+  .reading .val { font-size: 3.2rem; line-height: 1; }
+  .reading .unit { font-size: 0.85rem; opacity: 0.8; }
+  .reading .trend { margin-left: auto; font-size: 1.6rem; line-height: 1; }
+  .chip {
+    justify-self: start; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.02em;
+    padding: 0.22rem 0.7rem; border-radius: 999px; border: 1px solid currentColor;
+  }
+  .chip[data-level="ok"] { color: var(--insulin); }
+  .chip[data-level="high"] { color: var(--warn); }
+  .chip[data-level="veryhigh"] { color: var(--danger); }
+  .meter dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.8rem; font-size: 0.88rem; }
+  .meter dt { color: var(--muted); }
+  .meter dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
+
+  .narration {
+    margin: 0; padding: 0.9rem 1.1rem; border-radius: 14px; background: var(--surface);
+    border: 1px solid var(--line); border-left: 4px solid var(--glucose); min-height: 4.2rem;
   }
 
-  header {
-    text-align: center;
-    padding: 2.5rem 1rem 1rem;
-  }
+  .chart { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 1rem 1rem 0.6rem; }
+  .chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.3rem 1rem; font-size: 0.88rem; }
+  .chart-head strong { font-weight: 700; }
+  .chart-head span { color: var(--muted); }
+  .chart-head .key { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .chart-head .swatch { width: 14px; height: 10px; border-radius: 3px; background: var(--band); border: 1px solid var(--insulin); }
+  #series { width: 100%; height: 190px; display: block; margin-top: 0.4rem; }
 
-  header h1 {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(1.8rem, 5vw, 3.2rem);
-    font-weight: 900;
-    letter-spacing: -0.02em;
-    background: linear-gradient(135deg, #f39c12, #e74c3c);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+  .disclaimer-sim { font-size: 0.8rem; color: var(--muted); margin: 0; }
 
-  header p {
-    font-size: 0.95rem;
-    color: #aaa;
-    margin-top: 0.4rem;
-    font-weight: 300;
-  }
+  /* NUMBERS TABLE */
+  .table-wrap { overflow-x: auto; margin-top: 1.2rem; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 0.8rem 1rem; text-align: left; border-bottom: 1px solid var(--line); }
+  tr:last-child td { border-bottom: 0; }
+  thead th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
+  tbody th { font-weight: 500; }
+  td small { display: block; color: var(--muted); font-size: 0.78rem; }
+  th.col-sana, td.col-sana { --tone: var(--insulin); }
+  th.col-prediabetes, td.col-prediabetes { --tone: var(--warn); }
+  th.col-diabetes, td.col-diabetes { --tone: var(--danger); }
+  thead th[class^="col-"] { color: var(--tone); }
+  [data-current="sana"] .col-sana,
+  [data-current="prediabetes"] .col-prediabetes,
+  [data-current="diabetes"] .col-diabetes { background: color-mix(in srgb, var(--tone) 12%, transparent); font-weight: 700; }
 
-  /* TABS */
-  .tabs {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin: 1.5rem auto 0;
-    flex-wrap: wrap;
-    padding: 0 1rem;
-  }
+  /* CAST */
+  .cast { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem 2rem; margin-top: 1.4rem; }
+  @media (max-width: 640px) { .cast { grid-template-columns: minmax(0, 1fr); } }
+  .cast article { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0.9rem; align-items: start; }
+  .cast svg { width: 44px; height: 44px; }
+  .cast h3 { margin: 0; font-size: 1.05rem; }
+  .cast p { margin: 0.2rem 0 0; color: var(--muted); }
 
-  .tab-btn {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: #bbb;
-    padding: 0.5rem 1.2rem;
-    border-radius: 999px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem;
-    transition: all 0.3s;
-  }
+  /* HABITS */
+  .habits { list-style: none; padding: 0; margin: 1.4rem 0 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+  .habits li { display: grid; grid-template-columns: minmax(0, 13rem) minmax(0, 1fr); gap: 0.4rem 1.5rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+  @media (max-width: 640px) { .habits li { grid-template-columns: minmax(0, 1fr); } }
+  .habits strong { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; }
+  .habits span { color: var(--muted); }
 
-  .tab-btn.active {
-    background: linear-gradient(135deg, #f39c12, #e74c3c);
-    border-color: transparent;
-    color: #fff;
-    font-weight: 500;
-  }
+  footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 1.2rem; max-width: 70ch; }
+  footer p { margin: 0 0 0.5rem; }
 
-  /* SCENE CONTAINER */
-  .scene-wrap {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem 1rem 2rem;
-    animation: fadeIn 0.5s ease;
-  }
-  .scene-wrap.active { display: flex; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* LABEL BADGE */
-  .scene-label {
-    font-family: 'Fraunces', serif;
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    text-align: center;
-  }
-  .scene-label span {
-    display: inline-block;
-    padding: 0.25rem 1rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    margin-left: 0.5rem;
-    vertical-align: middle;
-  }
-  .badge-healthy { background: rgba(46,204,113,0.2); color: #2ecc71; border: 1px solid #2ecc71; }
-  .badge-diabetes { background: rgba(231,76,60,0.2); color: #e74c3c; border: 1px solid #e74c3c; }
-
-  /* CANVAS */
-  canvas {
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: #080810;
-    max-width: 100%;
-    height: auto; /* keep aspect ratio when scaled down on phones */
-    display: block;
-  }
-
-  /* INFO STRIP */
-  .info-strip {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1.2rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 600px;
-  }
-
-  .info-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
-    font-size: 0.82rem;
-    color: #ccc;
-    flex: 1 1 140px;
-    text-align: center;
-  }
-  .info-card strong { display: block; font-size: 1.1rem; margin-bottom: 0.2rem; }
-
-  /* LEGEND */
-  .legend {
-    display: flex;
-    gap: 1.2rem;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    color: #bbb;
-  }
-  .dot {
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  /* EXPLANATION */
-  .explanation {
-    max-width: 560px;
-    margin: 1.5rem auto 0;
-    background: rgba(255,255,255,0.04);
-    border-left: 3px solid #f39c12;
-    border-radius: 0 12px 12px 0;
-    padding: 1rem 1.2rem;
-    font-size: 0.88rem;
-    line-height: 1.7;
-    color: #ccc;
-  }
-  .explanation strong { color: var(--text); }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
-</head>
-<body>
 
-<header>
-  <h1>El Viaje de la Glucosa</h1>
-  <p>Cómo la insulina abre o bloquea las células</p>
-</header>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Educación en salud · Diabetes</p>
+    <h1>El Viaje de la Glucosa</h1>
+    <p class="lede">Lo que comes se convierte en glucosa, el combustible de tus células. La insulina es la llave que les abre la puerta. Escoge un escenario, dale de comer al cuerpo y mira qué pasa con el azúcar en sangre.</p>
+  </header>
 
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('healthy', this)">🟢 Persona Sana</button>
-  <button class="tab-btn" onclick="switchTab('diabetes', this)">🔴 Diabetes Tipo 2</button>
-</div>
+  <section aria-labelledby="sim-title">
+    <h2 id="sim-title">Simulador: tres cuerpos, el mismo plato</h2>
+    <p class="intro">Cada vez que cambias de escenario, la persona come el mismo plato de arroz con habichuelas. Compara cuánto sube la glucosa y cuánto tarda en bajar.</p>
 
-<!-- HEALTHY SCENE -->
-<div class="scene-wrap active" id="scene-healthy">
-  <div class="scene-label">
-    Funcionamiento Normal
-    <span class="badge-healthy">Saludable</span>
-  </div>
-  <canvas id="canvas-healthy" width="580" height="320"></canvas>
+    <div class="sim">
+      <div class="modes" role="group" aria-label="Escenario">
+        <button class="mode" data-mode="sana" aria-pressed="true"><span class="pip"></span>Persona sana</button>
+        <button class="mode" data-mode="prediabetes" aria-pressed="false"><span class="pip"></span>Prediabetes</button>
+        <button class="mode" data-mode="diabetes" aria-pressed="false"><span class="pip"></span>Diabetes tipo 2</button>
+      </div>
 
-  <div class="legend">
-    <div class="legend-item"><div class="dot" style="background:#e74c3c"></div> Glóbulo rojo</div>
-    <div class="legend-item"><div class="dot" style="background:#f39c12"></div> Glucosa</div>
-    <div class="legend-item"><div class="dot" style="background:#2ecc71"></div> Insulina (llave)</div>
-    <div class="legend-item"><div class="dot" style="background:#3498db"></div> Célula</div>
-  </div>
+      <div class="sim-grid">
+        <div class="scene">
+          <canvas id="scene" width="580" height="360" role="img" aria-label="Animación de un vaso sanguíneo con glucosa e insulina y tres células debajo"></canvas>
+          <div class="actions">
+            <button class="btn primary" id="btn-eat" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12h18a9 9 0 0 1-18 0Z"/><path d="M7 8c0-1.5 1-2 1-3.5M12 8c0-1.5 1-2 1-3.5M17 8c0-1.5 1-2 1-3.5"/></svg>
+              Comer otro plato
+            </button>
+            <button class="btn walk" id="btn-walk" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="4" r="2"/><path d="m9 21 3-6 3 2v5M8 12l2-4 4 1 2 3 3 1M10 8l-2 5"/></svg>
+              Caminar 20 minutos
+            </button>
+            <button class="btn" id="btn-pause" type="button" aria-pressed="false">Pausar</button>
+          </div>
+        </div>
 
-  <div class="explanation">
-    <strong>¿Qué pasa aquí?</strong> Después de comer, la glucosa entra al torrente sanguíneo. El páncreas libera <strong>insulina</strong>, que actúa como una <strong>llave</strong>. Esa llave abre las células, que absorben la glucosa y la convierten en energía. El nivel de azúcar en sangre se mantiene estable.
-  </div>
-</div>
+        <aside class="meter" aria-label="Glucómetro">
+          <div class="meter-screen">
+            <div class="meter-top"><span>Glucosa</span><span id="clock">12:00 p. m.</span></div>
+            <div class="reading"><span class="val" id="val">90</span><span class="unit">mg/dL</span><span class="trend" id="trend" aria-label="estable">→</span></div>
+          </div>
+          <span class="chip" id="chip" data-level="ok">En rango</span>
+          <dl>
+            <dt>Pico de hoy</dt><dd id="peak">90 mg/dL</dd>
+            <dt>Tiempo sobre 140</dt><dd id="over">0 min</dd>
+            <dt>Insulina en camino</dt><dd id="ins">0 llaves</dd>
+          </dl>
+        </aside>
+      </div>
 
-<!-- DIABETES SCENE -->
-<div class="scene-wrap" id="scene-diabetes">
-  <div class="scene-label">
-    Diabetes Tipo 2
-    <span class="badge-diabetes">Resistencia a la insulina</span>
-  </div>
-  <canvas id="canvas-diabetes" width="580" height="320"></canvas>
+      <p class="narration" id="narration" aria-live="polite">La persona acaba de comer.</p>
 
-  <div class="legend">
-    <div class="legend-item"><div class="dot" style="background:#e74c3c"></div> Glóbulo rojo</div>
-    <div class="legend-item"><div class="dot" style="background:#f39c12"></div> Glucosa (acumulada)</div>
-    <div class="legend-item"><div class="dot" style="background:#2ecc71"></div> Insulina (bloqueada)</div>
-    <div class="legend-item"><div class="dot" style="background:#3498db"></div> Célula (cerrada)</div>
-  </div>
+      <div class="chart">
+        <div class="chart-head">
+          <strong>Glucosa en las últimas 4 horas</strong>
+          <span class="key"><span class="swatch"></span>Rango meta: 70 a 140 mg/dL</span>
+        </div>
+        <canvas id="series" aria-label="Gráfica de la glucosa en las últimas cuatro horas simuladas"></canvas>
+      </div>
 
-  <div class="explanation">
-    <strong>¿Qué pasa aquí?</strong> En la diabetes tipo 2, las células se vuelven <strong>resistentes a la insulina</strong>: la llave ya no abre bien la puerta. La glucosa no puede entrar a las células y se acumula en la sangre, causando <strong>hiperglucemia</strong>. El páncreas produce más y más insulina hasta que se agota.
-  </div>
+      <p class="disclaimer-sim">Simulación educativa con valores aproximados: 1 segundo en pantalla equivale a 3 minutos en el cuerpo.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="nums-title">
+    <h2 id="nums-title">¿Qué significan los números?</h2>
+    <p class="intro">Estos son los valores que usa tu médico para el diagnóstico. La columna resaltada corresponde al escenario que escogiste arriba.</p>
+    <div class="table-wrap" id="nums" data-current="sana">
+      <table>
+        <thead>
+          <tr><th scope="col">Prueba</th><th scope="col" class="col-sana">Normal</th><th scope="col" class="col-prediabetes">Prediabetes</th><th scope="col" class="col-diabetes">Diabetes</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Glucosa en ayunas<small>8 horas sin comer</small></th><td class="col-sana">Menos de 100</td><td class="col-prediabetes">100 a 125</td><td class="col-diabetes">126 o más</td></tr>
+          <tr><th scope="row">2 horas después de tomar glucosa<small>Prueba de tolerancia, mg/dL</small></th><td class="col-sana">Menos de 140</td><td class="col-prediabetes">140 a 199</td><td class="col-diabetes">200 o más</td></tr>
+          <tr><th scope="row">Hemoglobina A1c<small>Promedio de 3 meses</small></th><td class="col-sana">Menos de 5.7%</td><td class="col-prediabetes">5.7% a 6.4%</td><td class="col-diabetes">6.5% o más</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="cast-title">
+    <h2 id="cast-title">Quién hace qué</h2>
+    <div class="cast">
+      <article>
+        <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M5 26c3-9 13-12 22-10 6 1 11-2 12 3 1 6-8 8-15 9-8 1-12 6-16 4-3-1-4-3-3-6Z" fill="var(--accent)" opacity="0.85"/><circle cx="30" cy="20" r="2.5" fill="var(--insulin)"/></svg>
+        <div><h3>Páncreas</h3><p>Está detrás del estómago. Sus células beta sienten que subió el azúcar y sueltan insulina a la sangre.</p></div>
+      </article>
+      <article>
+        <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M4 16c6-6 26-8 35-3 3 2 1 8-4 11-7 5-17 9-24 8-6-1-10-10-7-16Z" fill="var(--danger)" opacity="0.7"/></svg>
+        <div><h3>Hígado</h3><p>Guarda glucosa de reserva y la suelta cuando no has comido. En la diabetes la suelta aunque no haga falta.</p></div>
+      </article>
+      <article>
+        <svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="17" fill="none" stroke="var(--insulin)" stroke-width="3"/><circle cx="22" cy="22" r="6" fill="var(--insulin)" opacity="0.5"/><circle cx="14" cy="15" r="2" fill="var(--glucose)"/><circle cx="30" cy="27" r="2" fill="var(--glucose)"/></svg>
+        <div><h3>Músculos</h3><p>Son los que más glucosa usan. Cuando se mueven pueden absorberla aunque la insulina no esté funcionando bien.</p></div>
+      </article>
+      <article>
+        <svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="14" cy="22" r="7" fill="none" stroke="var(--insulin)" stroke-width="3"/><path d="M21 22h18M33 22v5M28 22v4" stroke="var(--insulin)" stroke-width="3" stroke-linecap="round"/></svg>
+        <div><h3>Insulina</h3><p>Es una hormona que funciona como llave. Si las células se vuelven “sordas” a ella, se le llama resistencia a la insulina.</p></div>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="habits-title">
+    <h2 id="habits-title">Lo que sí está en tus manos</h2>
+    <p class="intro">La prediabetes se puede revertir, y en la diabetes tipo 2 estos hábitos ayudan a que la insulina vuelva a funcionar mejor.</p>
+    <ul class="habits">
+      <li><strong>Camina después de comer</strong><span>Con 10 a 15 minutos basta para que los músculos usen parte de la glucosa del plato. Pruébalo arriba con el botón de caminar.</span></li>
+      <li><strong>Arma el plato</strong><span>Que la mitad sean vegetales, un cuarto proteína y un cuarto arroz, viandas o pan. La fibra hace que la glucosa entre más despacio.</span></li>
+      <li><strong>Bebe agua</strong><span>Los refrescos y jugos suben la glucosa de golpe porque el azúcar líquido no hay que digerirlo.</span></li>
+      <li><strong>Duerme 7 horas o más</strong><span>Dormir poco y vivir estresado aumentan la resistencia a la insulina.</span></li>
+      <li><strong>Hazte la prueba</strong><span>Mucha gente con prediabetes no lo sabe. Pídele a tu médico una A1c o una glucosa en ayunas en tu próximo chequeo.</span></li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Este material es educativo y no sustituye la evaluación de un profesional de la salud. Los valores de diagnóstico siguen los criterios de la Asociación Americana de la Diabetes (ADA).</p>
+  </footer>
 </div>
 
 <script>
-// ─── UTILITIES ───────────────────────────────────────────────────────────────
-function lerp(a, b, t) { return a + (b - a) * t; }
-function rand(min, max) { return Math.random() * (max - min) + min; }
+(() => {
+  // ─── MODEL ────────────────────────────────────────────────────────────────
+  const SIM_MIN_PER_SEC = 3;
+  const MODES = {
+    sana:        { basal: 90,  k: 0.040, accept: 0.95, spawn: 2.4, cap: 6,  pancreas: 'Páncreas',                 vein: ['#5a0000', '#a00000'] },
+    prediabetes: { basal: 110, k: 0.014, accept: 0.50, spawn: 1.0, cap: 11, pancreas: 'Páncreas (trabajando extra)', vein: ['#4d0000', '#8a0000'] },
+    diabetes:    { basal: 155, k: 0.008, accept: 0.15, spawn: 2.6, cap: 6,  pancreas: 'Páncreas (cansado)',         vein: ['#3d0000', '#750000'] },
+  };
+  const MEAL = 120;
 
-// ─── HEALTHY SCENE ───────────────────────────────────────────────────────────
-(function healthyScene() {
-  const canvas = document.getElementById('canvas-healthy');
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const VEIN_Y = H * 0.42, VEIN_R = 70;
+  let mode = 'sana', P = MODES[mode];
+  let G = P.basal, gut = 0, simMin = 0, walkUntil = -1;
+  let peak = G, overMin = 0, paused = false;
+  let series = [];
+  let lastMealAt = 0;
 
-  let t = 0;
-
-  // Red blood cells
-  const rbcs = Array.from({length: 7}, () => ({
-    x: rand(0, W),
-    y: VEIN_Y + rand(-20, 20),
-    speed: rand(0.6, 1.2),
-    r: rand(10, 14),
-    wobble: rand(0, Math.PI * 2)
-  }));
-
-  // Glucose particles in vein
-  const glucose = Array.from({length: 12}, () => ({
-    x: rand(0, W),
-    y: VEIN_Y + rand(-VEIN_R * 0.5, VEIN_R * 0.5),
-    speed: rand(0.8, 1.4),
-    r: rand(5, 8),
-    phase: 'flowing',   // 'flowing' | 'entering'
-    targetCell: null,
-    alpha: 1,
-    scale: 1,
-    trail: []
-  }));
-
-  // Cell states: 'closed' | 'unlocking' | 'open' | 'absorbing'
-  const cells = [
-    { x: 120, y: H * 0.80, r: 38, state: 'closed', energy: 0, glow: 0, openAmount: 0, insulinDocked: false, dockedInsTimer: 0 },
-    { x: 290, y: H * 0.80, r: 38, state: 'closed', energy: 0, glow: 0, openAmount: 0, insulinDocked: false, dockedInsTimer: 0 },
-    { x: 460, y: H * 0.80, r: 38, state: 'closed', energy: 0, glow: 0, openAmount: 0, insulinDocked: false, dockedInsTimer: 0 },
-  ];
-
-  // Insulin keys — each can be: 'flowing' | 'docking' | 'docked'
-  const insulins = Array.from({length: 6}, () => ({
-    x: rand(0, W),
-    y: VEIN_Y + rand(-30, 30),
-    speed: rand(0.5, 1.0),
-    angle: rand(0, Math.PI * 2),
-    r: 6,
-    phase: 'flowing',
-    targetCell: null,
-    alpha: 1
-  }));
-
-  function drawVein() {
-    const grad = ctx.createLinearGradient(0, VEIN_Y - VEIN_R, 0, VEIN_Y + VEIN_R);
-    grad.addColorStop(0,   '#5a0000');
-    grad.addColorStop(0.3, '#8b0000');
-    grad.addColorStop(0.5, '#a00000');
-    grad.addColorStop(0.7, '#8b0000');
-    grad.addColorStop(1,   '#5a0000');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.rect(0, VEIN_Y - VEIN_R, W, VEIN_R * 2);
-    ctx.fill();
-
-    const shine = ctx.createLinearGradient(0, VEIN_Y - VEIN_R, 0, VEIN_Y - VEIN_R + 20);
-    shine.addColorStop(0, 'rgba(255,255,255,0.08)');
-    shine.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = shine;
-    ctx.beginPath();
-    ctx.rect(0, VEIN_Y - VEIN_R, W, 20);
-    ctx.fill();
+  function stepModel(dtMin) {
+    const absorb = gut * (1 - Math.pow(1 - 0.032, dtMin));
+    gut -= absorb; G += absorb;
+    const k = P.k + (simMin < walkUntil ? 0.03 : 0);
+    G -= (G - P.basal) * (1 - Math.pow(1 - k, dtMin));
+    simMin += dtMin;
+    peak = Math.max(peak, G);
+    if (G > 140) overMin += dtMin;
   }
 
-  function drawRBC(rbc) {
-    const y = rbc.y + Math.sin(t * 2 + rbc.wobble) * 3;
-    ctx.save();
-    ctx.translate(rbc.x, y);
-    ctx.beginPath();
-    ctx.ellipse(0, 0, rbc.r * 1.4, rbc.r, 0, 0, Math.PI * 2);
-    const g = ctx.createRadialGradient(-3, -3, 1, 0, 0, rbc.r * 1.4);
-    g.addColorStop(0, '#ff6b6b');
-    g.addColorStop(0.6, '#e74c3c');
-    g.addColorStop(1, '#922b21');
-    ctx.fillStyle = g;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(0, 0, rbc.r * 0.5, rbc.r * 0.35, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(150,30,30,0.5)';
-    ctx.fill();
+  // ─── SCENE ────────────────────────────────────────────────────────────────
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const W = 580, H = 360, VEIN_Y = 150, VEIN_R = 58;
+  const PANC = { x: W - 78, y: 44 };
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const rand = (a, b) => Math.random() * (b - a) + a;
+  let t = 0;
+
+  const rbcs = Array.from({ length: 7 }, () => ({ x: rand(0, W), y: VEIN_Y + rand(-22, 22), speed: rand(0.6, 1.1), r: rand(10, 13), wobble: rand(0, 6.28) }));
+  const cells = [120, 290, 460].map(x => ({ x, y: 292, r: 38, open: 0, openAmt: 0, glow: 0, energy: 0, reject: 0, docked: null }));
+  let glucose = [];
+  let insulins = [];
+  let spawnTimer = 0, removeCooldown = 0;
+
+  function targetParticles() { return Math.max(4, Math.min(42, Math.round((G - 50) / 5))); }
+
+  function newGlucose(fromLeft) {
+    return { x: fromLeft ? rand(-30, -6) : rand(0, W), y: VEIN_Y + rand(-VEIN_R * 0.7, VEIN_R * 0.7), speed: rand(0.7, 1.3),
+             r: rand(5, 7.5), phase: 'flow', cell: null, alpha: 1, trail: [], pulse: rand(0, 6.28) };
+  }
+
+  function resetScene() {
+    glucose = Array.from({ length: targetParticles() }, () => newGlucose(false));
+    insulins = [];
+    cells.forEach(c => { c.open = 0; c.openAmt = 0; c.glow = 0; c.energy = 0; c.reject = 0; c.docked = null; });
+  }
+
+  function spawnInsulin() {
+    insulins.push({ x: PANC.x - 4, y: PANC.y + 18, vy: 0, speed: rand(-1.1, -0.6), angle: rand(0, 6.28), phase: 'drop',
+                    targetY: VEIN_Y + rand(-30, 30), cell: null, life: 0, alpha: 1, bounce: 0 });
+  }
+
+  function walking() { return simMin < walkUntil; }
+
+  function update(dtSec) {
+    const walk = walking();
+    rbcs.forEach(r => { r.x += r.speed * (mode === 'diabetes' ? 0.7 : 1); if (r.x > W + 20) r.x = -20; });
+
+    // Pancreas releases more insulin when glucose rises (less so when it's worn out)
+    const drive = mode === 'diabetes' ? 1 : 1 + Math.max(0, G - P.basal) / 35;
+    spawnTimer -= dtSec * drive;
+    if (spawnTimer <= 0 && insulins.length < P.cap) { spawnInsulin(); spawnTimer = P.spawn; }
+
+    insulins.forEach(ins => {
+      ins.life += dtSec;
+      if (ins.phase === 'drop') {
+        ins.y = lerp(ins.y, ins.targetY, 0.04); ins.x += -0.3; ins.angle += 0.05;
+        if (Math.abs(ins.y - ins.targetY) < 3) ins.phase = 'flow';
+      } else if (ins.phase === 'flow') {
+        ins.x += 0.8; ins.angle += 0.04;
+        if (ins.x > W + 12) ins.x = -12;
+        if (ins.life > 1.5) {
+          for (const c of cells) {
+            if (c.open > 0 || c.docked) continue;
+            if (Math.abs(ins.x - c.x) < 30 && Math.random() < 0.05) { ins.phase = 'dock'; ins.cell = c; c.docked = ins; break; }
+          }
+        }
+      } else if (ins.phase === 'dock') {
+        const tx = ins.cell.x, ty = ins.cell.y - ins.cell.r - 14;
+        ins.x = lerp(ins.x, tx, 0.09); ins.y = lerp(ins.y, ty, 0.09); ins.angle = lerp(ins.angle, Math.PI / 2, 0.12);
+        if (Math.hypot(ins.x - tx, ins.y - ty) < 3) {
+          if (Math.random() < P.accept) { ins.phase = 'used'; ins.cell.open = 4.5; ins.useT = 4.5; }
+          else { ins.phase = 'reject'; ins.bounce = 0.9; ins.cell.reject = 0.9; ins.cell.docked = null; }
+        }
+      } else if (ins.phase === 'reject') {
+        ins.bounce -= dtSec; ins.y -= 1.6; ins.angle += 0.3;
+        if (ins.bounce <= 0) { ins.phase = 'flow'; ins.cell = null; ins.y = VEIN_Y + rand(-30, 30); ins.life = 0; }
+      } else if (ins.phase === 'used') {
+        ins.useT -= dtSec; ins.alpha = Math.min(1, ins.useT);
+        if (ins.useT <= 0) { ins.dead = true; if (ins.cell) ins.cell.docked = null; }
+      }
+      if (ins.life > 16 && ins.phase === 'flow') { ins.alpha -= 0.02; if (ins.alpha <= 0) ins.dead = true; }
+    });
+    insulins = insulins.filter(i => !i.dead);
+
+    cells.forEach(c => {
+      c.open = Math.max(0, c.open - dtSec);
+      const target = (c.open > 0 || walk) ? 1 : 0;
+      c.openAmt = lerp(c.openAmt, target, 0.08);
+      c.reject = Math.max(0, c.reject - dtSec);
+      c.glow *= 0.97;
+      c.energy = Math.max(0, c.energy - 0.0015);
+    });
+
+    // Particles follow the numeric glucose level
+    const target = targetParticles();
+    const flowing = glucose.filter(g => g.phase === 'flow');
+    if (flowing.length < target - 1) glucose.push(newGlucose(gut > 2));
+    removeCooldown -= 1;
+    if (flowing.length > target + 1 && removeCooldown <= 0) {
+      const openCells = cells.filter(c => c.openAmt > 0.5);
+      if (openCells.length) {
+        let best = null, bd = Infinity, bc = null;
+        flowing.forEach(g => openCells.forEach(c => { const d = Math.abs(g.x - c.x); if (d < bd) { bd = d; best = g; bc = c; } }));
+        if (best) { best.phase = 'enter'; best.cell = bc; }
+      } else if (flowing.length > target + 4) {
+        flowing[0].phase = 'fade';
+      }
+      removeCooldown = 6;
+    }
+
+    glucose.forEach(g => {
+      if (g.phase === 'flow') {
+        g.x += g.speed; if (g.x > W + 10) g.x = -10;
+      } else if (g.phase === 'enter') {
+        g.trail.push({ x: g.x, y: g.y }); if (g.trail.length > 12) g.trail.shift();
+        g.x = lerp(g.x, g.cell.x, 0.08); g.y = lerp(g.y, g.cell.y, 0.08);
+        g.alpha -= 0.022;
+        g.cell.glow = Math.min(1, g.cell.glow + 0.05);
+        g.cell.energy = Math.min(1, g.cell.energy + 0.02);
+        if (g.alpha <= 0.08) g.dead = true;
+      } else if (g.phase === 'fade') {
+        g.x += g.speed; g.alpha -= 0.03; if (g.alpha <= 0) g.dead = true;
+      }
+    });
+    glucose = glucose.filter(g => !g.dead);
+  }
+
+  function drawVein() {
+    const [edge, mid] = P.vein;
+    const grad = ctx.createLinearGradient(0, VEIN_Y - VEIN_R, 0, VEIN_Y + VEIN_R);
+    grad.addColorStop(0, edge); grad.addColorStop(0.5, mid); grad.addColorStop(1, edge);
+    ctx.fillStyle = grad; ctx.fillRect(0, VEIN_Y - VEIN_R, W, VEIN_R * 2);
+    const shine = ctx.createLinearGradient(0, VEIN_Y - VEIN_R, 0, VEIN_Y - VEIN_R + 18);
+    shine.addColorStop(0, 'rgba(255,255,255,0.08)'); shine.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = shine; ctx.fillRect(0, VEIN_Y - VEIN_R, W, 18);
+
+    ctx.fillStyle = 'rgba(240,230,211,0.5)'; ctx.font = '13px "DM Sans", sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('torrente sanguíneo →', 12, VEIN_Y - VEIN_R - 10);
+    if (gut > 4) {
+      const a = 0.75 + 0.25 * Math.sin(t * 4);
+      ctx.fillStyle = `rgba(245,166,35,${a})`; ctx.font = 'bold 13px "DM Sans", sans-serif';
+      ctx.fillText('entra glucosa de la comida', 12, VEIN_Y + VEIN_R + 16);
+    }
+    if (G >= 180) {
+      const a = 0.45 + 0.3 * Math.sin(t * 2);
+      ctx.fillStyle = `rgba(255,107,94,${a})`; ctx.font = 'bold 13px "DM Sans", sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('⚠ glucosa alta en sangre', W / 2 - 40, VEIN_Y - VEIN_R - 10);
+    }
+  }
+
+  function drawPancreas() {
+    ctx.save(); ctx.translate(PANC.x, PANC.y);
+    const tired = mode === 'diabetes', busy = mode === 'prediabetes';
+    const pulse = busy ? 1 + 0.06 * Math.sin(t * 9) : 1;
+    ctx.scale(pulse, pulse);
+    ctx.fillStyle = tired ? '#7a2a22' : '#c0392b';
+    ctx.beginPath(); ctx.ellipse(0, 0, 34, 15, -0.25, 0, 6.283); ctx.fill();
+    ctx.fillStyle = tired ? '#9c3a30' : '#e74c3c';
+    ctx.beginPath(); ctx.ellipse(-2, -1, 23, 9, -0.25, 0, 6.283); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = 'rgba(240,230,211,0.75)'; ctx.font = '13px "DM Sans", sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(P.pancreas, PANC.x - 42, PANC.y + 4);
+  }
+
+  function drawRBC(r) {
+    const y = r.y + Math.sin(t * 2 + r.wobble) * 3;
+    ctx.save(); ctx.translate(r.x, y);
+    ctx.beginPath(); ctx.ellipse(0, 0, r.r * 1.4, r.r, 0, 0, 6.283);
+    const g = ctx.createRadialGradient(-3, -3, 1, 0, 0, r.r * 1.4);
+    const dim = mode === 'diabetes';
+    g.addColorStop(0, dim ? '#cc5555' : '#ff6b6b'); g.addColorStop(0.6, dim ? '#922b21' : '#e74c3c'); g.addColorStop(1, dim ? '#5a1010' : '#922b21');
+    ctx.fillStyle = g; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, 0, r.r * 0.5, r.r * 0.35, 0, 0, 6.283); ctx.fillStyle = 'rgba(120,25,25,0.5)'; ctx.fill();
     ctx.restore();
   }
 
   function drawGlucose(g) {
-    if (g.phase === 'entering' && g.trail.length > 1) {
-      for (let i = 0; i < g.trail.length; i++) {
-        const a = (i / g.trail.length) * 0.35 * g.alpha;
-        ctx.save();
-        ctx.globalAlpha = a;
-        ctx.fillStyle = '#f39c12';
-        ctx.shadowColor = '#f39c12';
-        ctx.shadowBlur = 5;
-        const tr = g.r * (i / g.trail.length) * 0.7;
-        ctx.beginPath();
-        ctx.arc(g.trail[i].x, g.trail[i].y, tr, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
+    if (g.phase === 'enter') {
+      g.trail.forEach((p, i) => {
+        ctx.globalAlpha = (i / g.trail.length) * 0.35 * g.alpha; ctx.fillStyle = '#f39c12';
+        ctx.beginPath(); ctx.arc(p.x, p.y, g.r * (i / g.trail.length) * 0.7, 0, 6.283); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
     }
-
-    ctx.save();
-    ctx.globalAlpha = g.alpha;
-    ctx.translate(g.x, g.y);
-    ctx.scale(g.scale, g.scale);
+    const high = G >= 180 ? 0.75 + 0.25 * Math.sin(t * 3 + g.pulse) : 1;
+    ctx.save(); ctx.globalAlpha = g.alpha * high; ctx.translate(g.x, g.y);
+    const s = g.phase === 'enter' ? Math.max(0.2, g.alpha) : 1; ctx.scale(s, s);
     const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, g.r);
-    gr.addColorStop(0, '#fff5aa');
-    gr.addColorStop(0.4, '#ffe033');
-    gr.addColorStop(0.7, '#f39c12');
-    gr.addColorStop(1, '#e67e22');
-    ctx.fillStyle = gr;
-    ctx.shadowColor = '#f39c12';
-    ctx.shadowBlur = g.phase === 'entering' ? 22 : 10;
-    ctx.beginPath();
-    ctx.arc(0, 0, g.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,220,0.8)';
-    ctx.beginPath();
-    ctx.arc(-g.r * 0.25, -g.r * 0.25, g.r * 0.25, 0, Math.PI * 2);
-    ctx.fill();
+    gr.addColorStop(0, '#fff5aa'); gr.addColorStop(0.45, '#ffd22e'); gr.addColorStop(0.8, '#f39c12'); gr.addColorStop(1, G >= 180 ? '#c0392b' : '#e67e22');
+    ctx.fillStyle = gr; ctx.shadowColor = '#f39c12'; ctx.shadowBlur = g.phase === 'enter' ? 18 : 9;
+    ctx.beginPath(); ctx.arc(0, 0, g.r, 0, 6.283); ctx.fill();
     ctx.restore();
+  }
+
+  function keyPath(r) {
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.283); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r, 0); ctx.lineTo(r + 11, 0); ctx.moveTo(r + 8, 0); ctx.lineTo(r + 8, -4); ctx.moveTo(r + 5, 0); ctx.lineTo(r + 5, -3); ctx.stroke();
   }
 
   function drawInsulin(ins) {
-    if (ins.phase === 'docked') return; // drawn inside drawCell instead
-    ctx.save();
-    ctx.globalAlpha = ins.alpha;
-    ctx.translate(ins.x, ins.y);
-    ctx.rotate(ins.angle);
-    const col = ins.phase === 'docking' ? '#00ff99' : '#2ecc71';
-    ctx.strokeStyle = col;
-    ctx.fillStyle = col;
-    ctx.lineWidth = 2;
-    ctx.shadowColor = col;
-    ctx.shadowBlur = ins.phase === 'docking' ? 14 : 6;
-    ctx.beginPath();
-    ctx.arc(0, 0, ins.r, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(ins.r, 0);
-    ctx.lineTo(ins.r + 11, 0);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(ins.r + 8, 0); ctx.lineTo(ins.r + 8, -4);
-    ctx.moveTo(ins.r + 5, 0); ctx.lineTo(ins.r + 5, -3);
-    ctx.stroke();
+    ctx.save(); ctx.globalAlpha = Math.max(0, ins.alpha); ctx.translate(ins.x, ins.y); ctx.rotate(ins.angle);
+    const col = ins.phase === 'reject' ? '#ff6b5e' : (ins.phase === 'dock' || ins.phase === 'used') ? '#00ff99' : '#2ecc71';
+    ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.shadowColor = col; ctx.shadowBlur = ins.phase === 'flow' ? 5 : 12;
+    keyPath(6);
     ctx.restore();
   }
 
-  function drawCell(cell) {
-    ctx.save();
-    ctx.translate(cell.x, cell.y);
-
-    if (cell.glow > 0.05) {
-      const ringR = cell.r + 8 + (1 - cell.glow) * 20;
-      ctx.beginPath();
-      ctx.arc(0, 0, ringR, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(243,156,18,${cell.glow * 0.5})`;
-      ctx.lineWidth = 3;
-      ctx.shadowColor = '#f39c12';
-      ctx.shadowBlur = 14;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
+  function drawCell(c) {
+    const walk = walking();
+    ctx.save(); ctx.translate(c.x, c.y);
+    if (c.glow > 0.05) {
+      ctx.beginPath(); ctx.arc(0, 0, c.r + 8 + (1 - c.glow) * 18, 0, 6.283);
+      ctx.strokeStyle = `rgba(243,156,18,${c.glow * 0.5})`; ctx.lineWidth = 3; ctx.stroke();
     }
+    const eb = c.glow;
+    const body = ctx.createRadialGradient(-10, -10, 2, 0, 0, c.r);
+    body.addColorStop(0, `rgb(${Math.round(lerp(93, 150, eb))},${Math.round(lerp(173, 185, eb))},${Math.round(lerp(226, 100, eb))})`);
+    body.addColorStop(0.6, `rgb(${Math.round(lerp(41, 90, eb))},${Math.round(lerp(128, 130, eb))},${Math.round(lerp(185, 50, eb))})`);
+    body.addColorStop(1, '#1a5276');
+    ctx.fillStyle = body; ctx.beginPath(); ctx.arc(0, 0, c.r, 0, 6.283); ctx.fill();
+    const resistant = mode !== 'sana';
+    ctx.strokeStyle = c.openAmt > 0.5 ? '#2ecc71' : (mode === 'diabetes' ? '#c0392b' : resistant ? '#d68910' : '#5dade2');
+    ctx.lineWidth = walk ? 4 : 3; ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, c.r * 0.32, 0, 6.283); ctx.fillStyle = 'rgba(20,60,100,0.85)'; ctx.fill();
 
-    const eb = cell.glow;
-    const bg2 = ctx.createRadialGradient(-10, -10, 2, 0, 0, cell.r);
-    bg2.addColorStop(0, `rgb(${Math.round(lerp(93,150,eb))},${Math.round(lerp(173,185,eb))},${Math.round(lerp(226,100,eb))})`);
-    bg2.addColorStop(0.6, `rgb(${Math.round(lerp(41,90,eb))},${Math.round(lerp(128,130,eb))},${Math.round(lerp(185,50,eb))})`);
-    bg2.addColorStop(1, '#1a5276');
-    ctx.fillStyle = bg2;
-    ctx.shadowColor = cell.glow > 0.1 ? '#f39c12' : 'transparent';
-    ctx.shadowBlur = cell.glow > 0.1 ? 16 * cell.glow : 0;
-    ctx.beginPath();
-    ctx.arc(0, 0, cell.r, 0, Math.PI * 2);
-    ctx.fill();
+    const recY = -c.r;
+    ctx.strokeStyle = c.reject > 0 ? '#ff6b5e' : c.open > 0 ? '#00ff99' : '#7fb3d3'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(-8, recY); ctx.lineTo(8, recY); ctx.moveTo(0, recY); ctx.lineTo(0, recY + 8); ctx.stroke();
 
-    const memCol = cell.openAmount > 0.5 ? '#2ecc71' : '#5dade2';
-    ctx.strokeStyle = memCol;
-    ctx.lineWidth = 3;
-    ctx.shadowBlur = 0;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(0, 0, cell.r * 0.32, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(20,60,100,0.85)';
-    ctx.fill();
-
-    // ── RECEPTOR SITE (top of cell) ──
-    const recY = -cell.r;
-    ctx.strokeStyle = cell.insulinDocked ? '#00ff99' : '#7fb3d3';
-    ctx.lineWidth = 3;
-    ctx.shadowColor = cell.insulinDocked ? '#00ff99' : 'transparent';
-    ctx.shadowBlur = cell.insulinDocked ? 10 : 0;
-    ctx.beginPath();
-    ctx.moveTo(-8, recY); ctx.lineTo(8, recY);
-    ctx.moveTo(0, recY); ctx.lineTo(0, recY + 8);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // ── CHANNEL (opens proportional to openAmount) ──
-    if (cell.openAmount > 0.05) {
-      const halfGap = cell.openAmount * 10;
-      ctx.strokeStyle = `rgba(39,174,96,${cell.openAmount})`;
-      ctx.lineWidth = 5;
-      ctx.shadowColor = '#2ecc71';
-      ctx.shadowBlur = 8 * cell.openAmount;
-      ctx.beginPath();
-      ctx.moveTo(-halfGap, recY - 2);
-      ctx.lineTo(-halfGap, recY + 12);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(halfGap, recY - 2);
-      ctx.lineTo(halfGap, recY + 12);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-
-      if (cell.state === 'open' || cell.state === 'absorbing') {
-        const arrowY = recY + 4 + Math.sin(t * 5) * 3;
-        ctx.fillStyle = `rgba(46,204,113,${0.5 + cell.openAmount * 0.5})`;
-        ctx.shadowColor = '#2ecc71';
-        ctx.shadowBlur = 6;
-        ctx.beginPath();
-        ctx.moveTo(0, arrowY + 8);
-        ctx.lineTo(-5, arrowY);
-        ctx.lineTo(5, arrowY);
-        ctx.closePath();
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
+    if (c.openAmt > 0.05) {
+      const gap = c.openAmt * 10;
+      ctx.strokeStyle = `rgba(39,174,96,${c.openAmt})`; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(-gap, recY - 2); ctx.lineTo(-gap, recY + 12); ctx.moveTo(gap, recY - 2); ctx.lineTo(gap, recY + 12); ctx.stroke();
+      const ay = recY + 4 + Math.sin(t * 5) * 3;
+      ctx.fillStyle = `rgba(46,204,113,${0.4 + c.openAmt * 0.6})`;
+      ctx.beginPath(); ctx.moveTo(0, ay + 8); ctx.lineTo(-5, ay); ctx.lineTo(5, ay); ctx.closePath(); ctx.fill();
     }
-
-    // ── DOCKED INSULIN KEY drawn at receptor ──
-    if (cell.insulinDocked) {
-      ctx.save();
-      ctx.translate(0, recY - 14);
-      ctx.rotate(Math.PI / 2);
-      ctx.strokeStyle = '#00ff99';
-      ctx.fillStyle = '#00ff99';
-      ctx.lineWidth = 2;
-      ctx.shadowColor = '#00ff99';
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.arc(0, 0, 5, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(5, 0); ctx.lineTo(14, 0);
-      ctx.moveTo(11, 0); ctx.lineTo(11, -3);
-      ctx.moveTo(8, 0); ctx.lineTo(8, -3);
-      ctx.stroke();
-      ctx.restore();
+    if (c.reject > 0) {
+      ctx.globalAlpha = Math.min(1, c.reject * 1.5); ctx.strokeStyle = '#ff6b5e'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(-9, recY - 24); ctx.lineTo(9, recY - 6); ctx.moveTo(9, recY - 24); ctx.lineTo(-9, recY - 6); ctx.stroke();
+      ctx.globalAlpha = 1;
     }
-
-    // Energy sparks inside
-    const sparkCount = Math.round(cell.energy * 8);
-    for (let i = 0; i < sparkCount; i++) {
-      const a = (i / sparkCount) * Math.PI * 2 + t * 2.5;
-      const ex = Math.cos(a) * cell.r * 0.52;
-      const ey = Math.sin(a) * cell.r * 0.52;
-      const sa = 0.5 + 0.5 * Math.sin(t * 5 + i);
-      ctx.fillStyle = `rgba(255,220,60,${sa})`;
-      ctx.shadowColor = '#f39c12';
-      ctx.shadowBlur = 7;
-      ctx.beginPath();
-      ctx.arc(ex, ey, 3.2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    if (cell.glow > 0.7) {
-      ctx.fillStyle = `rgba(255,240,100,${(cell.glow - 0.7) * 2.5})`;
-      ctx.font = 'bold 16px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = '#ffe033';
-      ctx.shadowBlur = 10;
-      ctx.fillText('⚡', 0, 5);
-    }
-
-    ctx.restore();
-
-    ctx.fillStyle = 'rgba(240,230,211,0.55)';
-    ctx.font = '11px DM Sans';
-    ctx.textAlign = 'center';
-    ctx.shadowBlur = 0;
-    ctx.fillText('célula', cell.x, cell.y + cell.r + 14);
-  }
-
-  function drawPancreas() {
-    const px = W - 70, py = 40;
-    ctx.save();
-    ctx.translate(px, py);
-    ctx.fillStyle = '#c0392b';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 35, 18, -0.3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#e74c3c';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 25, 12, -0.3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(240,230,211,0.7)';
-    ctx.font = '10px DM Sans';
-    ctx.textAlign = 'center';
-    ctx.fillText('Páncreas', 0, 34);
-
-    if (Math.sin(t * 1.5) > 0.5) {
-      ctx.fillStyle = '#2ecc71';
-      ctx.shadowColor = '#2ecc71';
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.arc(0, 28, 4, 0, Math.PI * 2);
-      ctx.fill();
+    const n = Math.round(c.energy * 8);
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * 6.283 + t * 2.5;
+      ctx.fillStyle = `rgba(255,220,60,${0.5 + 0.5 * Math.sin(t * 5 + i)})`;
+      ctx.beginPath(); ctx.arc(Math.cos(a) * c.r * 0.52, Math.sin(a) * c.r * 0.52, 3.2, 0, 6.283); ctx.fill();
     }
     ctx.restore();
+    ctx.fillStyle = 'rgba(240,230,211,0.6)'; ctx.font = '13px "DM Sans", sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(walk ? 'músculo activo' : 'célula', c.x, c.y + c.r + 16);
   }
 
-  function update() {
-    rbcs.forEach(r => {
-      r.x += r.speed;
-      if (r.x > W + 20) r.x = -20;
-    });
-
-    // ── INSULIN: flowing → docking → docked ──
-    insulins.forEach(ins => {
-      if (ins.phase === 'flowing') {
-        ins.x += ins.speed;
-        ins.angle += 0.04;
-        if (ins.x > W + 10) ins.x = -10;
-
-        for (const cell of cells) {
-          if (cell.insulinDocked || cell.state !== 'closed') continue;
-          const dx = ins.x - cell.x;
-          const dy = ins.y - (cell.y - cell.r - 14);
-          if (Math.sqrt(dx*dx + dy*dy) < 70 && Math.random() < 0.03) {
-            ins.phase = 'docking';
-            ins.targetCell = cell;
-            cell.state = 'unlocking';
-            break; // one key per cell, one cell per key
-          }
-        }
-      }
-
-      if (ins.phase === 'docking' && ins.targetCell) {
-        const tx = ins.targetCell.x;
-        const ty = ins.targetCell.y - ins.targetCell.r - 14;
-        ins.x = lerp(ins.x, tx, 0.1);
-        ins.y = lerp(ins.y, ty, 0.1);
-        ins.angle = lerp(ins.angle, Math.PI / 2, 0.1);
-
-        const dx = ins.x - tx, dy = ins.y - ty;
-        if (Math.sqrt(dx*dx + dy*dy) < 4) {
-          ins.phase = 'docked';
-          ins.targetCell.insulinDocked = true;
-          ins.targetCell.state = 'open';
-        }
-      }
-    });
-
-    // ── CELLS: open channel over time, then close and reset ──
-    cells.forEach(cell => {
-      if (cell.state === 'unlocking') {
-        cell.openAmount = Math.min(1, cell.openAmount + 0.02);
-      }
-      if (cell.state === 'open' || cell.state === 'absorbing') {
-        cell.openAmount = Math.min(1, cell.openAmount + 0.03);
-        cell.dockedInsTimer++;
-        if (cell.dockedInsTimer > 300) {
-          cell.state = 'closed';
-          cell.insulinDocked = false;
-          cell.openAmount = 0;
-          cell.dockedInsTimer = 0;
-          insulins.forEach(ins => {
-            if (ins.targetCell === cell) {
-              ins.phase = 'flowing';
-              ins.targetCell = null;
-              ins.x = cell.x + rand(-40, 40);
-              ins.y = VEIN_Y + rand(-30, 30);
-            }
-          });
-        }
-      }
-      cell.glow *= 0.97;
-      cell.energy = Math.max(0, cell.energy - 0.001);
-    });
-
-    // ── GLUCOSE: flowing → entering (absorbed) ──
-    glucose.forEach(g => {
-      if (g.phase === 'flowing') {
-        g.x += g.speed;
-        if (g.x > W + 10) g.x = -10;
-
-        for (const cell of cells) {
-          if (cell.state !== 'open' && cell.state !== 'absorbing') continue;
-          const dx = g.x - cell.x;
-          const dy = g.y - (cell.y - cell.r);
-          if (Math.sqrt(dx*dx + dy*dy) < 90 && Math.random() < 0.035) {
-            g.phase = 'entering';
-            g.targetCell = cell;
-            cell.state = 'absorbing';
-            break;
-          }
-        }
-      }
-
-      if (g.phase === 'entering' && g.targetCell) {
-        g.trail.push({ x: g.x, y: g.y });
-        if (g.trail.length > 12) g.trail.shift();
-
-        const tx = g.targetCell.x;
-        const ty = g.targetCell.y;
-        g.x = lerp(g.x, tx, 0.09);
-        g.y = lerp(g.y, ty, 0.09);
-        g.alpha -= 0.025;
-        g.scale = Math.max(0.1, g.alpha);
-
-        g.targetCell.glow = Math.min(1, g.targetCell.glow + 0.05);
-        g.targetCell.energy = Math.min(1, g.targetCell.energy + 0.02);
-
-        if (g.alpha <= 0.08) {
-          g.x = rand(-20, W);
-          g.y = VEIN_Y + rand(-VEIN_R * 0.55, VEIN_R * 0.55);
-          g.alpha = 1; g.scale = 1;
-          g.phase = 'flowing';
-          g.targetCell = null;
-          g.trail = [];
-          g.speed = rand(0.8, 1.4);
-        }
-      }
-    });
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-
+  function drawScene() {
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#080810');
-    bg.addColorStop(1, '#0e0e20');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
-
-    drawVein();
-    drawPancreas();
+    bg.addColorStop(0, mode === 'diabetes' ? '#0d0710' : '#080810'); bg.addColorStop(1, mode === 'diabetes' ? '#160a14' : '#0e0e20');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    drawVein(); drawPancreas();
     cells.forEach(drawCell);
     rbcs.forEach(drawRBC);
     insulins.forEach(drawInsulin);
     glucose.forEach(drawGlucose);
-
-    ctx.fillStyle = 'rgba(240,230,211,0.4)';
-    ctx.font = '11px DM Sans';
-    ctx.textAlign = 'left';
-    ctx.fillText('↔ torrente sanguíneo', 10, VEIN_Y - VEIN_R - 8);
-
-    t += 0.016;
-    update();
-    requestAnimationFrame(draw);
+    if (paused) {
+      ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#f0e6d3'; ctx.font = '600 20px "DM Sans", sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('En pausa', W / 2, H / 2);
+    }
   }
 
-  draw();
-})();
-
-// ─── DIABETES SCENE ──────────────────────────────────────────────────────────
-(function diabetesScene() {
-  const canvas = document.getElementById('canvas-diabetes');
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const VEIN_Y = H * 0.42, VEIN_R = 70;
-
-  let t = 0;
-
-  const rbcs = Array.from({length: 6}, () => ({
-    x: rand(0, W), y: VEIN_Y + rand(-20, 20),
-    speed: rand(0.4, 0.8), r: rand(10, 14), wobble: rand(0, Math.PI * 2)
-  }));
-
-  const glucose = Array.from({length: 22}, () => ({
-    x: rand(0, W), y: VEIN_Y + rand(-VEIN_R * 0.7, VEIN_R * 0.7),
-    speed: rand(0.3, 0.8), r: rand(4, 8), alpha: 1, pulse: rand(0, Math.PI * 2)
-  }));
-
-  const cells = [
-    { x: 120, y: H * 0.80, r: 38 },
-    { x: 290, y: H * 0.80, r: 38 },
-    { x: 460, y: H * 0.80, r: 38 },
-  ];
-
-  const blockedInsulins = cells.map(c => ({ x: c.x, y: c.y - c.r - 12, cell: c, angle: 0 }));
-
-  function drawVein() {
-    const grad = ctx.createLinearGradient(0, VEIN_Y - VEIN_R, 0, VEIN_Y + VEIN_R);
-    grad.addColorStop(0, '#3d0000');
-    grad.addColorStop(0.3, '#600000');
-    grad.addColorStop(0.5, '#750000');
-    grad.addColorStop(0.7, '#600000');
-    grad.addColorStop(1, '#3d0000');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.rect(0, VEIN_Y - VEIN_R, W, VEIN_R * 2);
-    ctx.fill();
-  }
-
-  function drawRBC(rbc) {
-    const y = rbc.y + Math.sin(t * 1.5 + rbc.wobble) * 2;
-    ctx.save();
-    ctx.translate(rbc.x, y);
-    ctx.beginPath();
-    ctx.ellipse(0, 0, rbc.r * 1.4, rbc.r, 0, 0, Math.PI * 2);
-    const g = ctx.createRadialGradient(-3, -3, 1, 0, 0, rbc.r * 1.4);
-    g.addColorStop(0, '#cc5555');
-    g.addColorStop(0.6, '#922b21');
-    g.addColorStop(1, '#5a1010');
-    ctx.fillStyle = g;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(0, 0, rbc.r * 0.5, rbc.r * 0.35, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(100,20,20,0.5)';
-    ctx.fill();
-    ctx.restore();
-  }
-
-  function drawGlucose(g) {
-    const pulse = 0.7 + 0.3 * Math.sin(t * 3 + g.pulse);
-    ctx.save();
-    ctx.globalAlpha = pulse;
-    ctx.translate(g.x, g.y);
-    ctx.shadowColor = '#f39c12';
-    ctx.shadowBlur = 15;
-    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, g.r);
-    gr.addColorStop(0, '#ffe066');
-    gr.addColorStop(0.5, '#f39c12');
-    gr.addColorStop(1, '#c0392b');
-    ctx.fillStyle = gr;
-    ctx.beginPath();
-    ctx.arc(0, 0, g.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-
-  function drawCell(cell) {
-    ctx.save();
-    ctx.translate(cell.x, cell.y);
-
-    const g = ctx.createRadialGradient(-10, -10, 2, 0, 0, cell.r);
-    g.addColorStop(0, '#4a7a9b');
-    g.addColorStop(0.5, '#1f618d');
-    g.addColorStop(1, '#154360');
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(0, 0, cell.r, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = '#e74c3c';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(0, 0, cell.r * 0.35, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(15,40,70,0.8)';
-    ctx.fill();
-
-    const cx = 0, cy = -cell.r + 2;
-    ctx.strokeStyle = '#e74c3c';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(cx - 8, cy - 8); ctx.lineTo(cx + 8, cy + 8);
-    ctx.moveTo(cx + 8, cy - 8); ctx.lineTo(cx - 8, cy + 8);
-    ctx.stroke();
-
-    ctx.restore();
-    ctx.fillStyle = 'rgba(240,230,211,0.6)';
-    ctx.font = '11px DM Sans';
-    ctx.textAlign = 'center';
-    ctx.fillText('célula', cell.x, cell.y + cell.r + 14);
-  }
-
-  function drawBlockedInsulin(ins) {
-    const bounce = Math.abs(Math.sin(t * 3 + ins.cell.x)) * 8;
-    const iy = ins.y - bounce;
-    ctx.save();
-    ctx.translate(ins.x, iy);
-    ctx.rotate(t * 2);
-    ctx.strokeStyle = '#2ecc71';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = '#2ecc71';
-    ctx.shadowBlur = 6;
-    ctx.beginPath();
-    ctx.arc(0, 0, 6, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(6, 0); ctx.lineTo(16, 0);
-    ctx.lineTo(16, 3);
-    ctx.moveTo(13, 0); ctx.lineTo(13, -3);
-    ctx.stroke();
-
-    ctx.strokeStyle = 'rgba(231,76,60,0.9)';
-    ctx.lineWidth = 2;
-    ctx.shadowBlur = 0;
-    ctx.beginPath();
-    ctx.moveTo(-10, -10); ctx.lineTo(10, 10);
-    ctx.moveTo(10, -10); ctx.lineTo(-10, 10);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawPancreas() {
-    const px = W - 70, py = 40;
-    ctx.save();
-    ctx.translate(px, py);
-    ctx.fillStyle = '#922b21';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 35, 18, -0.3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#c0392b';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 25, 12, -0.3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(240,230,211,0.7)';
-    ctx.font = '10px DM Sans';
-    ctx.textAlign = 'center';
-    ctx.fillText('Páncreas', 0, 34);
-    ctx.fillText('(agotado)', 0, 46);
-    ctx.restore();
-  }
-
-  function drawWarning() {
-    const alpha = 0.4 + 0.3 * Math.sin(t * 2);
-    ctx.fillStyle = `rgba(231,76,60,${alpha})`;
-    ctx.font = 'bold 11px DM Sans';
-    ctx.textAlign = 'center';
-    ctx.fillText('⚠ Glucosa elevada en sangre', W / 2, VEIN_Y - VEIN_R - 10);
-  }
-
-  function update() {
-    rbcs.forEach(r => {
-      r.x += r.speed;
-      if (r.x > W + 20) r.x = -20;
+  // ─── HISTORY CHART ────────────────────────────────────────────────────────
+  const hist = document.getElementById('series');
+  const hctx = hist.getContext('2d');
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  function drawHistory() {
+    const w = hist.clientWidth, h = hist.clientHeight;
+    if (hist.width !== Math.round(w * dpr)) { hist.width = Math.round(w * dpr); hist.height = Math.round(h * dpr); }
+    hctx.setTransform(dpr, 0, 0, dpr, 0, 0); hctx.clearRect(0, 0, w, h);
+    const padL = 34, padR = 10, padT = 8, padB = 22;
+    const yMin = 50, yMax = 300;
+    const X = i => padL + (i / 240) * (w - padL - padR);
+    const Y = v => padT + (1 - (Math.min(yMax, Math.max(yMin, v)) - yMin) / (yMax - yMin)) * (h - padT - padB);
+    const muted = css('--muted'), line = css('--line');
+    hctx.fillStyle = css('--band'); hctx.fillRect(padL, Y(140), w - padL - padR, Y(70) - Y(140));
+    hctx.font = '13px "DM Sans", sans-serif'; hctx.textAlign = 'right'; hctx.textBaseline = 'middle';
+    [70, 140, 200, 250].forEach(v => {
+      hctx.strokeStyle = line; hctx.lineWidth = 1; hctx.beginPath(); hctx.moveTo(padL, Y(v)); hctx.lineTo(w - padR, Y(v)); hctx.stroke();
+      hctx.fillStyle = muted; hctx.fillText(v, padL - 6, Y(v));
     });
-    glucose.forEach(g => {
-      g.x += g.speed;
-      if (g.x > W + 10) g.x = -10;
-    });
+    hctx.textAlign = 'center'; hctx.textBaseline = 'alphabetic';
+    ['−4 h', '−3 h', '−2 h', '−1 h', 'ahora'].forEach((l, i) => { hctx.fillStyle = muted; hctx.textAlign = i === 0 ? 'left' : i === 4 ? 'right' : 'center'; hctx.fillText(l, X(i * 60), h - 5); });
+    if (series.length < 2) return;
+    const off = 240 - (series.length - 1);
+    const lineCol = mode === 'diabetes' ? css('--danger') : mode === 'prediabetes' ? css('--warn') : css('--insulin');
+    hctx.beginPath();
+    series.forEach((v, i) => { const x = X(off + i), y = Y(v); i ? hctx.lineTo(x, y) : hctx.moveTo(x, y); });
+    hctx.strokeStyle = lineCol; hctx.lineWidth = 2.5; hctx.lineJoin = 'round'; hctx.stroke();
+    const lx = X(240), ly = Y(series[series.length - 1]);
+    hctx.fillStyle = lineCol; hctx.beginPath(); hctx.arc(lx, ly, 4.5, 0, 6.283); hctx.fill();
   }
 
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#0a0008');
-    bg.addColorStop(1, '#120010');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
+  // ─── UI ───────────────────────────────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+  const ui = { val: $('val'), trend: $('trend'), chip: $('chip'), clock: $('clock'), peak: $('peak'), over: $('over'), ins: $('ins'), narr: $('narration'), nums: $('nums') };
+  let lastNarr = '';
 
-    drawVein();
-    drawWarning();
-    drawPancreas();
-    cells.forEach(drawCell);
-    blockedInsulins.forEach(drawBlockedInsulin);
-    rbcs.forEach(drawRBC);
-    glucose.forEach(drawGlucose);
-
-    ctx.fillStyle = 'rgba(240,230,211,0.4)';
-    ctx.font = '11px DM Sans';
-    ctx.textAlign = 'left';
-    ctx.fillText('↔ torrente sanguíneo', 10, VEIN_Y - VEIN_R - 26);
-
-    t += 0.016;
-    update();
-    requestAnimationFrame(draw);
+  function clockLabel() {
+    const total = 12 * 60 + Math.floor(simMin);
+    let h = Math.floor(total / 60) % 24; const m = total % 60;
+    const suf = h >= 12 ? 'p. m.' : 'a. m.'; h = h % 12 || 12;
+    return `${h}:${String(m).padStart(2, '0')} ${suf}`;
   }
 
-  draw();
+  const TEXT = {
+    eating: {
+      sana: 'Comiste. La glucosa del plato pasa a la sangre y el páncreas suelta insulina enseguida.',
+      prediabetes: 'Comiste. Las células responden menos a la insulina, así que el páncreas tiene que soltar mucha más de lo normal.',
+      diabetes: 'Comiste. La insulina llega, pero casi ninguna célula le abre la puerta (fíjate en las X rojas). La glucosa se queda en la sangre.',
+    },
+    falling: {
+      sana: 'Las células abrieron y están usando la glucosa como energía. En menos de dos horas vuelve a lo normal.',
+      prediabetes: 'Baja, pero más despacio. Así se ve la prediabetes, y todavía se puede revertir con cambios de hábitos.',
+      diabetes: 'Se queda alta por horas. Con los años, esto daña los vasos sanguíneos, los nervios, los ojos y los riñones.',
+    },
+    rest: {
+      sana: 'Sin comer, la glucosa se queda entre 70 y 99 mg/dL. Todo está en balance.',
+      prediabetes: 'Aun sin comer, la glucosa ya está entre 100 y 125 mg/dL, aunque la persona se sienta bien.',
+      diabetes: 'Aun sin comer, la glucosa se queda sobre 126 mg/dL porque el hígado sigue soltando azúcar.',
+    },
+  };
+
+  function narrationText() {
+    if (walking()) return mode === 'sana'
+      ? 'Caminando, los músculos usan glucosa por su cuenta. Aquí casi no hace falta, pero igual ayuda.'
+      : 'Al caminar, los músculos absorben glucosa aunque la insulina no funcione bien. Mira cómo baja la línea.';
+    if (gut > 25) return TEXT.eating[mode];
+    if (G > P.basal + 12) return TEXT.falling[mode];
+    return TEXT.rest[mode];
+  }
+
+  function updateUI() {
+    const v = Math.round(G);
+    ui.val.textContent = v;
+    const prev = series.length > 15 ? series[series.length - 16] : G;
+    const d = G - prev;
+    const [arrow, label] = d > 20 ? ['↑', 'subiendo rápido'] : d > 6 ? ['↗', 'subiendo'] : d < -20 ? ['↓', 'bajando rápido'] : d < -6 ? ['↘', 'bajando'] : ['→', 'estable'];
+    ui.trend.textContent = arrow; ui.trend.setAttribute('aria-label', label);
+    const level = v >= 180 ? 'veryhigh' : v >= 140 ? 'high' : 'ok';
+    ui.chip.dataset.level = level;
+    ui.chip.textContent = level === 'veryhigh' ? 'Alta' : level === 'high' ? 'Elevada' : (v >= 100 && gut < 2 && G - P.basal < 5 ? 'Elevada en ayunas' : 'En rango');
+    if (ui.chip.textContent === 'Elevada en ayunas') ui.chip.dataset.level = 'high';
+    ui.clock.textContent = clockLabel();
+    ui.peak.textContent = `${Math.round(peak)} mg/dL`;
+    const om = Math.round(overMin);
+    ui.over.textContent = om >= 60 ? `${Math.floor(om / 60)} h ${om % 60} min` : `${om} min`;
+    const n = insulins.filter(i => i.phase !== 'used').length;
+    ui.ins.textContent = `${n} ${n === 1 ? 'llave' : 'llaves'}`;
+    const txt = narrationText();
+    if (txt !== lastNarr) { ui.narr.textContent = txt; lastNarr = txt; }
+  }
+
+  function eat() { gut = Math.min(gut + MEAL, 220); lastMealAt = simMin; }
+
+  function setMode(m, fromHash) {
+    if (!MODES[m]) m = 'sana';
+    mode = m; P = MODES[m];
+    G = P.basal; gut = 0; simMin = 0; walkUntil = -1; peak = G; overMin = 0;
+    series = Array.from({ length: 241 }, () => P.basal);
+    resetScene(); eat();
+    document.querySelectorAll('.mode').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    ui.nums.dataset.current = m;
+    if (!fromHash && location.hash.slice(1) !== m) location.hash = m;
+  }
+
+  document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h !== mode && MODES[h]) setMode(h, true); });
+  $('btn-eat').addEventListener('click', eat);
+  $('btn-walk').addEventListener('click', () => { walkUntil = simMin + 20; });
+  const pauseBtn = $('btn-pause');
+  function setPaused(p) { paused = p; pauseBtn.textContent = p ? 'Continuar' : 'Pausar'; pauseBtn.setAttribute('aria-pressed', String(p)); }
+  pauseBtn.addEventListener('click', () => setPaused(!paused));
+
+  // ─── LOOP ─────────────────────────────────────────────────────────────────
+  let last = performance.now(), histAcc = 0;
+  function frame(now) {
+    const dtSec = Math.min(0.05, (now - last) / 1000); last = now;
+    if (!paused) {
+      t += dtSec;
+      const dtMin = dtSec * SIM_MIN_PER_SEC;
+      stepModel(dtMin);
+      histAcc += dtMin;
+      while (histAcc >= 1) { series.push(G); histAcc -= 1; }
+      if (series.length > 241) series.splice(0, series.length - 241);
+      update(dtSec);
+      // Idle loop: a new meal about every 4 simulated hours keeps the demo alive
+      if (simMin - lastMealAt > 240) eat();
+    }
+    drawScene();
+    drawHistory();
+    updateUI();
+    requestAnimationFrame(frame);
+  }
+
+  const initial = location.hash.slice(1);
+  setMode(MODES[initial] ? initial : 'sana', true);
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) setPaused(true);
+  requestAnimationFrame(frame);
 })();
-
-// ─── TAB SWITCHING ───────────────────────────────────────────────────────────
-function switchTab(scene, btn) {
-  document.querySelectorAll('.scene-wrap').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('scene-' + scene).classList.add('active');
-  btn.classList.add('active');
-}
 </script>
-</body>
-</html>
