@@ -11,9 +11,13 @@ run = lambda *a: subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', *a], chec
 parts = []
 for i, s in enumerate(segs):
     a, b = s['voz']; out = f'{TMP}/frase{i:02d}.wav'
-    run('-ss', f'{max(0, a - 0.06):.3f}', '-to', f'{b + 0.15:.3f}', '-i', f'{V}/narracion-nova.mp3',
-        '-af', f'afade=t=out:st={b - a + 0.1:.3f}:d=0.1', '-ar', '44100', '-ac', '2', out)
-    parts.append((out, s['en'] - 0.06))
+    if 'archivo' in s:   # frase generada por separado (ElevenLabs)
+        run('-i', f'{D}/{s["archivo"]}', '-ar', '44100', '-ac', '2', out)
+        parts.append((out, s['en']))
+    else:                # tramo de la narración completa (versión anterior)
+        run('-ss', f'{max(0, a - 0.06):.3f}', '-to', f'{b + 0.15:.3f}', '-i', f'{V}/narracion-nova.mp3',
+            '-af', f'afade=t=out:st={b - a + 0.1:.3f}:d=0.1', '-ar', '44100', '-ac', '2', out)
+        parts.append((out, s['en'] - 0.06))
 inputs = sum([['-i', p] for p, _ in parts], [])
 f = ';'.join(f'[{i}:a]adelay={int(t * 1000)}|{int(t * 1000)}[d{i}]' for i, (_, t) in enumerate(parts))
 f += ';' + ''.join(f'[d{i}]' for i in range(len(parts))) + f'amix=inputs={len(parts)}:normalize=0,apad=whole_dur={TOTAL}[v]'

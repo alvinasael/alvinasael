@@ -1,0 +1,86 @@
+{
+ "0": {
+  "archivo": "frase00.mp3",
+  "dur": 6.269,
+  "habla_ini": 0.108,
+  "habla_fin": 6.269
+ },
+ "1": {
+  "archivo": "frase01.mp3",
+  "dur": 6.687,
+  "habla_ini": 0.0,
+  "habla_fin": 6.687
+ },
+ "2": {
+  "archivo": "frase02.mp3",
+  "dur": 7.549,
+  "habla_ini": 0.0,
+  "habla_fin": 7.549
+ },
+ "3": {
+  "archivo": "frase03.mp3",
+  "dur": 5.799,
+  "habla_ini": 0.0,
+  "habla_fin": 5.799
+ },
+ "4": {
+  "archivo": "frase04.mp3",
+  "dur": 2.926,
+  "habla_ini": 0.102,
+  "habla_fin": 2.926
+ },
+ "5": {
+  "archivo": "frase05.mp3",
+  "dur": 3.318,
+  "habla_ini": 0.0,
+  "habla_fin": 3.318
+ },
+ "6": {
+  "archivo": "frase06.mp3",
+  "dur": 2.691,
+  "habla_ini": 0.0,
+  "habla_fin": 2.691
+ },
+ "7": {
+  "archivo": "frase07.mp3",
+  "dur": 3.082,
+  "habla_ini": 0.0,
+  "habla_fin": 3.082
+ },
+ "8": {
+  "archivo": "frase08.mp3",
+  "dur": 3.971,
+  "habla_ini": 0.0,
+  "habla_fin": 3.971
+ },
+ "9": {
+  "archivo": "frase09.mp3",
+  "dur": 3.318,
+  "habla_ini": 0.0,
+  "habla_fin": 3.318
+ },
+ "10": {
+  "archivo": "frase10.mp3",
+  "dur": 3.318,
+  "habla_ini": 0.0,
+  "habla_fin": 3.318
+ },
+ "11": {
+  "archivo": "frase11.mp3",
+  "dur": 6.191,
+  "habla_ini": 0.0,
+  "habla_fin": 6.191
+ },
+ "12": {
+  "archivo": "frase12.mp3",
+  "dur": 6.113,
+  "habla_ini": 0.0,
+  "habla_fin": 6.113
+ },
+ "13": {
+  "archivo": "frase13.mp3",
+  "dur": 4.598,
+  "habla_ini": 0.0,
+  "habla_fin": 4.598
+ }
+}

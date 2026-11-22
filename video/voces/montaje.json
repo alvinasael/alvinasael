@@ -1,160 +1,175 @@
 {
+ "voz": "ElevenLabs \u00b7 Nutrici\u00f3n.Health \u2013 Educadora (eleven_v4)",
  "segmentos": [
   {
    "oa": 0,
    "ob": 6,
    "na": 0,
-   "nb": 6.68,
+   "nb": 7.069,
+   "en": 0.35,
+   "archivo": "voces/elevenlabs/frases/frase00.mp3",
    "voz": [
-    0.1,
-    5.88
-   ],
-   "en": 0.35
+    0,
+    6.269
+   ]
   },
   {
    "oa": 6,
    "ob": 13,
-   "na": 6.68,
-   "nb": 12.54,
+   "na": 7.069,
+   "nb": 14.556,
+   "en": 7.419,
+   "archivo": "voces/elevenlabs/frases/frase01.mp3",
    "voz": [
-    6.12,
-    11.08
-   ],
-   "en": 7.03
+    0,
+    6.687
+   ]
   },
   {
    "oa": 13,
    "ob": 20,
-   "na": 12.54,
-   "nb": 18.97,
+   "na": 14.556,
+   "nb": 22.905,
+   "en": 14.906,
+   "archivo": "voces/elevenlabs/frases/frase02.mp3",
    "voz": [
-    11.29,
-    16.82
-   ],
-   "en": 12.89
+    0,
+    7.549
+   ]
   },
   {
    "oa": 20,
    "ob": 27,
-   "na": 18.97,
-   "nb": 23.65,
+   "na": 22.905,
+   "nb": 29.504,
+   "en": 23.255,
+   "archivo": "voces/elevenlabs/frases/frase03.mp3",
    "voz": [
-    17.02,
-    20.8
-   ],
-   "en": 19.32
+    0,
+    5.799
+   ]
   },
   {
    "oa": 27,
    "ob": 32,
-   "na": 23.65,
-   "nb": 26.65,
+   "na": 29.504,
+   "nb": 33.23,
+   "en": 29.854,
+   "archivo": "voces/elevenlabs/frases/frase04.mp3",
    "voz": [
-    21.51,
-    23.45
-   ],
-   "en": 24.0
+    0,
+    2.926
+   ]
   },
   {
    "oa": 32,
    "ob": 37,
-   "na": 26.65,
-   "nb": 29.66,
+   "na": 33.23,
+   "nb": 37.348,
+   "en": 33.58,
+   "archivo": "voces/elevenlabs/frases/frase05.mp3",
    "voz": [
-    23.82,
-    25.93
-   ],
-   "en": 27.0
+    0,
+    3.318
+   ]
   },
   {
    "oa": 37,
    "ob": 42,
-   "na": 29.66,
-   "nb": 32.66,
+   "na": 37.348,
+   "nb": 40.839,
+   "en": 37.698,
+   "archivo": "voces/elevenlabs/frases/frase06.mp3",
    "voz": [
-    26.28,
-    27.95
-   ],
-   "en": 30.01
+    0,
+    2.691
+   ]
   },
   {
    "oa": 42,
    "ob": 46,
-   "na": 32.66,
-   "nb": 35.8,
+   "na": 40.839,
+   "nb": 44.721,
+   "en": 41.189,
+   "archivo": "voces/elevenlabs/frases/frase07.mp3",
    "voz": [
-    28.26,
-    30.5
-   ],
-   "en": 33.01
+    0,
+    3.082
+   ]
   },
   {
    "oa": 46,
    "ob": 51,
-   "na": 35.8,
-   "nb": 39.48,
+   "na": 44.721,
+   "nb": 49.492,
+   "en": 45.071,
+   "archivo": "voces/elevenlabs/frases/frase08.mp3",
    "voz": [
-    31.14,
-    33.92
-   ],
-   "en": 36.15
+    0,
+    3.971
+   ]
   },
   {
    "oa": 51,
    "ob": 56,
-   "na": 39.48,
-   "nb": 42.48,
+   "na": 49.492,
+   "nb": 53.61,
+   "en": 49.842,
+   "archivo": "voces/elevenlabs/frases/frase09.mp3",
    "voz": [
-    34.13,
-    36.22
-   ],
-   "en": 39.83
+    0,
+    3.318
+   ]
   },
   {
    "oa": 56,
    "ob": 61,
-   "na": 42.48,
-   "nb": 45.59,
+   "na": 53.61,
+   "nb": 57.728,
+   "en": 53.96,
+   "archivo": "voces/elevenlabs/frases/frase10.mp3",
    "voz": [
-    36.77,
-    38.98
-   ],
-   "en": 42.83
+    0,
+    3.318
+   ]
   },
   {
    "oa": 61,
    "ob": 67,
-   "na": 45.59,
-   "nb": 50.65,
+   "na": 57.728,
+   "nb": 64.719,
+   "en": 58.078,
+   "archivo": "voces/elevenlabs/frases/frase11.mp3",
    "voz": [
-    39.38,
-    43.54
-   ],
-   "en": 45.94
+    0,
+    6.191
+   ]
   },
   {
    "oa": 67,
    "ob": 70.6,
-   "na": 50.65,
-   "nb": 55.55,
+   "na": 64.719,
+   "nb": 71.632,
+   "en": 65.069,
+   "archivo": "voces/elevenlabs/frases/frase12.mp3",
    "voz": [
-    43.72,
-    47.72
-   ],
-   "en": 51.0
+    0,
+    6.113
+   ]
   },
   {
    "oa": 70.6,
    "ob": 74,
-   "na": 55.55,
-   "nb": 59.61,
+   "na": 71.632,
+   "nb": 77.03,
+   "en": 71.982,
+   "archivo": "voces/elevenlabs/frases/frase13.mp3",
    "voz": [
-    48.2,
-    51.36
-   ],
-   "en": 55.9
+    0,
+    4.598
+   ]
   }
  ],
- "fin": 59.61,
- "total": 62.61
+ "fin": 77.03,
+ "total": 80.03
 }
