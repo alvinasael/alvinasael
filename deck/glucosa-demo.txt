@@ -14,6 +14,13 @@ NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativ
 
 ====
 SLIDE: 3
+TIPO: Animación
+INSIGHT: Qué hace la insulina inyectada
+DATOS: glucosa-insulina
+NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativa, valores aproximados
+
+====
+SLIDE: 4
 TIPO: Tabla
 INSIGHT: Los números del diagnóstico
 DATOS: Prueba|Prediabetes|Diabetes

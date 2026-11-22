@@ -12,7 +12,8 @@
  * Supported TIPO values:
  *   Portada, Divisor, Contenido, Estadística, EstadísticaTrío,
  *   Cita, Gráfico, DosColumnas, Tabla, Actividad, Cierre,
- *   Animación (DATOS = nombre de un archivo en ./componentes/<nombre>.html)
+ *   Animación (DATOS = nombre de un archivo en ./componentes/<nombre>.html;
+ *              el componente puede usar {{INCLUIR:archivo}} para código compartido)
  */
 
 const fs   = require("fs");
@@ -174,6 +175,7 @@ function inferTipo(block) {
 }
 
 // ─── SLIDE RENDERERS ──────────────────────────────────────────────────────────
+const includedOnce = new Set(); // archivos compartidos ya insertados (componentes Animación)
 let chartCount = 0;
 const chartInits = []; // collected Chart.js init scripts
 
@@ -486,7 +488,14 @@ function renderSlide(block, idx) {
   <div class="s-body"><div class="s-intro">Falta el componente: ${esc(name)}</div></div>
 </div>`;
       }
+      // {{INCLUIR:archivo}} inserta un archivo compartido de ./componentes una sola vez por deck
+      const compDir = path.dirname(file);
       return fs.readFileSync(file, "utf8")
+        .replace(/{{INCLUIR:([\w.-]+)}}/g, (_, inc) => {
+          if (includedOnce.has(inc)) return "";
+          includedOnce.add(inc);
+          return fs.readFileSync(path.join(compDir, inc), "utf8");
+        })
         .replace(/{{INDEX}}/g, String(idx))
         .replace(/{{TITULO}}/g, ins)
         .replace(/{{FUENTE}}/g, esc(notasKey(not, "Fuente")));
