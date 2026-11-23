@@ -242,11 +242,10 @@ function sceneVessel(t) {
   // calendario (medicamento)
   const ka = win(t, 13.3, 20.2);
   if (ka > 0) { c.save(); c.globalAlpha *= ka; const days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'], bw = 112, x0 = 540 - (7 * bw + 6 * 12) / 2;
-    c.font = `700 26px ${SANS}`; c.letterSpacing = '4px'; c.fillStyle = K.amber; c.textAlign = 'center'; c.fillText('1 SEMANA', 540, 232); c.letterSpacing = '0px';
     days.forEach((d, i) => { const f = prog(t, 14.4 + i * .62, .4), x = x0 + i * (bw + 12);
       c.fillStyle = K.white; rr(x, 262, bw, 120, 16); c.fill(); c.save(); c.globalAlpha *= f; c.fillStyle = K.green; rr(x, 262, bw, 120, 16); c.fill(); c.restore();
       c.font = `600 44px ${SANS}`; c.fillStyle = f > .5 ? K.white : K.char60; c.textBaseline = 'middle'; c.fillText(d, x + bw / 2, 324); });
-    c.restore(); pill('Medicamento GLP-1: dura días', 540, 990, ka, K.white, K.char, 34); }
+    c.restore(); pill('1 semana', 540, 214, ka, K.amber, K.white, 28); pill('Medicamento GLP-1: dura días', 540, 450, ka, K.white, K.char, 34); }
 }
 // cuerpo pequeño + gráfica
 const MK = .5, MY = 190, M = (x, y) => [540 + (x - 540) * MK, MY + (y - 230) * MK];
