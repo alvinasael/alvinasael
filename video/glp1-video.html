@@ -306,15 +306,15 @@ function sceneExtras(t) {
   icon(860, prog(t, 71.5, .6), 'Riñones', () => { const bean = s => { c.save(); c.scale(s, 1); c.fillStyle = '#A66F5E'; c.beginPath(); c.moveTo(-18, -66); c.bezierCurveTo(-78, -70, -86, 40, -34, 66); c.bezierCurveTo(-4, 76, -4, 30, -22, 12); c.bezierCurveTo(-34, -2, -2, -40, -18, -66); c.fill(); c.restore(); }; bean(1); bean(-1); });
   card('Cerebro', 'menos apetito', 880, 300, M(612, 310)[0], M(612, 310)[1], win(t, 67.4, 74.3));
 }
-function captions(t) {
+function captions(t) {   // estilo subtítulo: cada línea con su propia franja blanca semitransparente
   CAPS.forEach(([a, b, text, strong]) => { const al = win(t, a + .05, b, .35); if (al <= 0) return;
-    c.save(); c.globalAlpha = al; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
-    c.font = strong ? `600 62px ${SERIF}` : `500 54px ${SANS}`; c.fillStyle = strong ? K.green : K.char;
-    const lines = wrap(text, 820), lh = strong ? 80 : 72, y0 = 1410 - (lines.length - 1) * lh / 2 + (1 - easeOut(prog(t, a, .5))) * 20;
-    const bw = Math.max(...lines.map(l => c.measureText(l).width)) + 80, top = y0 - lh * .8, bh = lines.length * lh + 26;
-    c.fillStyle = 'rgba(247,243,237,.9)'; rr(540 - bw / 2, top, bw, bh, 26); c.fill();
-    c.fillStyle = strong ? K.green : K.char;
-    lines.forEach((l, i) => c.fillText(l, 540, y0 + i * lh)); c.restore(); });
+    c.save(); c.globalAlpha = al; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = strong ? `600 54px ${SERIF}` : `600 46px ${SANS}`;
+    const lines = wrap(text, 900), lh = strong ? 74 : 66, yb = 1690 - (lines.length - 1) * lh + (1 - easeOut(prog(t, a, .5))) * 16;
+    lines.forEach((l, i) => { const w = c.measureText(l).width + 36, y = yb + i * lh;
+      c.fillStyle = 'rgba(255,255,255,.78)'; rr(540 - w / 2, y - lh / 2 + 4, w, lh - 8, 10); c.fill(); });
+    c.fillStyle = strong ? K.green : '#1E1C19';
+    lines.forEach((l, i) => c.fillText(l, 540, yb + i * lh + 2)); c.restore(); });
 }
 function renderAt(t) {
   c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; c.shadowColor = 'transparent'; c.letterSpacing = '0px';
