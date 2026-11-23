@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLP-1: el mensajero que tu cuerpo ya conoce</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #111; display: grid; place-items: center; }
+  canvas { height: 100vh; max-width: 100vw; aspect-ratio: 9 / 16; display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="vendor/three.min.js"></script>
+<script src="escenas3d.js"></script>
+<script>
+// Video vertical 1080×1920, 77 s. Todo es función del tiempo: renderAt(t) dibuja el cuadro exacto.
+const W = 1080, H = 1920, DUR = 77;
+const cv = document.getElementById('c'), c = cv.getContext('2d');
+const K = { green: '#2B4038', greenMid: '#3D5C4F', greenLight: '#D4E4DD', greenPale: '#EBF3EF', cream: '#F7F3ED', creamDark: '#EDE8DF',
+  amber: '#C4832B', amberLight: '#F5E8D6', char: '#1E1C19', char60: '#6B6760', char30: '#C2C0BC', white: '#FFFFFF',
+  skin: '#E8DCCE', brain: '#C9A394', stomach: '#CFA592', liver: '#A66F5E', pancreas: '#D8B36C', gut: '#DDB9A6' };
+const SANS = '"DM Sans", system-ui, sans-serif', SERIF = '"Playfair Display", Georgia, serif';
+
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const prog = (t, s, d) => clamp((t - s) / d, 0, 1);
+const win = (t, a, b, f = .45) => Math.min(prog(t, a, f), 1 - prog(t, b - f, f));   // visible entre a y b, con fundido
+function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let x = Math.imul(seed ^ seed >>> 15, 1 | seed); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; }; }
+const R = rng(77);
+const RBC = Array.from({ length: 7 }, () => ({ x0: R() * 1400, y: 590 + R() * 250, v: 70 + R() * 30, s: 1.7 + R() * .7, tilt: (R() - .5) * .5 }));
+const HX = Array.from({ length: 7 }, () => ({ x0: R() * 1300, y: 580 + R() * 260, v: 95 + R() * 35, ph: R() * 6.28 }));
+
+// ── Guion: texto en pantalla ──────────────────────────────────────────────
+const CAPS = [
+  [0, 6, '¿Sabías que tu cuerpo ya produce GLP-1? Cada vez que comes, tu intestino lo suelta.', 1],
+  [6, 13, 'Es una hormona mensajera: avisa que llegó comida. Pero la natural dura apenas unos minutos.'],
+  [13, 20, 'El medicamento GLP-1 es una copia que dura mucho más. Por eso muchas se aplican una vez por semana.'],
+  [20, 27, 'Al páncreas le dice: suelta insulina, pero solo cuando la glucosa está alta.'],
+  [27, 32, 'Al hígado: suelta menos azúcar.'],
+  [32, 37, 'Al estómago: vacíate más despacio.'],
+  [37, 42, 'Y al cerebro: ya estás lleno.'],
+  [42, 45, 'Cuatro factores que trabajan juntos.', 1],
+  [45, 49, 'Uno: más insulina, justo cuando hace falta.'],
+  [49, 53, 'Dos: menos azúcar saliendo del hígado.'],
+  [53, 57, 'Tres: la comida entra más despacio.'],
+  [57, 61, 'Cuatro: menos hambre, así que se come menos.'],
+  [61, 67, 'Juntos logran lo principal: una glucosa más estable, después de comer y en ayunas.', 1],
+  [67, 70.6, 'Y como beneficio adicional: para muchas personas, menos peso.'],
+  [70.6, 74, 'Algunos GLP-1 también protegen el corazón y los riñones.'],
+];
+
+// ── Primitivas ────────────────────────────────────────────────────────────
+function rr(x, y, w, h, r) { c.beginPath(); c.roundRect(x, y, w, h, r); }
+function wrap(text, maxW) { const words = text.split(' '), lines = []; let cur = ''; for (const w of words) { const t = cur ? cur + ' ' + w : w; if (c.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
+function helix(x, y, s, rot, a, ph, tail) {
+  if (a <= .01) return;
+  c.save(); c.globalAlpha *= a; c.translate(x, y); c.rotate(rot); c.scale(s, s); c.lineCap = 'round'; c.lineJoin = 'round';
+  const path = () => { c.beginPath(); for (let i = 0; i <= 28; i++) { const px = -14 + i, py = Math.sin(i * .68 + ph) * 4.2; i ? c.lineTo(px, py) : c.moveTo(px, py); } };
+  if (tail) { c.strokeStyle = K.amber; c.lineWidth = 2; c.beginPath(); c.moveTo(2, Math.sin(16 * .68 + ph) * 4.2); c.quadraticCurveTo(6, 12, 13, 11); c.stroke(); c.fillStyle = K.amber; c.beginPath(); c.arc(13, 11, 2.2, 0, 6.283); c.fill(); }
+  path(); c.strokeStyle = K.greenMid; c.lineWidth = 5.2; c.stroke();
+  path(); c.strokeStyle = K.greenLight; c.lineWidth = 1.8; c.stroke();
+  c.restore();
+}
+function hex(x, y, s, rot, a) {
+  if (a <= .01) return;
+  c.save(); c.globalAlpha *= a; c.translate(x, y); c.rotate(rot); c.scale(s, s);
+  c.beginPath(); for (let i = 0; i < 6; i++) { const t = i * Math.PI / 3 - Math.PI / 2; i ? c.lineTo(Math.cos(t) * 6.6, Math.sin(t) * 6.6) : c.moveTo(Math.cos(t) * 6.6, Math.sin(t) * 6.6); }
+  c.closePath(); c.fillStyle = '#EBC48B'; c.fill(); c.strokeStyle = K.amber; c.lineWidth = 1.7; c.lineJoin = 'round'; c.stroke();
+  c.beginPath(); c.moveTo(5.7, -3.3); c.lineTo(10, -6.4); c.stroke();
+  c.fillStyle = K.char60; c.beginPath(); c.arc(0, -6.6, 1.9, 0, 6.283); c.fill(); c.restore();
+}
+function insulin(x, y, s, rot, a) {
+  if (a <= .01) return;
+  c.save(); c.globalAlpha *= a; c.translate(x, y); c.rotate(rot); c.scale(s, s);
+  const blob = (bx, by, r, col) => { const g = c.createRadialGradient(bx - r * .35, by - r * .35, r * .1, bx, by, r); g.addColorStop(0, '#5E7E70'); g.addColorStop(1, col); c.fillStyle = g; c.beginPath(); c.arc(bx, by, r, 0, 6.283); c.fill(); };
+  blob(-3.5, 1, 5.2, K.green); blob(3, -2, 4.6, K.greenMid); blob(2.5, 4, 3.6, K.green); c.restore();
+}
+function rbc(x, y, s, tilt) {
+  c.save(); c.translate(x, y); c.rotate(tilt); c.scale(s, s);
+  const g = c.createRadialGradient(0, 0, 2, 0, 0, 25); g.addColorStop(0, '#8A2F29'); g.addColorStop(.5, '#A2443B'); g.addColorStop(.82, '#B9584D'); g.addColorStop(1, '#93352E');
+  c.fillStyle = g; c.beginPath(); c.ellipse(0, 0, 25, 11.5, 0, 0, 6.283); c.fill(); c.restore();
+}
+// Tarjeta con nombre del órgano y su mensaje, con línea guía
+function card(name, effect, cx, cy, ax, ay, a) {
+  if (a <= .01) return;
+  c.save(); c.globalAlpha *= a;
+  c.font = `600 36px ${SANS}`; const w1 = c.measureText(effect).width;
+  c.font = `700 24px ${SANS}`; c.letterSpacing = '3px'; const w0 = c.measureText(name.toUpperCase()).width; c.letterSpacing = '0px';
+  const w = Math.max(w0, w1) + 56, h = 112, x = cx - w / 2, y = cy - h / 2;
+  c.strokeStyle = K.amber; c.lineWidth = 3; c.beginPath(); c.moveTo(ax, ay); c.lineTo(clamp(ax, x, x + w), cy); c.stroke();
+  c.fillStyle = K.amber; c.beginPath(); c.arc(ax, ay, 7, 0, 6.283); c.fill();
+  c.shadowColor = 'rgba(30,28,25,.14)'; c.shadowBlur = 24; c.shadowOffsetY = 6;
+  c.fillStyle = K.white; rr(x, y, w, h, 18); c.fill(); c.shadowColor = 'transparent';
+  c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+  c.font = `700 24px ${SANS}`; c.letterSpacing = '3px'; c.fillStyle = K.amber; c.fillText(name.toUpperCase(), x + 28, y + 44); c.letterSpacing = '0px';
+  c.font = `600 36px ${SANS}`; c.fillStyle = K.char; c.fillText(effect, x + 28, y + 90);
+  c.restore();
+}
+function pill(text, cx, cy, a, bg = K.white, fg = K.char, size = 30) {
+  if (a <= .01) return;
+  c.save(); c.globalAlpha *= a; c.font = `600 ${size}px ${SANS}`; const w = c.measureText(text).width + size * 1.5, h = size * 1.9;
+  c.fillStyle = bg; rr(cx - w / 2, cy - h / 2, w, h, h / 2); c.fill();
+  c.fillStyle = fg; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(text, cx, cy + 2); c.restore();
+}
+
+// ── Cuerpo y órganos (coordenadas base: cabeza en y≈330, torso hasta y≈1220) ──
+const ORG = { brain: [540, 318], liver: [462, 722], stomach: [640, 752], pancreas: [575, 880], gut: [540, 1040] };
+function organPath(k) {
+  c.beginPath();
+  if (k === 'brain') { c.moveTo(468, 322); c.bezierCurveTo(462, 268, 510, 250, 545, 254); c.bezierCurveTo(590, 250, 622, 282, 614, 322); c.bezierCurveTo(612, 352, 585, 368, 560, 362); c.bezierCurveTo(552, 378, 528, 378, 522, 362); c.bezierCurveTo(492, 366, 470, 350, 468, 322); }
+  if (k === 'stomach') { c.moveTo(572, 652); c.bezierCurveTo(640, 630, 722, 700, 702, 800); c.bezierCurveTo(690, 860, 622, 880, 578, 850); c.bezierCurveTo(552, 834, 562, 800, 586, 780); c.bezierCurveTo(606, 760, 578, 702, 572, 652); }
+  if (k === 'liver') { c.moveTo(380, 692); c.bezierCurveTo(430, 642, 540, 650, 560, 692); c.bezierCurveTo(565, 742, 500, 790, 430, 800); c.bezierCurveTo(385, 800, 360, 742, 380, 692); }
+  if (k === 'pancreas') { c.moveTo(455, 886); c.bezierCurveTo(470, 850, 560, 862, 690, 846); c.bezierCurveTo(706, 850, 702, 872, 686, 874); c.bezierCurveTo(600, 892, 520, 916, 480, 916); c.bezierCurveTo(455, 916, 445, 900, 455, 886); }
+  c.closePath();
+}
+function gutPath() { c.beginPath(); [[430, 965], [650, 965], [650, 1015], [430, 1015], [430, 1065], [650, 1065], [650, 1115], [470, 1115]].forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); }
+function drawBody(lit, t) {
+  // silueta
+  const g = c.createLinearGradient(0, 1000, 0, 1230); g.addColorStop(0, K.skin); g.addColorStop(1, 'rgba(232,220,206,0)');
+  c.fillStyle = g; c.beginPath();
+  c.moveTo(500, 440); c.bezierCurveTo(470, 492, 360, 480, 300, 512); c.bezierCurveTo(262, 640, 334, 800, 350, 950); c.bezierCurveTo(362, 1050, 322, 1120, 320, 1230);
+  c.lineTo(760, 1230); c.bezierCurveTo(758, 1120, 718, 1050, 730, 950); c.bezierCurveTo(746, 800, 818, 640, 780, 512); c.bezierCurveTo(720, 480, 610, 492, 580, 440); c.closePath(); c.fill();
+  c.fillStyle = K.skin; c.beginPath(); c.arc(540, 330, 104, 0, 6.283); c.fill(); c.fillRect(500, 410, 80, 60);
+  // esófago
+  c.strokeStyle = '#D9C2B2'; c.lineWidth = 14; c.lineCap = 'round'; c.beginPath(); c.moveTo(540, 420); c.bezierCurveTo(540, 540, 560, 600, 574, 656); c.stroke();
+  const glow = (k, draw) => {
+    const L = lit[k] || 0;
+    c.save(); c.globalAlpha *= lerp(.62, 1, L);
+    if (L > 0) { c.shadowColor = `rgba(196,131,43,${.75 * L})`; c.shadowBlur = 34 + Math.sin(t * 4) * 8; }
+    draw(L); c.restore();
+  };
+  glow('gut', L => { gutPath(); c.lineJoin = 'round'; c.lineCap = 'round'; c.strokeStyle = K.gut; c.lineWidth = 36; c.stroke(); c.shadowColor = 'transparent'; gutPath(); c.strokeStyle = '#EBD3C5'; c.lineWidth = 12; c.stroke(); if (L > 0) { gutPath(); c.strokeStyle = `rgba(196,131,43,${L})`; c.lineWidth = 4; c.setLineDash([2, 16]); c.stroke(); c.setLineDash([]); } });
+  glow('pancreas', L => { organPath('pancreas'); c.fillStyle = K.pancreas; c.fill(); if (L > 0) { c.shadowColor = 'transparent'; c.strokeStyle = `rgba(196,131,43,${L})`; c.lineWidth = 5; c.stroke(); } });
+  glow('stomach', L => { organPath('stomach'); c.fillStyle = K.stomach; c.fill(); if (L > 0) { c.shadowColor = 'transparent'; c.strokeStyle = `rgba(196,131,43,${L})`; c.lineWidth = 5; c.stroke(); } });
+  glow('liver', L => { organPath('liver'); c.fillStyle = K.liver; c.fill(); if (L > 0) { c.shadowColor = 'transparent'; c.strokeStyle = `rgba(196,131,43,${L})`; c.lineWidth = 5; c.stroke(); } });
+  glow('brain', L => { organPath('brain'); c.fillStyle = K.brain; c.fill(); c.shadowColor = 'transparent'; c.strokeStyle = 'rgba(120,80,68,.45)'; c.lineWidth = 3; c.beginPath(); c.moveTo(540, 258); c.bezierCurveTo(530, 290, 552, 320, 540, 360); c.moveTo(490, 300); c.quadraticCurveTo(510, 312, 505, 335); c.moveTo(592, 296); c.quadraticCurveTo(572, 312, 580, 338); c.stroke(); if (L > 0) { organPath('brain'); c.strokeStyle = `rgba(196,131,43,${L})`; c.lineWidth = 5; c.stroke(); } });
+}
+// Cámara: acercamiento suave al órgano que recibe el mensaje
+const FOC = o => [540 + .4 * (ORG[o][0] - 540), 720 + .4 * (ORG[o][1] - 720), 1.14];
+const CAMK = [[0, 540, 720, 1], [20.3, 540, 720, 1], [21.3, ...FOC('pancreas')], [26.9, ...FOC('pancreas')], [27.9, ...FOC('liver')], [31.9, ...FOC('liver')],
+  [32.9, ...FOC('stomach')], [36.9, ...FOC('stomach')], [37.9, ...FOC('brain')], [41.2, ...FOC('brain')], [42, 540, 720, 1]];
+function cam(t) { let i = 0; while (i < CAMK.length - 2 && t >= CAMK[i + 1][0]) i++; const a = CAMK[i], b = CAMK[i + 1], u = ease(clamp((t - a[0]) / (b[0] - a[0]), 0, 1)); return [lerp(a[1], b[1], u), lerp(a[2], b[2], u), lerp(a[3], b[3], u)]; }
+let CARDQ = [];
+const qcard = (...a) => CARDQ.push(a);
+// partículas emitidas a un ritmo antes y otro después de un momento (determinista)
+function births(t, s0, tArr, fast, slow, life) { const out = []; let k = 0; for (let b = s0; b < Math.min(t, tArr); b += fast, k++) if (t - b < life) out.push([(t - b) / life, k]); if (slow) for (let b = tArr + slow * .4; b < t; b += slow, k++) if (t - b < life) out.push([(t - b) / life, k]); return out; }
+// mensajero que viaja hasta un órgano
+function messenger(t, t0, from, to) { const p = prog(t, t0, 1.7); if (p <= 0 || t > t0 + 2.6) return; const e = ease(p); const x = lerp(from[0], to[0], e), y = lerp(from[1], to[1], e) - Math.sin(e * Math.PI) * 70; helix(x, y, lerp(4.2, 2.6, e), lerp(-.3, .2, e), 1 - prog(t, t0 + 1.9, .6), t * 6, true); }
+
+// ── Escenas ───────────────────────────────────────────────────────────────
+function sceneBodyFull(t) {
+  const [ccx, ccy, ck] = cam(t), mx = x => 540 + (x - ccx) * ck, my = y => 720 + (y - ccy) * ck;
+  CARDQ = [];
+  c.save(); c.translate(540, 720); c.scale(ck, ck); c.translate(-ccx, -ccy);
+  sceneBodyInner(t);
+  c.restore();
+  CARDQ.forEach(([n, e, x, y, ax, ay, a]) => card(n, e, x, y, mx(ax), my(ay), a));
+}
+function sceneBodyInner(t) {
+  const lit = { gut: win(t, 2.6, 6.4), pancreas: t >= 20 ? lerp(.55, 1, win(t, 21.6, 27, .5)) * prog(t, 21.6, .5) : 0, liver: prog(t, 28.6, .5) * lerp(.55, 1, win(t, 28.6, 32, .5)), stomach: prog(t, 33.6, .5) * lerp(.55, 1, win(t, 33.6, 37, .5)), brain: prog(t, 38.6, .5) };
+  drawBody(lit, t);
+  if (t < 7) {   // 0–6 s: el plato y el intestino
+    const pa = prog(t, .2, .6);
+    c.save(); c.globalAlpha *= pa; c.fillStyle = K.white; c.strokeStyle = K.char30; c.lineWidth = 4; c.beginPath(); c.arc(215, 330, 78, 0, 6.283); c.fill(); c.stroke(); c.beginPath(); c.arc(215, 330, 54, 0, 6.283); c.stroke();
+    c.fillStyle = K.amber; c.beginPath(); c.arc(200, 320, 20, 0, 6.283); c.fill(); c.fillStyle = K.greenMid; c.beginPath(); c.arc(236, 344, 16, 0, 6.283); c.fill(); c.fillStyle = '#B9584D'; c.beginPath(); c.arc(226, 306, 11, 0, 6.283); c.fill(); c.restore();
+    const f = prog(t, .9, 2.6);   // bocado que baja
+    if (f > 0 && f < 1) { const pts = [[300, 330], [520, 400], [545, 520], [574, 656], [640, 760], [600, 850], [560, 940], [540, 965]]; const u = ease(f) * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(u)), v = u - i; c.fillStyle = K.amber; c.beginPath(); c.arc(lerp(pts[i][0], pts[i + 1][0], v), lerp(pts[i][1], pts[i + 1][1], v), 13, 0, 6.283); c.fill(); }
+    births(t, 3.4, 99, .42, 0, 2.6).forEach(([a, k]) => { const ang = -Math.PI / 2 + ((k % 5) - 2) * .5, d = easeOut(a) * 330; helix(540 + Math.cos(ang) * d * 1.25, 1010 + Math.sin(ang) * d, 3, ang + Math.PI / 2 + Math.sin(t * 2 + k) * .3, a < .15 ? a / .15 : 1 - prog(a, .7, .3), t * 6 + k); });
+    qcard('Intestino', 'suelta GLP-1', 190, 1100, 430, 1040, prog(t, 3.2, .5));
+  }
+  if (t >= 19.5) {
+    const from = [40, 620];
+    // Páncreas
+    messenger(t, 20.2, from, ORG.pancreas);
+    if (t > 21.8 && t < 42.6) births(t, 21.8, 99, .5, 0, 1.8).forEach(([a, k]) => { const ang = -.5 + ((k % 4) - 1.5) * .28, d = easeOut(a) * 190; insulin(600 + Math.cos(ang) * d, 870 + Math.sin(ang) * d - 20 * a, 2.4, k, (a < .15 ? a / .15 : 1 - prog(a, .65, .35)) * (t < 27 ? 1 : .0)); });
+    qcard('Páncreas', 'más insulina', 880, 960, 690, 860, win(t, 22, 42.5));
+    // Hígado
+    messenger(t, 27.2, from, ORG.liver);
+    if (t > 26.6 && t < 32.4) births(t, 26.6, 28.9, .42, 1.7, 2).forEach(([a, k]) => { const ang = Math.PI + .5 - ((k % 3) - 1) * .35, d = easeOut(a) * 200; hex(430 + Math.cos(ang) * d, 720 + Math.sin(ang) * d, 2.6, k + a, a < .15 ? a / .15 : 1 - prog(a, .65, .35)); });
+    qcard('Hígado', 'menos azúcar', 196, 560, 400, 700, win(t, 29, 42.5));
+    // Estómago
+    messenger(t, 32.2, from, ORG.stomach);
+    if (t > 31.6 && t < 37.4) births(t, 31.6, 33.9, .34, 1.4, 1.5).forEach(([a]) => { c.save(); c.globalAlpha *= a < .15 ? a / .15 : 1 - prog(a, .7, .3); c.fillStyle = K.amber; c.beginPath(); c.arc(lerp(596, 545, a), lerp(848, 962, ease(a)), 10, 0, 6.283); c.fill(); c.restore(); });
+    qcard('Estómago', 'más despacio', 900, 690, 700, 750, win(t, 34, 42.5));
+    // Cerebro
+    messenger(t, 37.2, from, ORG.brain);
+    qcard('Cerebro', 'menos apetito', 870, 250, 612, 310, win(t, 39, 42.5));
+  }
+}
+function sceneVessel(t) {
+  const top = 520, bot = 900;
+  if (!window.NH3D) {
+  const g = c.createLinearGradient(0, top, 0, bot); g.addColorStop(0, '#EAD5CA'); g.addColorStop(1, '#DDBAAB'); c.fillStyle = g; c.fillRect(0, top, W, bot - top);
+  c.fillStyle = '#D6AC9A'; c.fillRect(0, top - 26, W, 26); c.fillRect(0, bot, W, 26); c.fillStyle = '#E6C5B6'; c.fillRect(0, top - 4, W, 4); c.fillRect(0, bot, W, 4);
+  const wrapX = x => ((x % 1400) + 1400) % 1400 - 160;
+  c.save(); c.beginPath(); c.rect(0, top, W, bot - top); c.clip();
+  RBC.forEach(r => rbc(wrapX(r.x0 + r.v * t), r.y + Math.sin(t * .8 + r.x0) * 5, r.s, r.tilt));
+  HX.forEach((m, i) => {   // 6–13: natural, se desvanece. 13–20: medicamento, permanece
+    const natural = (1 - prog(t, 8.4 + i * .5, 1.3));
+    const med = prog(t, 13.4 + i * .28, .7);
+    const y = m.y + Math.sin(t * .9 + m.ph) * 8, x = wrapX(m.x0 + m.v * t);
+    helix(x, y, 3.4, Math.sin(t + m.ph) * .25, natural, t * 6 + m.ph, false);
+    helix(wrapX(m.x0 + 500 + m.v * t), y, 3.4, Math.sin(t + m.ph) * .25, med, t * 6 + m.ph, true);
+  });
+  c.restore();
+  pill('Sangre', 110, top + 46, 1, 'rgba(247,243,237,.92)');
+  }
+  // reloj (GLP-1 natural)
+  const ca = win(t, 6.3, 13.2);
+  if (ca > 0) { c.save(); c.globalAlpha *= ca; c.translate(540, 320); c.fillStyle = K.white; c.strokeStyle = K.char; c.lineWidth = 6; c.beginPath(); c.arc(0, 0, 96, 0, 6.283); c.fill(); c.stroke();
+    c.strokeStyle = K.char30; c.lineWidth = 4; for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; c.beginPath(); c.moveTo(Math.cos(a) * 78, Math.sin(a) * 78); c.lineTo(Math.cos(a) * 88, Math.sin(a) * 88); c.stroke(); }
+    const ang = -Math.PI / 2 + (t - 6.3) * 1.9; c.strokeStyle = K.amber; c.lineWidth = 8; c.lineCap = 'round'; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(ang) * 66, Math.sin(ang) * 66); c.stroke();
+    c.fillStyle = K.amber; c.globalAlpha *= .22; c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, 66, -Math.PI / 2, ang); c.closePath(); c.fill(); c.restore();
+    pill('GLP-1 natural: dura minutos', 540, 990, ca, K.white, K.char, 34); }
+  // calendario (medicamento)
+  const ka = win(t, 13.3, 20.2);
+  if (ka > 0) { c.save(); c.globalAlpha *= ka; const days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'], bw = 112, x0 = 540 - (7 * bw + 6 * 12) / 2;
+    c.font = `700 26px ${SANS}`; c.letterSpacing = '4px'; c.fillStyle = K.amber; c.textAlign = 'center'; c.fillText('1 SEMANA', 540, 232); c.letterSpacing = '0px';
+    days.forEach((d, i) => { const f = prog(t, 14.4 + i * .62, .4), x = x0 + i * (bw + 12);
+      c.fillStyle = K.white; rr(x, 262, bw, 120, 16); c.fill(); c.save(); c.globalAlpha *= f; c.fillStyle = K.green; rr(x, 262, bw, 120, 16); c.fill(); c.restore();
+      c.font = `600 44px ${SANS}`; c.fillStyle = f > .5 ? K.white : K.char60; c.textBaseline = 'middle'; c.fillText(d, x + bw / 2, 324); });
+    c.restore(); pill('Medicamento GLP-1: dura días', 540, 990, ka, K.white, K.char, 34); }
+}
+// cuerpo pequeño + gráfica
+const MK = .5, MY = 190, M = (x, y) => [540 + (x - 540) * MK, MY + (y - 230) * MK];
+function chartCurve(par, x0, x1, yT, yB, upTo = 1) {
+  const Y = v => yB - (v - 80) / 170 * (yB - yT); c.beginPath();
+  for (let i = 0; i <= 120 * upTo; i++) { const u = i / 120, v = par.base + (par.peak - par.base) * Math.exp(-Math.pow((u - par.uc) / par.w, 2)) * (u < par.uc ? 1 : 1) ; const x = lerp(x0, x1, u); i ? c.lineTo(x, Y(v)) : c.moveTo(x, Y(v)); }
+}
+function sceneConverge(t) {
+  const e = ease(prog(t, 42, 1.1)), k = lerp(1, MK, e), y0 = lerp(230, MY, e);
+  const stage = t >= 57 ? 4 : t >= 53 ? 3 : t >= 49 ? 2 : t >= 45 ? 1 : 0;
+  const litOn = (n, s) => t < 61 ? (stage === s ? 1 : stage > s ? .5 : (t < 45 ? .8 : .25)) : (t < 67 ? .8 : .2);
+  const lit = { pancreas: litOn('p', 1), liver: litOn('l', 2), stomach: litOn('s', 3), brain: t >= 67 ? 1 : (t < 43 ? Math.max(1 - prog(t, 42, .8), .8) : litOn('b', 4)) };
+  c.save(); c.translate(540, y0); c.scale(k, k); c.translate(-540, -230); drawBody(lit, t); c.restore();
+  if (t < 42.9) return;
+  // insignias numeradas
+  const badge = (n, [x, y], on) => { c.save(); c.globalAlpha *= prog(t, 43 + n * .25, .4); c.fillStyle = on ? K.amber : K.char60; c.beginPath(); c.arc(x, y, 24, 0, 6.283); c.fill(); c.fillStyle = K.white; c.font = `700 28px ${SANS}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(n, x, y + 2); c.restore(); };
+  const A = { p: M(700, 905), l: M(372, 700), s: M(712, 700), b: M(632, 292) };
+  const chA = 1 - prog(t, 67, .6);
+  if (chA > 0) {
+    c.save(); c.globalAlpha *= chA * prog(t, 43, .6);
+    const x0 = 130, x1 = 950, yT = 800, yB = 1140, Y = v => yB - (v - 80) / 170 * (yB - yT);
+    c.fillStyle = K.white; rr(70, 740, 940, 450, 28); c.fill();
+    c.fillStyle = K.greenPale; c.fillRect(x0, Y(180), x1 - x0, Y(80) - Y(180));
+    c.font = `500 24px ${SANS}`; c.fillStyle = K.greenMid; c.textAlign = 'right'; c.textBaseline = 'alphabetic'; c.fillText('Meta después de comer: menos de 180', x1 - 12, Y(80) - 14);
+    c.strokeStyle = K.char30; c.lineWidth = 2; c.setLineDash([6, 8]); c.beginPath(); c.moveTo(lerp(x0, x1, .2), yT); c.lineTo(lerp(x0, x1, .2), yB); c.stroke(); c.setLineDash([]);
+    c.fillStyle = K.char60; c.textAlign = 'center'; c.fillText('comida', lerp(x0, x1, .2), yT - 12);
+    const S = [{ base: 156, peak: 232, uc: .42, w: .15 }, { base: 156, peak: 214, uc: .42, w: .15 }, { base: 138, peak: 197, uc: .42, w: .15 }, { base: 138, peak: 180, uc: .5, w: .2 }, { base: 138, peak: 172, uc: .5, w: .19 }];
+    const mix = (a, b, m) => ({ base: lerp(a.base, b.base, m), peak: lerp(a.peak, b.peak, m), uc: lerp(a.uc, b.uc, m), w: lerp(a.w, b.w, m) });
+    let par = S[0]; [[46.3, 1], [50.3, 2], [54.3, 3], [58.3, 4]].forEach(([ts, i]) => { par = mix(par, S[i], ease(prog(t, ts, 1.6))); });
+    c.save(); c.globalAlpha *= .35; chartCurve(S[0], x0, x1, yT, yB, prog(t, 43.2, 1.6)); c.strokeStyle = K.char30; c.lineWidth = 5; c.setLineDash([10, 10]); c.stroke(); c.setLineDash([]); c.restore();
+    const done = prog(t, 61, 1);
+    chartCurve(par, x0, x1, yT, yB, prog(t, 43.2, 1.6)); c.strokeStyle = done > .5 ? K.green : K.amber; c.lineWidth = lerp(7, 10, done); c.lineJoin = 'round'; c.lineCap = 'round'; c.stroke();
+    if (t > 44.8) { const px = lerp(x0, x1, par.uc), py = Y(par.peak);
+      c.font = `700 50px ${SERIF}`; c.fillStyle = done > .5 ? K.green : K.amber; c.textAlign = 'center'; c.fillText(Math.round(par.peak), px, py - 22);
+      c.font = `600 30px ${SANS}`; c.fillStyle = K.char60; c.textAlign = 'left'; c.fillText(Math.round(par.base), x0 + 6, Y(par.base) - 16);
+      c.font = `500 22px ${SANS}`; c.fillText('en ayunas', x0 + 6, Y(par.base) + 34); }
+    // líneas del órgano a la parte de la curva que cambia
+    const link = (from, to, ts, on) => { const p = ease(prog(t, ts, 1)); if (p <= 0) return; c.save(); c.globalAlpha *= on ? 1 : .3; c.strokeStyle = K.amber; c.lineWidth = 4; c.setLineDash([3, 10]); c.lineCap = 'round'; c.beginPath();
+      for (let i = 0; i <= 40 * p; i++) { const u = i / 40, x = Math.pow(1 - u, 2) * from[0] + 2 * (1 - u) * u * from[0] + u * u * to[0], y = Math.pow(1 - u, 2) * from[1] + 2 * (1 - u) * u * lerp(from[1], to[1], .5) + u * u * to[1]; i ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke(); c.setLineDash([]);
+      if (p >= 1) { c.fillStyle = K.amber; c.beginPath(); c.arc(to[0], to[1], 9, 0, 6.283); c.fill(); } c.restore(); };
+    link(A.p, [lerp(x0, x1, par.uc) + 70, Y(par.peak) + 30], 45.2, stage === 1);
+    link(A.l, [x0 + 50, Y(par.base) - 60], 49.2, stage === 2);
+    link(A.s, [lerp(x0, x1, par.uc + par.w * 1.1), Y(lerp(par.base, par.peak, .45)) - 8], 53.2, stage === 3);
+    link(A.b, [lerp(x0, x1, par.uc) - 40, Y(par.peak) - 4], 57.2, stage === 4);
+    c.restore();
+    pill('Glucosa más estable  ·  A1c más baja', 540, 704, win(t, 62, 67.2), K.green, K.white, 34);
+  }
+  const all = t >= 61 && t < 67, st = t < 61 ? stage : 0;
+  badge(1, A.p, st === 1 || all); badge(2, A.l, st === 2 || all); badge(3, A.s, st === 3 || all); badge(4, A.b, st === 4 || all);
+  if (t >= 67) sceneExtras(t);
+}
+function sceneExtras(t) {
+  const icon = (cx, a, label, draw) => { if (a <= .01) return; c.save(); c.globalAlpha *= a; const y = 900 + (1 - easeOut(a)) * 40;
+    c.fillStyle = K.white; rr(cx - 140, y - 150, 280, 330, 28); c.fill(); c.save(); c.translate(cx, y - 20); draw(); c.restore();
+    c.font = `600 36px ${SANS}`; c.fillStyle = K.char; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillText(label, cx, y + 130); c.restore(); };
+  icon(220, prog(t, 68.2, .6), 'Menos peso', () => { c.fillStyle = K.green; rr(-70, -62, 140, 128, 26); c.fill(); c.fillStyle = K.white; c.beginPath(); c.arc(0, -8, 40, Math.PI, 0); c.closePath(); c.fill(); c.strokeStyle = K.amber; c.lineWidth = 7; c.lineCap = 'round'; const a = -Math.PI / 2 + lerp(.7, -.5, ease(prog(t, 68.6, 1.4))); c.beginPath(); c.moveTo(0, -8); c.lineTo(Math.cos(a) * 30, -8 + Math.sin(a) * 30); c.stroke(); });
+  icon(540, prog(t, 70.9, .6), 'Corazón', () => { const s = 1 + Math.sin(t * 7) * .04; c.scale(s, s); c.fillStyle = '#A2443B'; c.beginPath(); c.moveTo(0, 62); c.bezierCurveTo(-96, -4, -62, -84, 0, -34); c.bezierCurveTo(62, -84, 96, -4, 0, 62); c.fill(); });
+  icon(860, prog(t, 71.5, .6), 'Riñones', () => { const bean = s => { c.save(); c.scale(s, 1); c.fillStyle = '#A66F5E'; c.beginPath(); c.moveTo(-18, -66); c.bezierCurveTo(-78, -70, -86, 40, -34, 66); c.bezierCurveTo(-4, 76, -4, 30, -22, 12); c.bezierCurveTo(-34, -2, -2, -40, -18, -66); c.fill(); c.restore(); }; bean(1); bean(-1); });
+  card('Cerebro', 'menos apetito', 880, 300, M(612, 310)[0], M(612, 310)[1], win(t, 67.4, 74.3));
+}
+function captions(t) {
+  CAPS.forEach(([a, b, text, strong]) => { const al = win(t, a + .05, b, .35); if (al <= 0) return;
+    c.save(); c.globalAlpha = al; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+    c.font = strong ? `600 62px ${SERIF}` : `500 54px ${SANS}`; c.fillStyle = strong ? K.green : K.char;
+    const lines = wrap(text, 820), lh = strong ? 80 : 72, y0 = 1410 - (lines.length - 1) * lh / 2 + (1 - easeOut(prog(t, a, .5))) * 20;
+    const bw = Math.max(...lines.map(l => c.measureText(l).width)) + 80, top = y0 - lh * .8, bh = lines.length * lh + 26;
+    c.fillStyle = 'rgba(247,243,237,.9)'; rr(540 - bw / 2, top, bw, bh, 26); c.fill();
+    c.fillStyle = strong ? K.green : K.char;
+    lines.forEach((l, i) => c.fillText(l, 540, y0 + i * lh)); c.restore(); });
+}
+function renderAt(t) {
+  c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; c.shadowColor = 'transparent'; c.letterSpacing = '0px';
+  c.fillStyle = K.cream; c.fillRect(0, 0, W, H);
+  const aBody1 = t < 6.6 ? 1 - prog(t, 5.7, .6) : 0, aVessel = win(t, 5.9, 20.3, .55), aBody2 = t >= 19.6 && t < 42 ? prog(t, 19.8, .6) : 0;
+  let dk = 0;   // cuánto domina una escena 3D oscura (para el encabezado)
+  if (window.NH3D && t < 20.4) {
+    const aPlato = 1 - prog(t, 2.6, .6), aTunel = prog(t, 2.6, .6) * (1 - prog(t, 5.9, .55));
+    const draw3d = (a, fn) => { if (a <= .01) return; const img = fn(t); c.save(); c.globalAlpha = a; c.drawImage(img, 0, 0); c.restore(); };
+    draw3d(aPlato, NH3D.plato); draw3d(aTunel, NH3D.tunel); draw3d(aVessel, NH3D.vaso);
+    dk = Math.max(aTunel, aVessel);
+    pill('Células del intestino: sueltan GLP-1', 540, 330, win(t, 3.6, 6.1), 'rgba(247,243,237,.94)', K.char, 32);
+  } else if (aBody1 > 0) { c.save(); c.globalAlpha = aBody1; sceneBodyFull(t); c.restore(); }
+  if (aVessel > 0) { c.save(); c.globalAlpha = aVessel; sceneVessel(t); c.restore(); }
+  if (aBody2 > 0) { c.save(); c.globalAlpha = aBody2; sceneBodyFull(t); c.restore(); }
+  if (t >= 42) { c.save(); c.globalAlpha = 1; sceneConverge(t); c.restore(); }
+  // encabezado y barra de progreso
+  const hb = c.createLinearGradient(0, 0, 0, 170); hb.addColorStop(0, K.cream); hb.addColorStop(.7, 'rgba(247,243,237,.92)'); hb.addColorStop(1, 'rgba(247,243,237,0)');
+  c.save(); c.globalAlpha = 1 - dk; c.fillStyle = hb; c.fillRect(0, 0, W, 170); c.restore();
+  if (dk > 0) { const hd = c.createLinearGradient(0, 0, 0, 200); hd.addColorStop(0, 'rgba(30,10,9,.75)'); hd.addColorStop(1, 'rgba(30,10,9,0)'); c.save(); c.globalAlpha = dk; c.fillStyle = hd; c.fillRect(0, 0, W, 200); c.restore(); }
+  c.fillStyle = K.creamDark; c.fillRect(0, 0, W, 10); c.fillStyle = K.amber; c.fillRect(0, 0, W * TV / TOTAL, 10);
+  c.font = `700 28px ${SANS}`; c.letterSpacing = '4px'; c.fillStyle = K.amber; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillText('NUTRICIÓN.HEALTH', 70, 108); c.letterSpacing = '0px';
+  c.font = `500 28px ${SANS}`; c.textAlign = 'right';
+  c.save(); c.globalAlpha = 1 - dk; c.fillStyle = K.char60; c.fillText('Cómo funciona el GLP-1', W - 70, 108); c.restore();
+  if (dk > 0) { c.save(); c.globalAlpha = dk; c.fillStyle = K.creamDark; c.fillText('Cómo funciona el GLP-1', W - 70, 108); c.restore(); }
+  captions(t);
+  // cierre
+  const end = prog(t, 74, .7);
+  if (end > 0) { c.save(); c.globalAlpha = end; c.fillStyle = K.green; c.fillRect(0, 0, W, H); const up = easeOut(prog(t, 74.2, .8));
+    c.globalAlpha = end * up; c.fillStyle = K.amber; c.fillRect(500, 840, 80, 6);
+    c.font = `400 92px ${SERIF}`; c.fillStyle = K.white; c.textAlign = 'center'; c.fillText('Nutrición.Health', 540, 980);
+    c.font = `italic 400 42px ${SERIF}`; c.fillStyle = K.greenLight; c.fillText('Más allá del consultorio.', 540, 1060);
+    c.font = `400 28px ${SANS}`; c.fillStyle = 'rgba(255,255,255,.5)'; c.fillText('Material educativo. No sustituye la consulta con tu médico.', 540, 1760); c.restore(); }
+}
+// Montaje con voz: tiempo real del video → tiempo del guion original
+const SEGS = [[0, 7.069, 0, 6], [7.069, 14.557, 6, 13], [14.557, 22.906, 13, 20], [22.906, 29.505, 20, 27], [29.505, 33.231, 27, 32], [33.231, 37.349, 32, 37], [37.349, 40.839, 37, 42], [40.839, 44.33, 42, 45], [44.33, 49.1, 45, 49], [49.1, 53.218, 49, 53], [53.218, 57.336, 53, 57], [57.336, 62.002, 57, 61], [62.002, 69.071, 61, 67], [69.071, 74.469, 67, 70.6], [74.469, 79.866, 70.6, 74]], T_END = 79.866, TOTAL = 82.866;
+function tau(tv) { if (tv >= T_END) return 74 + (tv - T_END) / (TOTAL - T_END) * 3; for (const [na, nb, oa, ob] of SEGS) if (tv < nb) return oa + (tv - na) / (nb - na) * (ob - oa); return 74; }
+let TV = 0;
+function renderFrame(tv) { TV = tv; renderAt(tau(tv)); }
+window.renderAt = renderAt; window.renderFrame = renderFrame; window.DUR = TOTAL;
+window.frameJPEG = t => { renderFrame(t); return cv.toDataURL('image/jpeg', .93).slice(23); };
+// Vista previa en tiempo real al abrir el archivo (?t=30 muestra un cuadro fijo)
+document.fonts.ready.then(() => {
+  const q = new URLSearchParams(location.search).get('t');
+  if (q != null) { renderFrame(+q); window.ready = true; return; }
+  window.ready = true; const s = performance.now(); (function loop(n) { renderFrame(((n - s) / 1000) % TOTAL); requestAnimationFrame(loop); })(s);
+});
+</script>
+</body>
+</html>
