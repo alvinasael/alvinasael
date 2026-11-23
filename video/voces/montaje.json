@@ -96,21 +96,21 @@
    "oa": 42,
    "ob": 45,
    "na": 40.839,
-   "nb": 44.722,
+   "nb": 44.33,
    "en": 41.189,
-   "archivo": "voces/elevenlabs/frases/frase07-cuatro-historias.mp3",
+   "archivo": "voces/elevenlabs/frases/frase07-cuatro-factores.mp3",
    "voz": [
     0,
-    3.082
+    2.691
    ],
-   "texto": "Cuatro historias que se juntan en una sola."
+   "texto": "Cuatro factores que trabajan juntos."
   },
   {
    "oa": 45,
    "ob": 49,
-   "na": 44.722,
-   "nb": 49.492,
-   "en": 45.072,
+   "na": 44.33,
+   "nb": 49.1,
+   "en": 44.68,
    "archivo": "voces/elevenlabs/frases/frase08.mp3",
    "voz": [
     0,
@@ -121,9 +121,9 @@
   {
    "oa": 49,
    "ob": 53,
-   "na": 49.492,
-   "nb": 53.61,
-   "en": 49.842,
+   "na": 49.1,
+   "nb": 53.218,
+   "en": 49.45,
    "archivo": "voces/elevenlabs/frases/frase09.mp3",
    "voz": [
     0,
@@ -134,9 +134,9 @@
   {
    "oa": 53,
    "ob": 57,
-   "na": 53.61,
-   "nb": 57.727,
-   "en": 53.96,
+   "na": 53.218,
+   "nb": 57.336,
+   "en": 53.568,
    "archivo": "voces/elevenlabs/frases/frase10.mp3",
    "voz": [
     0,
@@ -147,9 +147,9 @@
   {
    "oa": 57,
    "ob": 61,
-   "na": 57.727,
-   "nb": 62.393,
-   "en": 58.077,
+   "na": 57.336,
+   "nb": 62.002,
+   "en": 57.686,
    "archivo": "voces/elevenlabs/frases/frase-cuatro-hambre.mp3",
    "voz": [
     0,
@@ -160,22 +160,22 @@
   {
    "oa": 61,
    "ob": 67,
-   "na": 62.393,
-   "nb": 69.384,
-   "en": 62.743,
-   "archivo": "voces/elevenlabs/frases/frase11.mp3",
+   "na": 62.002,
+   "nb": 69.071,
+   "en": 62.352,
+   "archivo": "voces/elevenlabs/frases/frase11-juntos.mp3",
    "voz": [
     0,
-    6.191
+    6.269
    ],
-   "texto": "Juntas logran lo principal: una glucosa más estable, después de comer y en ayunas."
+   "texto": "Juntos logran lo principal: una glucosa más estable, después de comer y en ayunas."
   },
   {
    "oa": 67,
    "ob": 70.6,
-   "na": 69.384,
-   "nb": 74.782,
-   "en": 69.734,
+   "na": 69.071,
+   "nb": 74.469,
+   "en": 69.421,
    "archivo": "voces/elevenlabs/frases/frase12-beneficio.mp3",
    "voz": [
     0,
@@ -186,9 +186,9 @@
   {
    "oa": 70.6,
    "ob": 74,
-   "na": 74.782,
-   "nb": 80.18,
-   "en": 75.132,
+   "na": 74.469,
+   "nb": 79.866,
+   "en": 74.819,
    "archivo": "voces/elevenlabs/frases/frase13.mp3",
    "voz": [
     0,
@@ -197,6 +197,6 @@
    "texto": "Algunos GLP-1 también protegen el corazón y los riñones."
   }
  ],
- "fin": 80.18,
- "total": 83.18
+ "fin": 79.866,
+ "total": 82.866
 }
