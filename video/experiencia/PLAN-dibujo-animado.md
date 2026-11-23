@@ -93,7 +93,7 @@ pantalla dividida se conserva tal cual.
 ## 9. Guion (versión aprobada en revisión)
 
 **Acto 1 · Sin acompañamiento**
-1. Te diagnostican diabetes en una consulta de quince minutos. Sin acompañamiento, sales con una receta, una orientación breve y muchas dudas. *(se regraba)*
+1. Te diagnostican diabetes en una breve consulta. Sin acompañamiento, sales con una receta, una orientación breve y muchas dudas.
 2. Esa noche, sin guía, buscas en internet y encuentras respuestas que se contradicen.
 3. A la hora de comer, te dan una lista de prohibidos y dejas tu arroz con habichuelas.
 4. Tu glucómetro marca números que no entiendes, y te preocupan.
@@ -104,7 +104,7 @@ pantalla dividida se conserva tal cual.
 
 **Acto 2 · Con Nutrición.Health** *(nuevas)*
 1. Sales de la consulta con algo más: un camino.
-2. Esa noche, en Nutrición.Health evaluamos tu caso y te damos un plan.
+2. Esa noche, en Nutrición punto Health evaluamos tu caso y te damos un plan.
 3. A la hora de comer, aprendes a comer sin renunciar a tu comida.
 4. Entiendes tus números y sabes qué hacer.
 5. Y no lo enfrentas sin apoyo: tienes ocho sesiones en grupo, con personas que viven lo mismo que tú.
