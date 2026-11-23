@@ -3,7 +3,7 @@
 import os, subprocess, re
 D = os.path.dirname(os.path.abspath(__file__)); V = os.path.dirname(D); E = f'{V}/voces/elevenlabs'; TMP = f'{D}/tmp'; os.makedirs(TMP, exist_ok=True)
 TOTAL = 66.0
-VOZ = [(1, .5), (2, 6.4), (3, 12.6), (4, 22.0), (5, 28.6), (6, 38.1), (7, 49.3), (8, 53.6), (9, 57.9)]
+VOZ = [(1, .5), (2, 6.4), (3, 13.35), (4, 22.0), (5, 28.6), (6, 38.8), (7, 49.3), (8, 53.6), (9, 57.9)]
 run = lambda *a: subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', *a], check=True)
 def lufs(p): return float(re.findall(r'I:\s+(-?[0-9.]+) LUFS', subprocess.run(['ffmpeg', '-hide_banner', '-i', p, '-af', 'ebur128', '-f', 'null', '-'], capture_output=True, text=True).stderr)[-1])
 def place(items, out):
