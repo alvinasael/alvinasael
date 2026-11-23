@@ -50,15 +50,14 @@ const CAPS = [
   [53, 57, 'Tres: la comida entra más despacio.'],
   [57, 61, 'Cuatro: menos hambre, así que se come menos.'],
   [61, 67, 'Juntos logran lo principal: una glucosa más estable, después de comer y en ayunas.', 1],
-  [67, 70.6, 'Y como beneficio adicional: para muchas personas, menos peso.'],
-  [70.6, 74, 'Algunos GLP-1 también protegen el corazón y los riñones.'],
+  [67.45, 74, '¿Tienes dudas sobre tu tratamiento? Contáctanos.', 1],
 ];
 
 // ── Clips de video (ElevenCreative · Seedance 2.5), guardados como cuadros JPG en clips/<nombre>/ ──
 // [clip, inicio, fin (segundos reales del video), desde, hasta (segundos del clip), fundido de entrada, de salida]
 window.CLIPN = window.CLIPN || {};
 const SHOTS = [['plato', 0, 1.95, 0, 1.95, 0, .5], ['persona', 1.45, 3.8, 2.45, 4.95, .5, .75], ['pluma', 19.3, 22.75, .6, 4.4, .5, .55],
-  ['camina', 68.9, 74.7, 0, 4.96, .5, .5], ['cierre', 77.3, 80.6, 1.6, 4.96, .6, .01]].filter(sh => CLIPN[sh[0]]);
+  ['camina', 68.9, 72.1, 0, 3.2, .5, .5], ['cierre', 71.6, 74.9, 1.6, 4.96, .5, .01]].filter(sh => CLIPN[sh[0]]);
 const shotA = (sh, tv) => tv < sh[1] || tv > sh[2] ? 0 : Math.min(sh[5] ? prog(tv, sh[1], sh[5]) : 1, 1 - prog(tv, sh[2] - sh[6], sh[6]));
 const shotF = (sh, tv) => clamp(Math.round(lerp(sh[3], sh[4], clamp((tv - sh[1]) / (sh[2] - sh[1]), 0, 1)) * 30), 0, CLIPN[sh[0]] - 1);
 const clipSrc = (n, i) => `clips/${n}/f${String(i + 1).padStart(3, '0')}.jpg`;
@@ -74,7 +73,6 @@ function drawClips(tv, late) {
     if (sh[0] === 'pluma' && tv > sh[1] + sh[5]) { c.save(); c.globalAlpha = 1; c.fillStyle = K.cream; c.fillRect(0, 0, W, H); c.restore(); }
     if (sh[0] === 'persona') { const z = 1 + .4 * ease(prog(tv, 2.95, .85)); c.translate(540, 1500); c.scale(z, z); c.translate(-540, -1500); }
     c.drawImage(e.im, 0, 0, W, H); c.restore(); top = Math.max(top, a); }
-  if (late) pill('Menos peso', 540, 300, win(tv, 70.87, 74.4, .35), K.green, K.white, 40);
   return top;
 }
 
@@ -349,10 +347,11 @@ function renderAt(t) {
     c.globalAlpha = end * up; c.fillStyle = K.amber; c.fillRect(500, 840, 80, 6);
     c.font = `400 92px ${SERIF}`; c.fillStyle = K.white; c.textAlign = 'center'; c.fillText('Nutrición.Health', 540, 980);
     c.font = `italic 400 42px ${SERIF}`; c.fillStyle = K.greenLight; c.fillText('Más allá del consultorio.', 540, 1060);
+    pill('¿Dudas sobre tu tratamiento? Contáctanos', 540, 1200, easeOut(prog(t, 74.8, .8)), K.amber, K.white, 34);
     c.font = `400 28px ${SANS}`; c.fillStyle = 'rgba(255,255,255,.5)'; c.fillText('Material educativo. No sustituye la consulta con tu médico.', 540, 1760); c.restore(); }
 }
 // Montaje con voz: tiempo real del video → tiempo del guion original
-const SEGS = [[0, 7.069, 0, 6], [7.069, 14.557, 6, 13], [14.557, 22.906, 13, 20], [22.906, 29.505, 20, 27], [29.505, 33.231, 27, 32], [33.231, 37.349, 32, 37], [37.349, 40.839, 37, 42], [40.839, 44.33, 42, 45], [44.33, 49.1, 45, 49], [49.1, 53.218, 49, 53], [53.218, 57.336, 53, 57], [57.336, 62.002, 57, 61], [62.002, 69.071, 61, 67], [69.071, 74.469, 67, 70.6], [74.469, 79.866, 70.6, 74]], T_END = 79.866, TOTAL = 82.866;
+const SEGS = [[0, 7.069, 0, 6], [7.069, 14.557, 6, 13], [14.557, 22.906, 13, 20], [22.906, 29.505, 20, 27], [29.505, 33.231, 27, 32], [33.231, 37.349, 32, 37], [37.349, 40.839, 37, 42], [40.839, 44.33, 42, 45], [44.33, 49.1, 45, 49], [49.1, 53.218, 49, 53], [53.218, 57.336, 53, 57], [57.336, 62.002, 57, 61], [62.002, 69.071, 61, 67], [69.071, 74.0, 67, 74]], T_END = 74.0, TOTAL = 77.0;
 function tau(tv) { if (tv >= T_END) return 74 + (tv - T_END) / (TOTAL - T_END) * 3; for (const [na, nb, oa, ob] of SEGS) if (tv < nb) return oa + (tv - na) / (nb - na) * (ob - oa); return 74; }
 let TV = 0;
 function renderFrame(tv) { TV = tv; renderAt(tau(tv)); }

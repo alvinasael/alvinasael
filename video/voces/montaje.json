@@ -172,31 +172,18 @@
   },
   {
    "oa": 67,
-   "ob": 70.6,
-   "na": 69.071,
-   "nb": 74.469,
-   "en": 69.421,
-   "archivo": "voces/elevenlabs/frases/frase12-beneficio.mp3",
-   "voz": [
-    0,
-    4.598
-   ],
-   "texto": "Y como beneficio adicional: para muchas personas, menos peso."
-  },
-  {
-   "oa": 70.6,
    "ob": 74,
-   "na": 74.469,
-   "nb": 79.866,
-   "en": 74.819,
-   "archivo": "voces/elevenlabs/frases/frase13.mp3",
+   "na": 69.071,
+   "nb": 74.0,
+   "en": 69.6,
+   "archivo": "voces/elevenlabs/frases/frase-cierre-contacto-1.mp3",
    "voz": [
     0,
-    4.598
+    3.2
    ],
-   "texto": "Algunos GLP-1 también protegen el corazón y los riñones."
+   "texto": "¿Tienes dudas sobre tu tratamiento? Contáctanos."
   }
  ],
- "fin": 79.866,
- "total": 82.866
+ "fin": 74.0,
+ "total": 77.0
 }

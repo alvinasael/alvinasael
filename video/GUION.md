@@ -1,6 +1,6 @@
 # GLP-1: el mensajero que tu cuerpo ya conoce
 
-Video vertical (1080×1920), 83 s, con voz, música, efectos de sonido y texto en pantalla.
+Video vertical (1080×1920), 77 s (versión 2; la versión 1 dura 83 s), con voz, música, efectos de sonido y texto en pantalla.
 
 | Tiempo | Narración (igual al texto en pantalla) |
 |---|---|
@@ -17,9 +17,10 @@ Video vertical (1080×1920), 83 s, con voz, música, efectos de sonido y texto e
 | 53.2–57.3 s | Tres: la comida entra más despacio. |
 | 57.3–62.0 s | Cuatro: menos hambre, así que se come menos. |
 | 62.0–69.1 s | Juntos logran lo principal: una glucosa más estable, después de comer y en ayunas. |
-| 69.1–74.5 s | Y como beneficio adicional: para muchas personas, menos peso. |
-| 74.5–79.9 s | Algunos GLP-1 también protegen el corazón y los riñones. |
-| 79.9–82.9 s | Cierre con el logo |
+| 69.1–74.0 s | ¿Tienes dudas sobre tu tratamiento? Contáctanos. |
+| 74.0–77.0 s | Logo, con "¿Dudas sobre tu tratamiento? Contáctanos" |
+
+En la versión 2 se quitaron las frases de beneficios adicionales (peso, corazón y riñones); siguen en la versión 1.
 
 ## Escenas 3D (Three.js)
 - **Del plato al intestino:** plato de arroz con habichuelas, ensalada y tostones; la cámara entra al intestino, donde las células (puntos ámbar) sueltan GLP-1 (hélices verdes).
@@ -43,8 +44,8 @@ La versión 1 quedó congelada en `version-1/`. Esta versión usa la misma voz, 
 | 1.5–3.8 s | Clip de la protagonista comiendo; acercamiento que entra al túnel del intestino 3D |
 | 19.3–22.8 s | Clip de la protagonista con la pluma semanal, con el calendario encima |
 | 22.9–69 s | La ilustración del cuerpo (atlas médico) con los órganos iluminándose en ámbar |
-| 68.9–74.7 s | Clip de la protagonista caminando frente al mar ("Menos peso") |
-| 77.3–80.6 s | Clip de cierre: se detiene, respira y sonríe; luego el logo |
+| 68.9–72.1 s | Clip de la protagonista caminando frente al mar |
+| 71.6–74.9 s | Clip de cierre: se detiene, respira y sonríe; luego el logo |
 
 - Kit de marca en ElevenLabs: "Nutrición.Health" (paleta, tipografía y reglas).
 - Imágenes: plato y persona con GPT Image 2.5; pluma y caminata con Gemini 3 Pro Image usando a la protagonista como referencia; cuerpo con GPT Image 2.5 (fondo quitado: `imagenes-ia/elegidas/cuerpo-recorte.png`).
@@ -58,4 +59,4 @@ La versión 1 quedó congelada en `version-1/`. Esta versión usa la misma voz, 
 3. `bash clips/extraer.sh` y luego `node render.js` graba el video con ese audio, o une `glp1-mudo.mp4` con la mezcla:
    `ffmpeg -i glp1-mudo.mp4 -i voces/mezcla.m4a -map 0:v -map 1:a -c copy -shortest glp1-como-funciona.mp4`
 
-Los valores de glucosa son ilustrativos. Pendiente de revisión clínica: la frase sobre corazón y riñones.
+Los valores de glucosa son ilustrativos. Pendiente de revisión clínica (solo versión 1): la frase sobre corazón y riñones.
