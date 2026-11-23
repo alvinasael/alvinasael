@@ -1,6 +1,11 @@
-# Video: Cómo funciona el programa de Nutrición.Health (borrador 1)
+# Video: Cómo funciona el programa de Nutrición.Health
 
-Para pacientes · vertical 1080×1920 · ~70 s · voz "Nutrición.Health – Educadora" · misma protagonista del video de GLP-1.
+Para pacientes · vertical 1080×1920 · 66 s · voz "Nutrición.Health – Educadora" · **sin protagonista: todo animado en código** (como la versión 1 del video GLP-1).
+
+Archivos: `metodologia.html` (animación), `voz/m1..m9.mp3`, `mezcla.py` → `mezcla.m4a`, video final `como-funciona-el-programa.mp4`.
+Grabar: `PAGE=metodologia/metodologia.html AUDIO=metodologia/mezcla.m4a node render.js salida.mp4` (desde `video/`).
+
+> La tabla de abajo es el borrador original; las escenas finales usan íconos y gráficas en vez de imágenes de la protagonista. Cierre final: "¿Quieres ser de los primeros? Regístrate y te avisamos." → logo y nutricion.health. Costo real: ~1,000 créditos (solo voz).
 Fuente del contenido: www.nutricion.health (repositorio Nutricion-Health/home).
 
 | # | Tiempo | Narración | Qué se ve |

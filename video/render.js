@@ -1,4 +1,5 @@
 // Graba glp1-video.html cuadro a cuadro y lo codifica en MP4 con ffmpeg.
+// Otra página: PAGE=metodologia/metodologia.html AUDIO=metodologia/mezcla.m4a node render.js salida.mp4
 // Uso: node render.js [salida.mp4]   ·   node render.js --stills 3,10,24   (cuadros sueltos en ./stills)
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
@@ -13,7 +14,7 @@ const fs = require('fs'), path = require('path');
     if (!f.startsWith(__dirname) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { s.writeHead(404); return s.end(); }
     s.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(s); });
   await new Promise(r => srv.listen(0, '127.0.0.1', r));
-  await p.goto(`http://127.0.0.1:${srv.address().port}/glp1-video.html?t=0`);
+  await p.goto(`http://127.0.0.1:${srv.address().port}/${process.env.PAGE || 'glp1-video.html'}?t=0`);
   await p.waitForFunction('window.ready === true');
   await p.evaluate(() => Promise.all(['600 62px "Playfair Display"', 'italic 400 42px "Playfair Display"', '400 92px "Playfair Display"', '500 54px "DM Sans"', '600 36px "DM Sans"', '700 28px "DM Sans"', '400 28px "DM Sans"'].map(f => document.fonts.load(f))));
   console.log('fuentes:', await p.evaluate(() => [document.fonts.check('62px "Playfair Display"'), document.fonts.check('54px "DM Sans"')]));
@@ -24,7 +25,7 @@ const fs = require('fs'), path = require('path');
   } else {
     const out = args[0] || path.join(__dirname, 'glp1-como-funciona.mp4');
     // Audio: voces/mezcla.m4a (python3 mezcla.py) o, si no existe, silencio
-    const mix = path.join(__dirname, 'voces', 'mezcla.m4a'), hasMix = fs.existsSync(mix);
+    const mix = path.join(__dirname, process.env.AUDIO || 'voces/mezcla.m4a'), hasMix = fs.existsSync(mix);
     const audioIn = hasMix ? ['-i', mix] : ['-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo'];
     const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-', ...audioIn, '-map', '0:v', '-map', '1:a', '-shortest',
       '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', '-preset', 'medium', '-c:a', hasMix ? 'copy' : 'aac', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
