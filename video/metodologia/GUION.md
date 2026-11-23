@@ -35,3 +35,21 @@ Igual que la versión 1, más una escena de 8 s después de "Lo complementamos" 
 
 En pantalla: "Consultas individuales · uno a uno con Giovanna · MNT", con evaluación nutricional, plan de alimentación personalizado, seguimiento continuo y "$0 con Medicare en casos elegibles".
 Archivos: `metodologia-v2.html`, `voz/m7b.mp3`, `python3 mezcla.py v2` → `mezcla-v2.m4a`, video `como-funciona-el-programa-v2.mp4`.
+
+## Versión 3: "Un enfoque completo" · 66 s
+Consulta individual, programa grupal y tu médico como tres partes conectadas del mismo acompañamiento, con el paciente en el centro.
+
+| Tiempo | Narración |
+|---|---|
+| 0.5 s | Tu cita con el médico dura unos quince minutos. ¿Te alcanza para entender tu diabetes? |
+| 6.4 s | Por eso nuestro enfoque es completo. Te acompañamos de tres formas, conectadas entre sí. |
+| 13.0 s | En tu consulta individual, Giovanna evalúa tu caso y crea tu plan de alimentación. |
+| 18.6 s | En el programa aprendes a vivir con tu diabetes: ocho sesiones en grupo pequeño, por Zoom y en español. |
+| 25.9 s | Aprendes a leer tu glucómetro y a entender tus números. A comer sin renunciar a tu comida. Y tienes tiempo de verdad para preguntar todo. |
+| 35.4 s | Y tu médico recibe tu progreso, para que todo trabaje en la misma dirección. |
+| 40.9 s | Las guía Giovanna Gierbolini, nutricionista-dietista registrada y especialista en diabetes. |
+| 47.5 s | Tu médico trata la enfermedad. Nosotros te enseñamos a vivir con ella, todos los días. |
+| 53.7 s | Entiende tu diabetes. Vive con confianza. |
+| 58.0 s | ¿Quieres ser de los primeros? Regístrate y te avisamos. |
+
+Archivos: `enfoque-completo.html`, `voz/e1..e4.mp3` (frases nuevas), `python3 mezcla.py v3` → `mezcla-enfoque.m4a`, video `enfoque-completo.mp4`.
