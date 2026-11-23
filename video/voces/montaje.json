@@ -175,11 +175,11 @@
    "ob": 74,
    "na": 69.071,
    "nb": 74.0,
-   "en": 69.6,
-   "archivo": "voces/elevenlabs/frases/frase-cierre-contacto-1.mp3",
+   "en": 69.5,
+   "archivo": "voces/elevenlabs/frases/frase-cierre-final-2.mp3",
    "voz": [
     0,
-    3.2
+    3.76
    ],
    "texto": "¿Tienes dudas sobre tu tratamiento? Contáctanos."
   }
