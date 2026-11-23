@@ -1,6 +1,6 @@
 # GLP-1: el mensajero que tu cuerpo ya conoce
 
-Video vertical (1080×1920), 80 s, con voz, música, efectos de sonido y texto en pantalla.
+Video vertical (1080×1920), 83 s, con voz, música, efectos de sonido y texto en pantalla.
 
 | Tiempo | Narración (igual al texto en pantalla) |
 |---|---|
@@ -11,14 +11,15 @@ Video vertical (1080×1920), 80 s, con voz, música, efectos de sonido y texto e
 | 29.5–33.2 s | Al hígado: suelta menos azúcar. |
 | 33.2–37.3 s | Al estómago: vacíate más despacio. |
 | 37.3–40.8 s | Y al cerebro: ya estás lleno. |
-| 40.8–44.7 s | Tres historias que se juntan en una sola. |
-| 44.7–49.5 s | Uno: más insulina, justo cuando hace falta. |
-| 49.5–53.6 s | Dos: menos azúcar saliendo del hígado. |
-| 53.6–57.7 s | Tres: la comida entra más despacio. |
-| 57.7–64.7 s | Juntas logran lo principal: una glucosa más estable, después de comer y en ayunas. |
-| 64.7–71.6 s | Y como beneficio adicional: menos apetito y, para muchas personas, menos peso. |
-| 71.6–77.0 s | Algunos GLP-1 también protegen el corazón y los riñones. |
-| 77.0–80.0 s | Cierre con el logo |
+| 40.8–44.3 s | Cuatro factores que trabajan juntos. |
+| 44.3–49.1 s | Uno: más insulina, justo cuando hace falta. |
+| 49.1–53.2 s | Dos: menos azúcar saliendo del hígado. |
+| 53.2–57.3 s | Tres: la comida entra más despacio. |
+| 57.3–62.0 s | Cuatro: menos hambre, así que se come menos. |
+| 62.0–69.1 s | Juntos logran lo principal: una glucosa más estable, después de comer y en ayunas. |
+| 69.1–74.5 s | Y como beneficio adicional: para muchas personas, menos peso. |
+| 74.5–79.9 s | Algunos GLP-1 también protegen el corazón y los riñones. |
+| 79.9–82.9 s | Cierre con el logo |
 
 ## Escenas 3D (Three.js)
 - **Del plato al intestino:** plato de arroz con habichuelas, ensalada y tostones; la cámara entra al intestino, donde las células (puntos ámbar) sueltan GLP-1 (hélices verdes).
@@ -29,7 +30,8 @@ Video vertical (1080×1920), 80 s, con voz, música, efectos de sonido y texto e
 - **Voz:** "Nutrición.Health – Educadora", voz puertorriqueña diseñada en ElevenLabs y guardada en la cuenta (`voice_id 3Hh6aIdDpasRtIYLDdKL`). Modelo eleven_v4, una frase por archivo (`voces/elevenlabs/frases/`). "GLP-1" se escribe "G L P uno" para que lo lea en español.
 - **Música:** Eleven Music v2.5, 80 s instrumental (cuatro puertorriqueño, marimba, percusión suave), con secciones que siguen las escenas. Hay 4 versiones en `voces/elevenlabs/musica/`; se usa la 4, elegida por Nutrición.Health.
 - **Efectos:** ElevenLabs Sound Effects v3 (`voces/elevenlabs/sfx/`), ubicados según `voces/elevenlabs/momentos.json`. El tic-tac del reloj se arma con el clic suave, porque el efecto de reloj salió casi mudo.
-- Créditos usados en ElevenLabs: unos 7,200 de 131,000 del mes.
+- Créditos usados en ElevenLabs: unos 7,700 de 131,000 del mes.
+- Estructura: cuatro factores (páncreas, hígado, estómago y cerebro) bajan la glucosa; el peso, el corazón y los riñones son beneficios adicionales.
 - La versión anterior con la voz Nova (Artificial Studio) quedó en `voces/mezcla-nova.m4a`.
 
 ## Cómo volver a generarlo
