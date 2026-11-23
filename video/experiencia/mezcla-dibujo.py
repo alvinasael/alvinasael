@@ -3,7 +3,7 @@
 import os, subprocess, re
 D = os.path.dirname(os.path.abspath(__file__)); V = os.path.dirname(D); E = f'{V}/voces/elevenlabs'; TMP = f'{D}/tmp'; os.makedirs(TMP, exist_ok=True)
 TOTAL = 86.0
-VOZ = [('d1', .4), ('s2', 10.6), ('s3', 16.9), ('s4', 22.4), ('s5', 27.2), ('s6', 32.3), ('giro', 37.3), ('c1', 39.8), ('c2', 43.9), ('c3', 48.1), ('c4', 52.8), ('c5', 56.3), ('c6', 63.0), ('x7', 68.8), ('m8', 74.4), ('m9', 78.6)]
+VOZ = [('d1', .4), ('s2', 10.6), ('s3', 16.9), ('s4', 22.4), ('s5', 27.2), ('s6', 32.3), ('giro', 37.3), ('c1', 39.8), ('c2-nh', 43.75), ('c3', 48.6), ('c4', 53.0), ('c5', 56.3), ('c6', 63.0), ('x7', 68.8), ('m8', 74.4), ('m9', 78.6)]
 run = lambda *a: subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', *a], check=True)
 def lufs(p): return float(re.findall(r'I:\s+(-?[0-9.]+) LUFS', subprocess.run(['ffmpeg', '-hide_banner', '-i', p, '-af', 'ebur128', '-f', 'null', '-'], capture_output=True, text=True).stderr)[-1])
 def place(items, out):
@@ -18,8 +18,8 @@ fx = lambda n, at, tgt, ex='': (f'{E}/sfx/{n}.mp3', at, round(tgt - lufs(f'{E}/s
 ef = [fx('tic', a + .2, -30) for a in (0, 10.3, 16.6, 22.1, 26.9, 32.0)]
 ef += [fx('pop', 5.5 + i * .35, -30) for i in range(5)] + [fx('pop', x, -28) for x in (12.4, 13.4, 14.5, 23.0)]
 ef += [fx('zambullida', 35.95, -24, 'areverse,atrim=0:1.6')]                                    # rebobinado
-ef += [fx('resuelve', a + .25, -27) for a in (37.4, 43.6, 47.8, 52.5, 56.0, 62.7)]
-ef += [fx('pop', x, -26) for x in (41.4, 45.0, 45.9, 53.3, 66.4)] + [fx('pop', 58.2 + i * .14, -30) for i in range(8)]
+ef += [fx('resuelve', a + .25, -27) for a in (37.4, 43.6, 48.4, 52.9, 56.0, 62.7)]
+ef += [fx('pop', x, -26) for x in (41.4, 45.0, 45.9, 53.5, 66.4)] + [fx('pop', 58.2 + i * .14, -30) for i in range(8)]
 ef += [fx('se-deshace', 69.2, -28), fx('resuelve', 74.5, -26), fx('pop', 80.8, -24), fx('logo', 83.1, -21)]
 place(ef, f'{TMP}/efectos.wav')
 M = f'{E}/musica/musica-4.mp3'

@@ -104,7 +104,7 @@ pantalla dividida se conserva tal cual.
 
 **Acto 2 · Con Nutrición.Health** *(nuevas)*
 1. Sales de la consulta con algo más: un camino.
-2. Esa noche, Giovanna evalúa tu caso y te da un plan.
+2. Esa noche, en Nutrición.Health evaluamos tu caso y te damos un plan.
 3. A la hora de comer, aprendes a comer sin renunciar a tu comida.
 4. Entiendes tus números y sabes qué hacer.
 5. Y no lo enfrentas sin apoyo: tienes ocho sesiones en grupo, con personas que viven lo mismo que tú.
