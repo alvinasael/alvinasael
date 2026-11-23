@@ -57,7 +57,7 @@ const CAPS = [
 // ── Clips de video (ElevenCreative · Seedance 2.5), guardados como cuadros JPG en clips/<nombre>/ ──
 // [clip, inicio, fin (segundos reales del video), desde, hasta (segundos del clip), fundido de entrada, de salida]
 window.CLIPN = window.CLIPN || {};
-const SHOTS = [['plato', 0, 1.95, 0, 1.95, 0, .5], ['persona', 1.45, 3.8, 1.2, 3.55, .5, .75], ['pluma', 19.3, 22.75, .6, 4.4, .5, .55],
+const SHOTS = [['plato', 0, 1.95, 0, 1.95, 0, .5], ['persona', 1.45, 3.8, 2.45, 4.95, .5, .75], ['pluma', 19.3, 22.75, .6, 4.4, .5, .55],
   ['camina', 68.9, 74.7, 0, 4.96, .5, .5], ['cierre', 77.3, 80.6, 1.6, 4.96, .6, .01]].filter(sh => CLIPN[sh[0]]);
 const shotA = (sh, tv) => tv < sh[1] || tv > sh[2] ? 0 : Math.min(sh[5] ? prog(tv, sh[1], sh[5]) : 1, 1 - prog(tv, sh[2] - sh[6], sh[6]));
 const shotF = (sh, tv) => clamp(Math.round(lerp(sh[3], sh[4], clamp((tv - sh[1]) / (sh[2] - sh[1]), 0, 1)) * 30), 0, CLIPN[sh[0]] - 1);
@@ -72,7 +72,7 @@ function drawClips(tv, late) {
   for (const sh of SHOTS) { if ((sh[1] > 60) !== late) continue; const a = shotA(sh, tv); if (a <= 0) continue; const e = CACHE.get(clipSrc(sh[0], shotF(sh, tv))); if (!e || !e.im.naturalWidth) continue;
     c.save(); c.globalAlpha = a;
     if (sh[0] === 'pluma' && tv > sh[1] + sh[5]) { c.save(); c.globalAlpha = 1; c.fillStyle = K.cream; c.fillRect(0, 0, W, H); c.restore(); }
-    if (sh[0] === 'persona') { const z = 1 + .4 * ease(prog(tv, 2.95, .85)); c.translate(540, 1150); c.scale(z, z); c.translate(-540, -1150); }
+    if (sh[0] === 'persona') { const z = 1 + .4 * ease(prog(tv, 2.95, .85)); c.translate(540, 1500); c.scale(z, z); c.translate(-540, -1500); }
     c.drawImage(e.im, 0, 0, W, H); c.restore(); top = Math.max(top, a); }
   if (late) pill('Menos peso', 540, 300, win(tv, 70.87, 74.4, .35), K.green, K.white, 40);
   return top;

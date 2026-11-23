@@ -34,10 +34,28 @@ Video vertical (1080×1920), 83 s, con voz, música, efectos de sonido y texto e
 - Estructura: cuatro factores (páncreas, hígado, estómago y cerebro) bajan la glucosa; el peso, el corazón y los riñones son beneficios adicionales.
 - La versión anterior con la voz Nova (Artificial Studio) quedó en `voces/mezcla-nova.m4a`.
 
+## Versión 2: imágenes y clips de ElevenCreative
+La versión 1 quedó congelada en `version-1/`. Esta versión usa la misma voz, música y efectos (mismo audio y mismos tiempos) y cambia la imagen:
+
+| Tiempo | Qué se ve |
+|---|---|
+| 0.0–1.9 s | Clip del plato boricua (arroz, habichuelas, tostones, ensalada) |
+| 1.5–3.8 s | Clip de la protagonista comiendo; acercamiento que entra al túnel del intestino 3D |
+| 19.3–22.8 s | Clip de la protagonista con la pluma semanal, con el calendario encima |
+| 22.9–69 s | La ilustración del cuerpo (atlas médico) con los órganos iluminándose en ámbar |
+| 68.9–74.7 s | Clip de la protagonista caminando frente al mar ("Menos peso") |
+| 77.3–80.6 s | Clip de cierre: se detiene, respira y sonríe; luego el logo |
+
+- Kit de marca en ElevenLabs: "Nutrición.Health" (paleta, tipografía y reglas).
+- Imágenes: plato y persona con GPT Image 2.5; pluma y caminata con Gemini 3 Pro Image usando a la protagonista como referencia; cuerpo con GPT Image 2.5 (fondo quitado: `imagenes-ia/elegidas/cuerpo-recorte.png`).
+- Clips: Seedance 2.5, 5 s, 720p, sin audio (`clips/*.mp4`). `bash clips/extraer.sh` los convierte en cuadros antes de grabar.
+- `render.js` sirve la carpeta con un servidor local para poder leer las imágenes en el canvas.
+- Costo aproximado en ElevenLabs: imágenes ~33,800 créditos, clips ~84,000 créditos.
+
 ## Cómo volver a generarlo
 1. `voces/montaje.json`: en qué segundo va cada frase y cada escena.
 2. `python3 mezcla_elevenlabs.py [1-4]`: arma `voces/mezcla.m4a` (el número elige la música).
-3. `node render.js` graba el video con ese audio, o une `glp1-mudo.mp4` con la mezcla:
+3. `bash clips/extraer.sh` y luego `node render.js` graba el video con ese audio, o une `glp1-mudo.mp4` con la mezcla:
    `ffmpeg -i glp1-mudo.mp4 -i voces/mezcla.m4a -map 0:v -map 1:a -c copy -shortest glp1-como-funciona.mp4`
 
 Los valores de glucosa son ilustrativos. Pendiente de revisión clínica: la frase sobre corazón y riñones.
