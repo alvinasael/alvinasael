@@ -89,3 +89,27 @@ a 5,000 sin terminar.
 
 Video vertical de ~80 s en `video/experiencia/`, aparte del actual. "Dos experiencias" en
 pantalla dividida se conserva tal cual.
+
+## 9. Guion (versión aprobada en revisión)
+
+**Acto 1 · Sin acompañamiento**
+1. Te diagnostican diabetes en una consulta de quince minutos. Sin acompañamiento, sales con una receta, una orientación breve y muchas dudas. *(se regraba)*
+2. Esa noche, sin guía, buscas en internet y encuentras respuestas que se contradicen.
+3. A la hora de comer, te dan una lista de prohibidos y dejas tu arroz con habichuelas.
+4. Tu glucómetro marca números que no entiendes, y te preocupan.
+5. Los próximos meses los enfrentas sin apoyo, hasta tu próxima cita.
+6. En tu próxima cita, el médico empieza de cero.
+
+**Giro:** ¿Y si lo hacemos diferente? *(nueva)*
+
+**Acto 2 · Con Nutrición.Health** *(nuevas)*
+1. Sales de la consulta con algo más: un camino.
+2. Esa noche, Giovanna evalúa tu caso y te da un plan.
+3. A la hora de comer, aprendes a comer sin renunciar a tu comida.
+4. Entiendes tus números y sabes qué hacer.
+5. Y no lo enfrentas sin apoyo: tienes ocho sesiones en grupo, con personas que viven lo mismo que tú.
+6. En tu próxima cita, tu médico ya recibió tu progreso. Llegan alineados.
+
+**Cierre:** Es la misma diabetes. Pero dos experiencias muy distintas. · Entiende tu diabetes. Vive con confianza. · ¿Quieres ser de los primeros? Regístrate y te avisamos.
+
+Voz por grabar: frase 1 del acto 1, el giro y las 6 del acto 2 (~800 créditos).
