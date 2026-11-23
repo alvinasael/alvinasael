@@ -113,3 +113,9 @@ pantalla dividida se conserva tal cual.
 **Cierre:** Es la misma diabetes. Pero dos experiencias muy distintas. · Entiende tu diabetes. Vive con confianza. · ¿Quieres ser de los primeros? Regístrate y te avisamos.
 
 Voz por grabar: frase 1 del acto 1, el giro y las 6 del acto 2 (~800 créditos).
+
+## 10. Resultado
+- Video: `dos-experiencias-dibujo.mp4` (86 s). Animación: `dibujo-animado.html`. Audio: `python3 mezcla-dibujo.py` → `mezcla-dibujo.m4a`.
+- Grabar (desde `video/`): `PAGE=experiencia/dibujo-animado.html AUDIO=experiencia/mezcla-dibujo.m4a node render.js salida.mp4`
+- Imágenes en `dibujo/` (hoja de personaje, 12 escenas). Música del acto 1 con filtro pasa-bajos; se abre en el acto 2.
+- Créditos usados: ~5,455 (voces ~680, personaje ~380, escenas ~4,395).
