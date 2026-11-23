@@ -27,7 +27,7 @@ Video vertical (1080×1920), 80 s, con voz, música, efectos de sonido y texto e
 
 ## Audio (ElevenLabs)
 - **Voz:** "Nutrición.Health – Educadora", voz puertorriqueña diseñada en ElevenLabs y guardada en la cuenta (`voice_id 3Hh6aIdDpasRtIYLDdKL`). Modelo eleven_v4, una frase por archivo (`voces/elevenlabs/frases/`). "GLP-1" se escribe "G L P uno" para que lo lea en español.
-- **Música:** Eleven Music v2.5, 80 s instrumental (cuatro puertorriqueño, marimba, percusión suave), con secciones que siguen las escenas. Hay 4 versiones en `voces/elevenlabs/musica/`; se usa la 1, la que mejor sigue la curva de energía pedida.
+- **Música:** Eleven Music v2.5, 80 s instrumental (cuatro puertorriqueño, marimba, percusión suave), con secciones que siguen las escenas. Hay 4 versiones en `voces/elevenlabs/musica/`; se usa la 4, elegida por Nutrición.Health.
 - **Efectos:** ElevenLabs Sound Effects v3 (`voces/elevenlabs/sfx/`), ubicados según `voces/elevenlabs/momentos.json`. El tic-tac del reloj se arma con el clic suave, porque el efecto de reloj salió casi mudo.
 - Créditos usados en ElevenLabs: unos 7,200 de 131,000 del mes.
 - La versión anterior con la voz Nova (Artificial Studio) quedó en `voces/mezcla-nova.m4a`.
