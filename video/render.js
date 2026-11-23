@@ -7,14 +7,20 @@ const fs = require('fs'), path = require('path');
   const FPS = 30, args = process.argv.slice(2);
   const b = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] }); const p = await b.newPage({ viewport: { width: 540, height: 960 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
-  await p.goto('file://' + path.join(__dirname, 'glp1-video.html') + '?t=0');
+  // servidor local: las imágenes y los clips no pueden leerse desde file:// sin bloquear el canvas
+  const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.jpg': 'image/jpeg', '.png': 'image/png', '.css': 'text/css' };
+  const srv = require('http').createServer((q, s) => { const f = path.join(__dirname, decodeURIComponent(q.url.split('?')[0]));
+    if (!f.startsWith(__dirname) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { s.writeHead(404); return s.end(); }
+    s.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(s); });
+  await new Promise(r => srv.listen(0, '127.0.0.1', r));
+  await p.goto(`http://127.0.0.1:${srv.address().port}/glp1-video.html?t=0`);
   await p.waitForFunction('window.ready === true');
   await p.evaluate(() => Promise.all(['600 62px "Playfair Display"', 'italic 400 42px "Playfair Display"', '400 92px "Playfair Display"', '500 54px "DM Sans"', '600 36px "DM Sans"', '700 28px "DM Sans"', '400 28px "DM Sans"'].map(f => document.fonts.load(f))));
   console.log('fuentes:', await p.evaluate(() => [document.fonts.check('62px "Playfair Display"'), document.fonts.check('54px "DM Sans"')]));
   const DUR = await p.evaluate('window.DUR');
   if (args[0] === '--stills') {
     fs.mkdirSync(path.join(__dirname, 'stills'), { recursive: true });
-    for (const t of args[1].split(',')) fs.writeFileSync(path.join(__dirname, 'stills', `t${t}.jpg`), Buffer.from(await p.evaluate(t => frameJPEG(t), +t), 'base64'));
+    for (const t of args[1].split(',')) fs.writeFileSync(path.join(__dirname, 'stills', `t${t}.jpg`), Buffer.from(await p.evaluate(async t => { await prepare(t); return frameJPEG(t); }, +t), 'base64'));
   } else {
     const out = args[0] || path.join(__dirname, 'glp1-como-funciona.mp4');
     // Audio: voces/mezcla.m4a (python3 mezcla.py) o, si no existe, silencio
@@ -25,8 +31,8 @@ const fs = require('fs'), path = require('path');
     console.log('audio:', hasMix ? 'voz + música' : 'silencio');
     const done = new Promise(r => ff.on('close', r));
     const N = Math.round(DUR * FPS);
-    for (let i = 0; i < N; i++) { const buf = Buffer.from(await p.evaluate(t => frameJPEG(t), i / FPS), 'base64'); if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r)); if (i % 60 === 0) console.log(`cuadro ${i}/${N}  ${new Date().toISOString().slice(11,19)}`); }
+    for (let i = 0; i < N; i++) { const buf = Buffer.from(await p.evaluate(async t => { await prepare(t); return frameJPEG(t); }, i / FPS), 'base64'); if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r)); if (i % 60 === 0) console.log(`cuadro ${i}/${N}  ${new Date().toISOString().slice(11,19)}`); }
     ff.stdin.end(); await done; console.log('listo:', out);
   }
-  console.log('errores:', errs.length ? errs : 'ninguno'); await b.close();
+  console.log('errores:', errs.length ? errs : 'ninguno'); await b.close(); srv.close();
 })();
