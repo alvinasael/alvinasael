@@ -1,5 +1,5 @@
 {
- "voz": "ElevenLabs \u00b7 Nutrici\u00f3n.Health \u2013 Educadora (eleven_v4)",
+ "voz": "ElevenLabs · Nutrición.Health – Educadora (eleven_v4)",
  "segmentos": [
   {
    "oa": 0,
@@ -11,107 +11,116 @@
    "voz": [
     0,
     6.269
-   ]
+   ],
+   "texto": "¿Sabías que tu cuerpo ya produce GLP-1? Cada vez que comes, tu intestino lo suelta."
   },
   {
    "oa": 6,
    "ob": 13,
    "na": 7.069,
-   "nb": 14.556,
+   "nb": 14.557,
    "en": 7.419,
    "archivo": "voces/elevenlabs/frases/frase01.mp3",
    "voz": [
     0,
     6.687
-   ]
+   ],
+   "texto": "Es una hormona mensajera: avisa que llegó comida. Pero la natural dura apenas unos minutos."
   },
   {
    "oa": 13,
    "ob": 20,
-   "na": 14.556,
-   "nb": 22.905,
-   "en": 14.906,
+   "na": 14.557,
+   "nb": 22.906,
+   "en": 14.907,
    "archivo": "voces/elevenlabs/frases/frase02.mp3",
    "voz": [
     0,
     7.549
-   ]
+   ],
+   "texto": "El medicamento GLP-1 es una copia que dura mucho más. Por eso muchas se aplican una vez por semana."
   },
   {
    "oa": 20,
    "ob": 27,
-   "na": 22.905,
-   "nb": 29.504,
-   "en": 23.255,
+   "na": 22.906,
+   "nb": 29.505,
+   "en": 23.256,
    "archivo": "voces/elevenlabs/frases/frase03.mp3",
    "voz": [
     0,
     5.799
-   ]
+   ],
+   "texto": "Al páncreas le dice: suelta insulina, pero solo cuando la glucosa está alta."
   },
   {
    "oa": 27,
    "ob": 32,
-   "na": 29.504,
-   "nb": 33.23,
-   "en": 29.854,
+   "na": 29.505,
+   "nb": 33.231,
+   "en": 29.855,
    "archivo": "voces/elevenlabs/frases/frase04.mp3",
    "voz": [
     0,
     2.926
-   ]
+   ],
+   "texto": "Al hígado: suelta menos azúcar."
   },
   {
    "oa": 32,
    "ob": 37,
-   "na": 33.23,
-   "nb": 37.348,
-   "en": 33.58,
+   "na": 33.231,
+   "nb": 37.349,
+   "en": 33.581,
    "archivo": "voces/elevenlabs/frases/frase05.mp3",
    "voz": [
     0,
     3.318
-   ]
+   ],
+   "texto": "Al estómago: vacíate más despacio."
   },
   {
    "oa": 37,
    "ob": 42,
-   "na": 37.348,
+   "na": 37.349,
    "nb": 40.839,
-   "en": 37.698,
+   "en": 37.699,
    "archivo": "voces/elevenlabs/frases/frase06.mp3",
    "voz": [
     0,
     2.691
-   ]
+   ],
+   "texto": "Y al cerebro: ya estás lleno."
   },
   {
    "oa": 42,
-   "ob": 46,
+   "ob": 45,
    "na": 40.839,
-   "nb": 44.721,
+   "nb": 44.722,
    "en": 41.189,
-   "archivo": "voces/elevenlabs/frases/frase07.mp3",
+   "archivo": "voces/elevenlabs/frases/frase07-cuatro-historias.mp3",
    "voz": [
     0,
     3.082
-   ]
+   ],
+   "texto": "Cuatro historias que se juntan en una sola."
   },
   {
-   "oa": 46,
-   "ob": 51,
-   "na": 44.721,
+   "oa": 45,
+   "ob": 49,
+   "na": 44.722,
    "nb": 49.492,
-   "en": 45.071,
+   "en": 45.072,
    "archivo": "voces/elevenlabs/frases/frase08.mp3",
    "voz": [
     0,
     3.971
-   ]
+   ],
+   "texto": "Uno: más insulina, justo cuando hace falta."
   },
   {
-   "oa": 51,
-   "ob": 56,
+   "oa": 49,
+   "ob": 53,
    "na": 49.492,
    "nb": 53.61,
    "en": 49.842,
@@ -119,57 +128,75 @@
    "voz": [
     0,
     3.318
-   ]
+   ],
+   "texto": "Dos: menos azúcar saliendo del hígado."
   },
   {
-   "oa": 56,
-   "ob": 61,
+   "oa": 53,
+   "ob": 57,
    "na": 53.61,
-   "nb": 57.728,
+   "nb": 57.727,
    "en": 53.96,
    "archivo": "voces/elevenlabs/frases/frase10.mp3",
    "voz": [
     0,
     3.318
-   ]
+   ],
+   "texto": "Tres: la comida entra más despacio."
+  },
+  {
+   "oa": 57,
+   "ob": 61,
+   "na": 57.727,
+   "nb": 62.393,
+   "en": 58.077,
+   "archivo": "voces/elevenlabs/frases/frase-cuatro-hambre.mp3",
+   "voz": [
+    0,
+    3.866
+   ],
+   "texto": "Cuatro: menos hambre, así que se come menos."
   },
   {
    "oa": 61,
    "ob": 67,
-   "na": 57.728,
-   "nb": 64.719,
-   "en": 58.078,
+   "na": 62.393,
+   "nb": 69.384,
+   "en": 62.743,
    "archivo": "voces/elevenlabs/frases/frase11.mp3",
    "voz": [
     0,
     6.191
-   ]
+   ],
+   "texto": "Juntas logran lo principal: una glucosa más estable, después de comer y en ayunas."
   },
   {
    "oa": 67,
    "ob": 70.6,
-   "na": 64.719,
-   "nb": 71.632,
-   "en": 65.069,
-   "archivo": "voces/elevenlabs/frases/frase12.mp3",
+   "na": 69.384,
+   "nb": 74.782,
+   "en": 69.734,
+   "archivo": "voces/elevenlabs/frases/frase12-beneficio.mp3",
    "voz": [
     0,
-    6.113
-   ]
+    4.598
+   ],
+   "texto": "Y como beneficio adicional: para muchas personas, menos peso."
   },
   {
    "oa": 70.6,
    "ob": 74,
-   "na": 71.632,
-   "nb": 77.03,
-   "en": 71.982,
+   "na": 74.782,
+   "nb": 80.18,
+   "en": 75.132,
    "archivo": "voces/elevenlabs/frases/frase13.mp3",
    "voz": [
     0,
     4.598
-   ]
+   ],
+   "texto": "Algunos GLP-1 también protegen el corazón y los riñones."
   }
  ],
- "fin": 77.03,
- "total": 80.03
+ "fin": 80.18,
+ "total": 83.18
 }

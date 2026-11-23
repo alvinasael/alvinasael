@@ -43,12 +43,13 @@ const CAPS = [
   [27, 32, 'Al hígado: suelta menos azúcar.'],
   [32, 37, 'Al estómago: vacíate más despacio.'],
   [37, 42, 'Y al cerebro: ya estás lleno.'],
-  [42, 46, 'Tres historias que se juntan en una sola.', 1],
-  [46, 51, 'Uno: más insulina, justo cuando hace falta.'],
-  [51, 56, 'Dos: menos azúcar saliendo del hígado.'],
-  [56, 61, 'Tres: la comida entra más despacio.'],
+  [42, 45, 'Cuatro historias que se juntan en una sola.', 1],
+  [45, 49, 'Uno: más insulina, justo cuando hace falta.'],
+  [49, 53, 'Dos: menos azúcar saliendo del hígado.'],
+  [53, 57, 'Tres: la comida entra más despacio.'],
+  [57, 61, 'Cuatro: menos hambre, así que se come menos.'],
   [61, 67, 'Juntas logran lo principal: una glucosa más estable, después de comer y en ayunas.', 1],
-  [67, 70.6, 'Y como beneficio adicional: menos apetito y, para muchas personas, menos peso.'],
+  [67, 70.6, 'Y como beneficio adicional: para muchas personas, menos peso.'],
   [70.6, 74, 'Algunos GLP-1 también protegen el corazón y los riñones.'],
 ];
 
@@ -232,14 +233,14 @@ function chartCurve(par, x0, x1, yT, yB, upTo = 1) {
 }
 function sceneConverge(t) {
   const e = ease(prog(t, 42, 1.1)), k = lerp(1, MK, e), y0 = lerp(230, MY, e);
-  const stage = t >= 56 ? 3 : t >= 51 ? 2 : t >= 46 ? 1 : 0;
-  const litOn = (n, s) => t < 61 ? (stage === s ? 1 : stage > s ? .5 : (t < 46 ? .8 : .25)) : (t < 67 ? .8 : .2);
-  const lit = { pancreas: litOn('p', 1), liver: litOn('l', 2), stomach: litOn('s', 3), brain: t >= 67 ? 1 : (t < 43 ? 1 - prog(t, 42, .8) : 0) };
+  const stage = t >= 57 ? 4 : t >= 53 ? 3 : t >= 49 ? 2 : t >= 45 ? 1 : 0;
+  const litOn = (n, s) => t < 61 ? (stage === s ? 1 : stage > s ? .5 : (t < 45 ? .8 : .25)) : (t < 67 ? .8 : .2);
+  const lit = { pancreas: litOn('p', 1), liver: litOn('l', 2), stomach: litOn('s', 3), brain: t >= 67 ? 1 : (t < 43 ? Math.max(1 - prog(t, 42, .8), .8) : litOn('b', 4)) };
   c.save(); c.translate(540, y0); c.scale(k, k); c.translate(-540, -230); drawBody(lit, t); c.restore();
   if (t < 42.9) return;
   // insignias numeradas
   const badge = (n, [x, y], on) => { c.save(); c.globalAlpha *= prog(t, 43 + n * .25, .4); c.fillStyle = on ? K.amber : K.char60; c.beginPath(); c.arc(x, y, 24, 0, 6.283); c.fill(); c.fillStyle = K.white; c.font = `700 28px ${SANS}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(n, x, y + 2); c.restore(); };
-  const A = { p: M(700, 905), l: M(372, 700), s: M(712, 700) };
+  const A = { p: M(700, 905), l: M(372, 700), s: M(712, 700), b: M(632, 292) };
   const chA = 1 - prog(t, 67, .6);
   if (chA > 0) {
     c.save(); c.globalAlpha *= chA * prog(t, 43, .6);
@@ -249,9 +250,9 @@ function sceneConverge(t) {
     c.font = `500 24px ${SANS}`; c.fillStyle = K.greenMid; c.textAlign = 'right'; c.textBaseline = 'alphabetic'; c.fillText('Meta después de comer: menos de 180', x1 - 12, Y(80) - 14);
     c.strokeStyle = K.char30; c.lineWidth = 2; c.setLineDash([6, 8]); c.beginPath(); c.moveTo(lerp(x0, x1, .2), yT); c.lineTo(lerp(x0, x1, .2), yB); c.stroke(); c.setLineDash([]);
     c.fillStyle = K.char60; c.textAlign = 'center'; c.fillText('comida', lerp(x0, x1, .2), yT - 12);
-    const S = [{ base: 156, peak: 232, uc: .42, w: .15 }, { base: 156, peak: 214, uc: .42, w: .15 }, { base: 138, peak: 197, uc: .42, w: .15 }, { base: 138, peak: 180, uc: .5, w: .2 }];
+    const S = [{ base: 156, peak: 232, uc: .42, w: .15 }, { base: 156, peak: 214, uc: .42, w: .15 }, { base: 138, peak: 197, uc: .42, w: .15 }, { base: 138, peak: 180, uc: .5, w: .2 }, { base: 138, peak: 172, uc: .5, w: .19 }];
     const mix = (a, b, m) => ({ base: lerp(a.base, b.base, m), peak: lerp(a.peak, b.peak, m), uc: lerp(a.uc, b.uc, m), w: lerp(a.w, b.w, m) });
-    let par = S[0]; [[47.3, 1], [52.3, 2], [57.3, 3]].forEach(([ts, i]) => { par = mix(par, S[i], ease(prog(t, ts, 1.6))); });
+    let par = S[0]; [[46.3, 1], [50.3, 2], [54.3, 3], [58.3, 4]].forEach(([ts, i]) => { par = mix(par, S[i], ease(prog(t, ts, 1.6))); });
     c.save(); c.globalAlpha *= .35; chartCurve(S[0], x0, x1, yT, yB, prog(t, 43.2, 1.6)); c.strokeStyle = K.char30; c.lineWidth = 5; c.setLineDash([10, 10]); c.stroke(); c.setLineDash([]); c.restore();
     const done = prog(t, 61, 1);
     chartCurve(par, x0, x1, yT, yB, prog(t, 43.2, 1.6)); c.strokeStyle = done > .5 ? K.green : K.amber; c.lineWidth = lerp(7, 10, done); c.lineJoin = 'round'; c.lineCap = 'round'; c.stroke();
@@ -263,14 +264,15 @@ function sceneConverge(t) {
     const link = (from, to, ts, on) => { const p = ease(prog(t, ts, 1)); if (p <= 0) return; c.save(); c.globalAlpha *= on ? 1 : .3; c.strokeStyle = K.amber; c.lineWidth = 4; c.setLineDash([3, 10]); c.lineCap = 'round'; c.beginPath();
       for (let i = 0; i <= 40 * p; i++) { const u = i / 40, x = Math.pow(1 - u, 2) * from[0] + 2 * (1 - u) * u * from[0] + u * u * to[0], y = Math.pow(1 - u, 2) * from[1] + 2 * (1 - u) * u * lerp(from[1], to[1], .5) + u * u * to[1]; i ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke(); c.setLineDash([]);
       if (p >= 1) { c.fillStyle = K.amber; c.beginPath(); c.arc(to[0], to[1], 9, 0, 6.283); c.fill(); } c.restore(); };
-    link(A.p, [lerp(x0, x1, par.uc) + 70, Y(par.peak) + 30], 46.2, stage === 1);
-    link(A.l, [x0 + 50, Y(par.base) - 60], 51.2, stage === 2);
-    link(A.s, [lerp(x0, x1, par.uc + par.w * 1.1), Y(lerp(par.base, par.peak, .45)) - 8], 56.2, stage === 3);
+    link(A.p, [lerp(x0, x1, par.uc) + 70, Y(par.peak) + 30], 45.2, stage === 1);
+    link(A.l, [x0 + 50, Y(par.base) - 60], 49.2, stage === 2);
+    link(A.s, [lerp(x0, x1, par.uc + par.w * 1.1), Y(lerp(par.base, par.peak, .45)) - 8], 53.2, stage === 3);
+    link(A.b, [lerp(x0, x1, par.uc) - 40, Y(par.peak) - 4], 57.2, stage === 4);
     c.restore();
     pill('Glucosa más estable  ·  A1c más baja', 540, 704, win(t, 62, 67.2), K.green, K.white, 34);
   }
   const all = t >= 61 && t < 67, st = t < 61 ? stage : 0;
-  badge(1, A.p, st === 1 || all); badge(2, A.l, st === 2 || all); badge(3, A.s, st === 3 || all);
+  badge(1, A.p, st === 1 || all); badge(2, A.l, st === 2 || all); badge(3, A.s, st === 3 || all); badge(4, A.b, st === 4 || all);
   if (t >= 67) sceneExtras(t);
 }
 function sceneExtras(t) {
@@ -326,7 +328,7 @@ function renderAt(t) {
     c.font = `400 28px ${SANS}`; c.fillStyle = 'rgba(255,255,255,.5)'; c.fillText('Material educativo. No sustituye la consulta con tu médico.', 540, 1760); c.restore(); }
 }
 // Montaje con voz: tiempo real del video → tiempo del guion original
-const SEGS = [[0, 7.069, 0, 6], [7.069, 14.556, 6, 13], [14.556, 22.905, 13, 20], [22.905, 29.504, 20, 27], [29.504, 33.23, 27, 32], [33.23, 37.348, 32, 37], [37.348, 40.839, 37, 42], [40.839, 44.721, 42, 46], [44.721, 49.492, 46, 51], [49.492, 53.61, 51, 56], [53.61, 57.728, 56, 61], [57.728, 64.719, 61, 67], [64.719, 71.632, 67, 70.6], [71.632, 77.03, 70.6, 74]], T_END = 77.03, TOTAL = 80.03;
+const SEGS = [[0, 7.069, 0, 6], [7.069, 14.557, 6, 13], [14.557, 22.906, 13, 20], [22.906, 29.505, 20, 27], [29.505, 33.231, 27, 32], [33.231, 37.349, 32, 37], [37.349, 40.839, 37, 42], [40.839, 44.722, 42, 45], [44.722, 49.492, 45, 49], [49.492, 53.61, 49, 53], [53.61, 57.727, 53, 57], [57.727, 62.393, 57, 61], [62.393, 69.384, 61, 67], [69.384, 74.782, 67, 70.6], [74.782, 80.18, 70.6, 74]], T_END = 80.18, TOTAL = 83.18;
 function tau(tv) { if (tv >= T_END) return 74 + (tv - T_END) / (TOTAL - T_END) * 3; for (const [na, nb, oa, ob] of SEGS) if (tv < nb) return oa + (tv - na) / (nb - na) * (ob - oa); return 74; }
 let TV = 0;
 function renderFrame(tv) { TV = tv; renderAt(tau(tv)); }
