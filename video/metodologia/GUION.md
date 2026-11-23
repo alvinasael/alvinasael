@@ -28,3 +28,10 @@ Fuente del contenido: www.nutricion.health (repositorio Nutricion-Health/home).
 - Música nueva (opcional; si no, se reusa la del video GLP-1): ~1,000–2,000
 - Clips de video nuevos: ninguno (se reusan 4 clips ya pagados)
 - Total estimado: ~10,000–11,000
+
+## Versión 2 (con consultas individuales) · 74 s
+Igual que la versión 1, más una escena de 8 s después de "Lo complementamos" (53.35 s):
+> ¿Prefieres atención individual? También ofrecemos consultas uno a uno con Giovanna, y con Medicare pueden ser sin costo.
+
+En pantalla: "Consultas individuales · uno a uno con Giovanna · MNT", con evaluación nutricional, plan de alimentación personalizado, seguimiento continuo y "$0 con Medicare en casos elegibles".
+Archivos: `metodologia-v2.html`, `voz/m7b.mp3`, `python3 mezcla.py v2` → `mezcla-v2.m4a`, video `como-funciona-el-programa-v2.mp4`.
