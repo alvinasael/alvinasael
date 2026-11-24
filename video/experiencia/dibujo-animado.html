@@ -44,11 +44,12 @@ const TIT = ['1 · El diagnóstico', '2 · Esa noche', '3 · A la hora de comer'
 const CAM = [[1.06, 1.16, .5, .32], [1.06, 1.18, .5, .3], [1.05, 1.15, .45, .3], [1.06, 1.18, .5, .28], [1.05, 1.15, .45, .3], [1.06, 1.16, .55, .3]];
 const CAM2 = [[1.06, 1.16, .5, .32], [1.05, 1.15, .5, .3], [1.05, 1.15, .5, .3], [1.06, 1.16, .5, .28], [1.05, 1.15, .55, .32], [1.06, 1.16, .55, .3]];
 const SH = [];
-A1.forEach((k, i) => SH.push([`e${i + 1}-sin`, i ? S(k) - .6 : 0, i < 5 ? S(A1[i + 1]) - .3 : E('s6') + .6, 0, TIT[i], ...CAM[i]]));
-A2.forEach((k, i) => SH.push([`e${i + 1}-con`, i ? S(k) - .6 : S('giro') - .3, i < 5 ? S(A2[i + 1]) - .3 : E('c6') + .7, 1, TIT[i], ...CAM2[i]]));
+const WHO = ['', 'm-', '', 'm-', '', 'm-'];   // momentos 2, 4 y 6 los vive él
+A1.forEach((k, i) => SH.push([`${WHO[i]}e${i + 1}-sin`, i ? S(k) - .6 : 0, i < 5 ? S(A1[i + 1]) - .3 : E('s6') + .6, 0, TIT[i], ...CAM[i]]));
+A2.forEach((k, i) => SH.push([`${WHO[i]}e${i + 1}-con`, i ? S(k) - .6 : S('giro') - .3, i < 5 ? S(A2[i + 1]) - .3 : E('c6') + .7, 1, TIT[i], ...CAM2[i]]));
 const REW = [E('s6') + .6, S('giro') - .2];   // rebobinado
 const CONF = [[.5, .42, .34, .27, .21, .16], [.6, .68, .76, .83, .9, .95]];
-const IMG = {}; ['e1-sin','e2-sin','e3-sin','e4-sin','e5-sin','e6-sin','e1-con','e2-con','e3-con','e4-con','e5-con','e6-con'].forEach(n => { IMG[n] = new Image(); IMG[n].src = `dibujo/${n}.jpg`; });
+const IMG = {}; ['e1-sin','m-e2-sin','e3-sin','m-e4-sin','e5-sin','m-e6-sin','e1-con','m-e2-con','e3-con','m-e4-con','e5-con','m-e6-con'].forEach(n => { IMG[n] = new Image(); IMG[n].src = `dibujo/${n}.jpg`; });
 const LOADED = Promise.all(Object.values(IMG).map(im => im.decode().catch(() => {})));
 // ── Primitivas ────────────────────────────────────────────────────────────
 function rr(x, y, w, h, r) { c.beginPath(); c.roundRect(x, y, w, h, r); }
@@ -141,7 +142,7 @@ function details(t) {
   const al = pop(t, E('c6') - 1.3) * off(E('c6') + .5); if (al > 0) { c.save(); scaleAt(540, 1180, al); pill('✓ Alineados', 540, 1180, Math.min(1, al), K.amber, K.white, 40); c.restore(); }
 }
 function sceneGiro(t) {
-  const r = prog(t, REW[0], REW[1] - REW[0]), i = Math.min(5, Math.floor(r * 6)), n = `e${6 - i}-sin`;
+  const r = prog(t, REW[0], REW[1] - REW[0]), i = Math.min(5, Math.floor(r * 6)), n = SH[5 - i][0];
   c.save(); c.translate((r * 6 % 1) * -60, 0); drawIllu(n, 0, 0, 1, 1.12, 1.12, .5, .3, 0, 1); c.restore();
   c.fillStyle = 'rgba(255,255,255,.08)'; for (let k = 0; k < 6; k++) c.fillRect(0, ((t * 900 + k * 330) % H), W, 6);
   c.save(); c.globalAlpha = .9; c.fillStyle = K.white; [0, 70].forEach(dx => { c.beginPath(); c.moveTo(560 + dx, 880); c.lineTo(480 + dx, 960); c.lineTo(560 + dx, 1040); c.fill(); }); c.restore();
