@@ -119,3 +119,29 @@ Voz por grabar: frase 1 del acto 1, el giro y las 6 del acto 2 (~800 créditos).
 - Grabar (desde `video/`): `PAGE=experiencia/dibujo-animado.html AUDIO=experiencia/mezcla-dibujo.m4a node render.js salida.mp4`
 - Imágenes en `dibujo/` (hoja de personaje, 12 escenas). Música del acto 1 con filtro pasa-bajos; se abre en el acto 2.
 - Créditos usados: ~5,455 (voces ~680, personaje ~380, escenas ~4,395).
+
+
+## 11. Revisión: perspectiva del médico y una sola grabación
+- El problema es el tiempo de la consulta, no el médico. El médico es aliado en ambos actos (refiere y recibe el progreso).
+- Etiqueta del acto 1: "Por tu cuenta" (antes "Sin acompañamiento").
+- Toda la narración se grabó en UNA toma (`voz/narracion-completa.mp3`) y se cortó por frases (`voz/u-*.mp3`);
+  `tiempos-dibujo.json` guarda dónde va cada frase y la animación se sincroniza sola a partir de ahí. Duración: 92.9 s.
+
+Guion final:
+1. Te diagnostican diabetes. Tu médico te orienta, pero el tiempo de la consulta no alcanza para todo, y sales con muchas dudas.
+2. Esa noche, sin guía, buscas en internet y encuentras respuestas que se contradicen.
+3. A la hora de comer, sigues una lista de prohibidos que encontraste por ahí, y dejas tu arroz con habichuelas.
+4. Tu glucómetro marca números que no entiendes, y te preocupan.
+5. Los próximos meses los enfrentas por tu cuenta, hasta tu próxima cita.
+6. En tu próxima cita, el tiempo vuelve a ser corto para ponerse al día. (reloj de 15 min en pantalla)
+Giro: ¿Y si lo hacemos diferente?
+1. Esta vez, tu médico te refiere, y sales con algo más: un camino.
+2. Esa noche, en Nutrición punto Health evaluamos tu caso y te damos un plan.
+3. A la hora de comer, aprendes a comer sin renunciar a tu comida.
+4. Entiendes tus números y sabes qué hacer.
+5. Y no lo enfrentas por tu cuenta: tienes ocho sesiones en grupo, con personas que viven lo mismo que tú.
+6. En tu próxima cita, tu médico ya recibió tu progreso. Llegan alineados.
+Cierre: Es la misma diabetes. Pero dos experiencias muy distintas. · Entiende tu diabetes. Vive con confianza. · ¿Quieres ser de los primeros? Regístrate y te avisamos.
+
+## 12. Personaje masculino (para el próximo video de la serie)
+`dibujo/personaje-hombre.jpg`: puertorriqueño de unos 56 años, bigote canoso, guayabera azul clara. Mismo estilo que ella; podría ser su esposo.
