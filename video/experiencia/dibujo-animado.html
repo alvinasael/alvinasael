@@ -97,7 +97,7 @@ function iconChat(x, y, s) { c.save(); c.translate(x, y); c.scale(s, s); c.fillS
 function drawIllu(name, t, a, b, z0, z1, fx, fy, act, alpha) {
   const im = IMG[name]; if (!im || !im.naturalWidth || alpha <= 0) return;
   const p = ease(clamp((t - a) / (b - a), 0, 1)), z = lerp(z0, z1, p) * 1.5, w = 720 * z, h = 1280 * z;
-  const x = W * .5 - fx * w + (fx - .5) * W * .0, y = Math.min(0, H * fy - fy * h);
+  const x = clamp(W * .5 - fx * w, W - w, 0), y = clamp(H * fy - fy * h, H - h, 0);   // la imagen siempre cubre toda la pantalla
   c.save(); c.globalAlpha = alpha; if (!act) c.filter = 'saturate(32%) brightness(86%) contrast(95%)';
   c.drawImage(im, x, y, w, h); c.filter = 'none';
   if (!act) { c.fillStyle = 'rgba(40,52,70,.16)'; c.fillRect(0, 0, W, H); } else { const g = c.createRadialGradient(W * .8, 0, 50, W * .8, 0, 1200); g.addColorStop(0, 'rgba(245,200,120,.16)'); g.addColorStop(1, 'rgba(245,200,120,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
@@ -143,7 +143,7 @@ function details(t) {
 }
 function sceneGiro(t) {
   const r = prog(t, REW[0], REW[1] - REW[0]), i = Math.min(5, Math.floor(r * 6)), n = SH[5 - i][0];
-  c.save(); c.translate((r * 6 % 1) * -60, 0); drawIllu(n, 0, 0, 1, 1.12, 1.12, .5, .3, 0, 1); c.restore();
+  drawIllu(n, 0, 0, 1, 1.12 + (r * 6 % 1) * .06, 1.12 + (r * 6 % 1) * .06, .5, .3, 0, 1);   // sacudida sin destapar los bordes
   c.fillStyle = 'rgba(255,255,255,.08)'; for (let k = 0; k < 6; k++) c.fillRect(0, ((t * 900 + k * 330) % H), W, 6);
   c.save(); c.globalAlpha = .9; c.fillStyle = K.white; [0, 70].forEach(dx => { c.beginPath(); c.moveTo(560 + dx, 880); c.lineTo(480 + dx, 960); c.lineTo(560 + dx, 1040); c.fill(); }); c.restore();
 }
