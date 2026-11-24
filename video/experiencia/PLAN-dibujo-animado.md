@@ -145,3 +145,7 @@ Cierre: Es la misma diabetes. Pero dos experiencias muy distintas. · Entiende t
 
 ## 12. Personaje masculino (para el próximo video de la serie)
 `dibujo/personaje-hombre.jpg`: puertorriqueño de unos 56 años, bigote canoso, guayabera azul clara. Mismo estilo que ella; podría ser su esposo.
+
+## 13. Él y ella se alternan
+Ella vive los momentos 1, 3 y 5; él, los momentos 2, 4 y 6 (`dibujo/m-e2-*`, `m-e4-*`, `m-e6-*`), en ambos actos.
+La cocina de él usa la escena de prueba como referencia; el consultorio usa la misma descripción. Costo: ~2,320 créditos.
