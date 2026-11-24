@@ -1,9 +1,9 @@
 # Audio del video en dibujo animado.  python3 experiencia/mezcla-dibujo.py  →  experiencia/mezcla-dibujo.m4a
-# La narración es UNA sola grabación (voz/narracion-completa.mp3) cortada por frases en voz/u-*.mp3;
-# tiempos-dibujo.json dice dónde va cada frase. Acto 1: música apagada (pasa-bajos). Acto 2: música abierta.
+# La narración es UNA grabación continua (voz/narracion-fluida-montada.wav, hecha por tiempos-fluido.py);
+# tiempos-fluido.json dice cuándo empieza cada idea. Acto 1: música apagada (pasa-bajos). Acto 2: música abierta.
 import os, subprocess, re, json
 D = os.path.dirname(os.path.abspath(__file__)); V = os.path.dirname(D); E = f'{V}/voces/elevenlabs'; TMP = f'{D}/tmp'; os.makedirs(TMP, exist_ok=True)
-T = json.load(open(f'{D}/tiempos-dibujo.json')); S = lambda k: T[k][0]; EN = lambda k: T[k][1]
+J = json.load(open(f'{D}/tiempos-fluido.json')); T = J['T']; X = J['X']; S = lambda k: T[k][0]; EN = lambda k: T[k][1]
 TOTAL = round(EN('m9') + 4.0, 1)
 run = lambda *a: subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', *a], check=True)
 def lufs(p): return float(re.findall(r'I:\s+(-?[0-9.]+) LUFS', subprocess.run(['ffmpeg', '-hide_banner', '-i', p, '-af', 'ebur128', '-f', 'null', '-'], capture_output=True, text=True).stderr)[-1])
@@ -13,17 +13,17 @@ def place(items, out):
         ins += ['-i', p]; ms = int(max(0, at) * 1000); f.append(f'[{i}:a]aformat=sample_rates=44100:channel_layouts=stereo,volume={g}dB{"," + ex if ex else ""},adelay={ms}|{ms}[p{i}]')
     f.append(''.join(f'[p{i}]' for i in range(len(items))) + f'amix=inputs={len(items)}:normalize=0,apad=whole_dur={TOTAL}[o]')
     run(*ins, '-filter_complex', ';'.join(f), '-map', '[o]', '-t', str(TOTAL), out)
-place([(f'{D}/voz/u-{k}.mp3', S(k) - .12, 0, '') for k in T], f'{TMP}/voz-cruda.wav')
+place([(f'{D}/voz/narracion-fluida-montada.wav', J['off'], 0, '')], f'{TMP}/voz-cruda.wav')
 run('-i', f'{TMP}/voz-cruda.wav', '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-ar', '44100', f'{TMP}/voz.wav')
 fx = lambda n, at, tgt, ex='': (f'{E}/sfx/{n}.mp3', at, round(tgt - lufs(f'{E}/sfx/{n}.mp3'), 1), ex)
 A1, A2 = ['d1', 's2', 's3', 's4', 's5', 's6'], ['c1', 'c2', 'c3', 'c4', 'c5', 'c6']
-ef = [fx('tic', 0.2, -30)] + [fx('tic', S(k) - .4, -30) for k in A1[1:]]
-ef += [fx('pop', EN('d1') - 2.6 + i * .35, -30) for i in range(5)] + [fx('pop', S('s2') + d, -28) for d in (1.8, 2.8, 3.9)] + [fx('pop', S('s4') + .6, -28)]
+ef = [fx('tic', 0.2, -30)] + [fx('tic', S(k) - .2, -31) for k in A1[1:]]
+ef += [fx('pop', X['preguntas'] + i * .35, -30) for i in range(5)] + [fx('pop', S('s2') + d, -28) for d in (1.0, 1.9, 2.9)] + [fx('pop', S('s4') + .6, -28)]
 ef += [fx('tic', S('s6') + .2 + i * .5, -31) for i in range(6)]                                  # reloj de la consulta
 ef += [fx('zambullida', EN('s6') + .55, -24, 'areverse,atrim=0:1.6')]                             # rebobinado
-ef += [fx('resuelve', S('giro') - .1, -27)] + [fx('resuelve', S(k) - .35, -28) for k in A2[1:]]
-ef += [fx('pop', x, -26) for x in (S('c1') + 1.2, S('c2') + 2.2, S('c2') + 3.1, S('c4') + .4, EN('c6') - 1.3)] + [fx('pop', S('c5') + 2.4 + i * .14, -30) for i in range(8)]
-ef += [fx('se-deshace', S('x7') - .4, -28), fx('resuelve', S('m8'), -26), fx('pop', S('m9') + 1.9, -24), fx('logo', EN('m9') + .5, -21)]
+ef += [fx('resuelve', S('giro') - .1, -27)] + [fx('resuelve', S(k) - .2, -29) for k in A2[1:]]
+ef += [fx('pop', x, -26) for x in (S('c1') + 1.2, X['evaluamos'], X['plan'], S('c4') + .4, X['alineados'])] + [fx('pop', X['ocho'] + i * .14, -30) for i in range(8)]
+ef += [fx('se-deshace', S('x7') - .4, -28), fx('resuelve', S('m8'), -26), fx('pop', X['registrate'], -24), fx('logo', EN('m9') + .5, -21)]
 place(ef, f'{TMP}/efectos.wav')
 M = f'{E}/musica/musica-4.mp3'; G = S('giro') - .3
 run('-i', M, '-i', M, '-filter_complex', '[0:a][1:a]acrossfade=d=3[o]', '-map', '[o]', '-ar', '44100', '-ac', '2', f'{TMP}/musica-larga.wav')

@@ -1,0 +1,191 @@
+{
+ "T": {
+  "d1": [
+   0.562,
+   8.168
+  ],
+  "s2": [
+   8.488,
+   12.568
+  ],
+  "s3": [
+   12.808,
+   16.528
+  ],
+  "s4": [
+   16.728,
+   21.715
+  ],
+  "s5": [
+   21.741,
+   24.195
+  ],
+  "s6": [
+   24.221,
+   29.328
+  ],
+  "giro": [
+   31.592,
+   33.832
+  ],
+  "c1": [
+   34.742,
+   38.155
+  ],
+  "c2": [
+   38.235,
+   43.555
+  ],
+  "c3": [
+   43.595,
+   46.795
+  ],
+  "c4": [
+   46.915,
+   50.528
+  ],
+  "c5": [
+   50.582,
+   57.155
+  ],
+  "c6": [
+   57.195,
+   63.515
+  ],
+  "x7": [
+   64.077,
+   68.437
+  ],
+  "m8": [
+   69.25,
+   72.357
+  ],
+  "m9": [
+   72.946,
+   76.718
+  ]
+ },
+ "CAPS": [
+  [
+   0.562,
+   3.608,
+   "Te diagnostican diabetes. Tu médico te orienta,",
+   0
+  ],
+  [
+   3.688,
+   8.408,
+   "pero sales con preguntas, porque el tiempo de la consulta no alcanza para todo.",
+   0
+  ],
+  [
+   8.488,
+   12.728,
+   "Esa noche buscas en internet, y cada página dice algo distinto.",
+   0
+  ],
+  [
+   12.808,
+   16.648,
+   "Entonces, por si acaso, dejas de comer tus comidas favoritas.",
+   0
+  ],
+  [
+   16.728,
+   21.661,
+   "Te mides la glucosa, pero los números no te dicen mucho… solo te preocupan.",
+   0
+  ],
+  [
+   21.741,
+   24.141,
+   "Y así pasan los meses, por tu cuenta,",
+   0
+  ],
+  [
+   24.221,
+   29.678,
+   "hasta la próxima cita… donde el tiempo, otra vez, no alcanza.",
+   0
+  ],
+  [
+   31.592,
+   34.182,
+   "¿Y si lo hacemos diferente?",
+   1
+  ],
+  [
+   34.742,
+   38.155,
+   "Ahora, tu médico te refiere a Nutrición.Health.",
+   0
+  ],
+  [
+   38.235,
+   43.515,
+   "Esa misma semana nos contactas, evaluamos tu caso y te damos un plan hecho para ti.",
+   0
+  ],
+  [
+   43.595,
+   46.555,
+   "Aprendes a comer sin renunciar a tus comidas favoritas,",
+   0
+  ],
+  [
+   46.635,
+   50.502,
+   "y por fin entiendes tus números… y sabes qué hacer.",
+   0
+  ],
+  [
+   50.582,
+   52.955,
+   "Con nosotros, no lo enfrentas por tu cuenta:",
+   0
+  ],
+  [
+   53.035,
+   57.115,
+   "son ocho sesiones en grupo, con personas que viven lo mismo que tú.",
+   0
+  ],
+  [
+   57.195,
+   61.675,
+   "Esta vez, cuando llega tu próxima cita, tu médico ya conoce tu progreso.",
+   0
+  ],
+  [
+   61.755,
+   63.865,
+   "Llegan alineados.",
+   0
+  ],
+  [
+   64.077,
+   68.787,
+   "Es la misma diabetes… pero una experiencia muy distinta.",
+   1
+  ],
+  [
+   72.946,
+   77.118,
+   "¿Quieres ser de los primeros? Regístrate y te avisamos.",
+   1
+  ]
+ ],
+ "X": {
+  "registrate": 74.798,
+  "vive": 70.717,
+  "ocho": 53.435,
+  "evaluamos": 40.235,
+  "plan": 42.195,
+  "preguntas": 4.408,
+  "dos": 65.944,
+  "alineados": 61.755
+ },
+ "off": 0.4,
+ "cut": 29.2,
+ "gap": 1.5
+}

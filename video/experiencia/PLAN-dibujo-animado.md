@@ -149,3 +149,19 @@ Cierre: Es la misma diabetes. Pero dos experiencias muy distintas. · Entiende t
 ## 13. Él y ella se alternan
 Ella vive los momentos 1, 3 y 5; él, los momentos 2, 4 y 6 (`dibujo/m-e2-*`, `m-e4-*`, `m-e6-*`), en ambos actos.
 La cocina de él usa la escena de prueba como referencia; el consultorio usa la misma descripción. Costo: ~2,320 créditos.
+
+## 14. Guion fluido (una grabación continua, sin cortes)
+- Narración: `voz/narracion-fluida.mp3` (74.7 s, una sola toma). Solo se agregan 1.5 s de silencio en la pausa antes del giro (rebobinado).
+- Los tiempos salen de la transcripción por palabra (`voz/narracion-fluida-palabras.json`) con `python3 tiempos-fluido.py`.
+  Las escenas cambian en la palabra donde empieza cada idea; los subtítulos van por frase.
+- Corrección: la imagen siempre cubre todo el ancho (no hay línea blanca en los bordes).
+- Video: 80.7 s.
+
+Guion: Te diagnostican diabetes. Tu médico te orienta, pero sales con preguntas, porque el tiempo de la consulta no alcanza para todo.
+Esa noche buscas en internet, y cada página dice algo distinto. Entonces, por si acaso, dejas de comer tus comidas favoritas.
+Te mides la glucosa, pero los números no te dicen mucho… solo te preocupan. Y así pasan los meses, por tu cuenta, hasta la próxima cita…
+donde el tiempo, otra vez, no alcanza. ¿Y si lo hacemos diferente? Ahora, tu médico te refiere a Nutrición punto Health. Esa misma semana
+nos contactas, evaluamos tu caso y te damos un plan hecho para ti. Aprendes a comer sin renunciar a tus comidas favoritas, y por fin
+entiendes tus números… y sabes qué hacer. Con nosotros, no lo enfrentas por tu cuenta: son ocho sesiones en grupo, con personas que viven
+lo mismo que tú. Esta vez, cuando llega tu próxima cita, tu médico ya conoce tu progreso. Llegan alineados. Es la misma diabetes… pero una
+experiencia muy distinta. Entiende tu diabetes. Vive con confianza. ¿Quieres ser de los primeros? Regístrate y te avisamos.
