@@ -140,13 +140,15 @@ function sceneGiro(t) {
   c.fillStyle = 'rgba(255,255,255,.08)'; for (let k = 0; k < 6; k++) c.fillRect(0, ((t * 900 + k * 330) % H), W, 6);
   c.save(); c.globalAlpha = .9; c.fillStyle = K.white; [0, 70].forEach(dx => { c.beginPath(); c.moveTo(560 + dx, 880); c.lineTo(480 + dx, 960); c.lineTo(560 + dx, 1040); c.fill(); }); c.restore();
 }
-function sceneFinal(t) {
-  const sp = ease(prog(t, S('x7') - .4, 1.2)), mid = lerp(W, W / 2, sp);
-  c.save(); c.beginPath(); c.rect(0, 0, mid, H); c.clip(); drawIllu('e3-sin', 0, 0, 1, 1.1, 1.1, .5, .3, 0, 1); c.restore();
-  c.save(); c.beginPath(); c.rect(mid, 0, W - mid, H); c.clip(); drawIllu('e3-con', 0, 0, 1, 1.1, 1.1, .5, .3, 1, 1); c.restore();
-  if (sp > 0) { c.fillStyle = K.white; c.fillRect(mid - 3, 0, 6, H); }
-  c.save(); c.globalAlpha = easeOut(prog(t, S('x7') + .2, .6)); pill('Por tu cuenta', W * .25, 330, 1, 'rgba(60,60,64,.92)', K.white, 30); c.restore();
-  c.save(); c.globalAlpha = easeOut(prog(t, X.dos, .6)); pill('Con Nutrición.Health', W * .75, 330, 1, K.green, K.white, 30); c.restore();
+function sceneFinal(t) {   // la misma cocina: primero dividida; en "pero una experiencia muy distinta" gana la versión a color
+  const sp1 = ease(prog(t, S('x7') - .4, 1.2)), sp2 = ease(prog(t, X.dos, 1.5)), mid = lerp(lerp(W, W / 2, sp1), 0, sp2);
+  const zc = 1.1 + .08 * ease(prog(t, X.dos + 1.0, 3.5));   // acercamiento suave hacia ella al final
+  if (mid > 1) { c.save(); c.beginPath(); c.rect(0, 0, mid, H); c.clip(); drawIllu('e3-sin', 0, 0, 1, 1.1, 1.1, .5, .3, 0, 1); c.restore(); }
+  c.save(); c.beginPath(); c.rect(mid, 0, W - mid, H); c.clip(); drawIllu('e3-con', 0, 0, 1, zc, zc, .5, .3, 1, 1); c.restore();
+  if (sp1 > 0 && mid > 2) { c.fillStyle = K.white; c.fillRect(mid - 3, 0, 6, H); }
+  const lab = (text, x, a, bg) => { if (a <= .01) return; c.save(); c.globalAlpha *= a; c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 18; pill(text, x, 215, 1, bg, K.white, 32); c.restore(); };
+  lab('Por tu cuenta', W * .25, easeOut(prog(t, S('x7') + .2, .6)) * (1 - prog(t, X.dos, .6)), 'rgba(60,60,64,.95)');
+  lab('Con Nutrición.Health', lerp(W * .75, W / 2, sp2), easeOut(prog(t, S('x7') + .8, .6)), K.green);
 }
 function sceneGreen(t) { c.fillStyle = K.green; c.fillRect(0, 0, W, H); const a1 = easeOut(prog(t, S('m8') + .05, .7)), a2 = easeOut(prog(t, X.vive, .7));
   c.save(); c.globalAlpha = a1; txt('Entiende tu diabetes.', 540, 860, `400 78px ${SERIF}`, K.white); c.restore();
