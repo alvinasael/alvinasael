@@ -18,7 +18,7 @@ else:
     place([(f'{D}/voz/narracion.mp3', J['off'], 0, '')], f'{TMP}/voz-cruda.wav')
     run('-i', f'{TMP}/voz-cruda.wav', '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-ar', '44100', f'{TMP}/voz.wav')
 fx = lambda n, at, tgt, ex='': (f'{E}/sfx/{n}.mp3', at, round(tgt - lufs(f'{E}/sfx/{n}.mp3'), 1), ex)
-ef = [fx('tic', 0.2, -30), fx('pop', X['poco'] + 1.4, -27)]
+ef = [fx('tic', 0.2, -30), fx('pop', X['bajar'] + 1.5, -27)]
 ef += [fx('escalon', X[k] - .15, -27) for k in ('veintiun', 'catorce', 'treinta7', 'treinta4')]
 ef += [fx('se-deshace', S('q') - .3, -29), fx('resuelve', S('e1') - .1, -27), fx('pop', X['uno1'] - .2, -26), fx('pop', X['medicamento'] - .4, -28)]
 ef += [fx('tic', X[k] - .2, -30) for k in ('entiendes', 'decisiones', 'habitos')]

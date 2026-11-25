@@ -1,17 +1,17 @@
-# Video: "El poder de un 1%" — guion v13 (v1 en historial git)
+# Video: "El poder de un 1%" — guion v14 (v1 en historial git)
 
 Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de números (estilo videos anteriores)
 
 | # | Narración | En pantalla |
 |---|-----------|-------------|
 | 1 | Tu médico te habla de tu A1c… pero ¿sabes cuánto puede cambiar tu vida reducirla en un uno por ciento? | "A1c" grande · "¿Cuánto cambia tu vida bajarla 1%?" |
-| 2 | La A1c es un análisis de sangre que muestra tu promedio de azúcar de los últimos tres meses, no solo lo de un día. Parece poco… | Tubo de sangre → calendario de 3 meses → medidor 8% → 7% |
+| 2 | La A1c es un análisis de sangre que muestra tu promedio de azúcar de los últimos tres meses, no solo lo de un día. Bajar un uno por ciento parece poco… | Tubo de sangre → calendario de 3 meses → medidor 8% → 7% |
 | 3 | …pero estudios con miles de personas encontraron que, por cada uno por ciento menos, hay: | "Por cada 1% menos de A1c:" |
 | 4 | veintiún por ciento menos muertes relacionadas con la diabetes, | **–21%** muertes por diabetes |
 | 5 | catorce por ciento menos infartos, | **–14%** infartos |
 | 6 | treinta y siete por ciento menos daño en tus ojos, tus riñones y tus nervios, | **–37%** daño en ojos, riñones y nervios (iconos) |
 | 6b | y treinta y cuatro por ciento de reducción en las hospitalizaciones. | **–34%** hospitalizaciones |
-| 7 | ¿Y cómo se logra? *(pausa ~1 s)* | Slide propio: solo "¿Y cómo se logra?" centrado |
+| 7 | ¿Y cómo podemos bajar un uno por ciento de A1c? *(pausa ~1 s)* | Slide propio: "¿Y cómo bajamos un 1% de A1c?" centrado |
 | 8 | Se ha encontrado que una educación estructurada en diabetes baja la A1c hasta un uno por ciento: tanto como un medicamento. | **hasta –1%** · "comparable a un medicamento" |
 | 8b | Ahora, ¿qué es una educación estructurada? Hablar de una educación estructurada es más que recibir información. Es un camino con un orden: primero entiendes tu diabetes, luego aprendes a tomar decisiones en tu día a día, y después las conviertes en hábitos que se quedan contigo. | Camino de 3 pasos: Entender → Decidir → Mantener |
 | 9 | Según las investigaciones en este tema, aquellos quienes participaron en un programa de este tipo bajaron uno punto uno por ciento… frente a solo tres décimas con el cuidado usual. | Barras: –1.1% vs –0.3% |
