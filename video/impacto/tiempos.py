@@ -21,9 +21,9 @@ X = {'punto': at('reducirla'), 'analisis': at('análisis de sangre'), 'promedio'
      'mas': at('más que recibir'), 'camino': at('Es un camino'), 'entiendes': at('entiendes'), 'decisiones': at('aprendes a tomar'), 'habitos': at('las conviertes'),
      'uno2': at('uno punto uno'), 'tres': at('tres décimas'), 'ocho': at('programa completo de ocho'), 'vivo': at('en vivo'), 'casa': at('desde tu casa'),
      'plan': at('con un plan'), 'seguimiento': at('y siempre en complemento'), 'cambiarlo': at('puede cambiarlo')}
-caps_def = [('Tu médico te habla de tu A1c… pero ¿sabes cuánto puede cambiar tu vida un solo punto?', 'Tu médico', 'punto'),
- ('La A1c es tu promedio de azúcar de los últimos tres meses.', 'La A uno', 'meses'),
- ('Bajarla un 1% parece poco…', 'Bajarla', 'poco'),
+caps_def = [('Tu médico te habla de tu A1c… pero ¿sabes cuánto puede cambiar tu vida reducirla en un 1%?', 'Tu médico', 'ciento'),
+ ('La A1c es un análisis de sangre que muestra tu promedio de azúcar de los últimos tres meses,', 'La A uno', 'meses'),
+ ('no solo lo de un día. Parece poco…', 'no solo', 'poco'),
  ('pero estudios con miles de personas encontraron que, por cada 1% menos, hay:', 'pero estudios', 'hay'),
  ('21% menos muertes relacionadas con la diabetes,', 'veintiún', 'diabetes'),
  ('14% menos infartos,', 'catorce', 'infartos'),

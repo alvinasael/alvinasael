@@ -29,3 +29,9 @@ Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de número
 - Tiempos: `python3 tiempos.py` → `tiempos.json` (y los inserta en `impacto.html`).
 - Audio: `python3 mezcla.py` → `mezcla.m4a` (música 4 con ducking + efectos).
 - Video: `PAGE=impacto/impacto.html AUDIO=impacto/mezcla.m4a node render.js impacto/el-poder-de-un-1.mp4` (97 s).
+
+## v13 provisional (sin voz) — créditos agotados hasta el 22 dic 2026
+- `voz/provisional.py` estima los tiempos: el inicio nuevo al ritmo de la voz v1, el resto con los tiempos reales de v1.
+- `mezcla.py` sin `voz/narracion.mp3` → `mezcla-sin-voz.m4a` (música + efectos). Video: `el-poder-de-un-1-v2-sin-voz.mp4`.
+- Para agregar la voz: generar la narración v13 → `voz/narracion.mp3`, transcribir → `voz/palabras.json` → `voz/habladas.json`,
+  luego `python3 tiempos.py && python3 mezcla.py` y renderizar `el-poder-de-un-1-v2.mp4`.
