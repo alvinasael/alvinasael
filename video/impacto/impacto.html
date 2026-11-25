@@ -70,13 +70,29 @@ function sceneHook(t) {   // Tu médico te habla de tu A1c… ¿cuánto puede ca
   circ(540, 700, 300, K.white); c.strokeStyle = K.amber; c.lineWidth = 12; c.beginPath(); c.arc(540, 700, 300, -Math.PI / 2, -Math.PI / 2 + 6.283 * ease(prog(t, S('g1') + .3, 2.2))); c.stroke();
   txt('A1c', 540, 760, `700 200px ${SERIF}`, K.green); c.restore();
   const q = easeOut(prog(t, X.punto - .6, .6)); if (q > 0) { c.save(); c.globalAlpha *= q;
-    txt('¿Cuánto importa', 540, 1150 + (1 - q) * 30, `400 74px ${SERIF}`, K.char); txt('un solo punto?', 540, 1240 + (1 - q) * 30, `italic 400 74px ${SERIF}`, K.amber); c.restore(); }
+    txt('¿Cuánto cambia tu vida', 540, 1150 + (1 - q) * 30, `400 70px ${SERIF}`, K.char); txt('bajarla 1%?', 540, 1240 + (1 - q) * 30, `italic 400 74px ${SERIF}`, K.amber); c.restore(); }
 }
-function sceneGauge(t) {   // promedio de 3 meses · bajar 1%
-  const a = easeOut(prog(t, S('g2'), .6)), v = lerp(8, 7, ease(prog(t, X.bajarla, 1.6)));
-  gauge(540, 760, 300, v, a);
-  pill('Tu promedio de azúcar de 3 meses', 540, 330, easeOut(prog(t, S('g2') + .5, .5)), K.greenPale, K.green, 32);
-  const d = pop(t, X.bajarla + 1.2); if (d > 0) { c.save(); scaleAt(540, 1260, d); c.globalAlpha *= Math.min(1, d); pill('–1%', 540, 1260, 1, K.amber, K.white, 64); c.restore(); }
+function iconTube(x, y, s) { c.save(); c.translate(x, y); c.scale(s, s); c.rotate(.25);
+  c.fillStyle = K.white; c.strokeStyle = K.green; c.lineWidth = 6; rr(-26, -80, 52, 170, [6, 6, 26, 26]); c.fill(); c.stroke();
+  c.fillStyle = K.red; rr(-20, -10, 40, 94, [0, 0, 20, 20]); c.fill(); c.fillStyle = K.amber; rr(-32, -104, 64, 30, 8); c.fill(); c.restore(); }
+function iconCalendar(x, y, s, t0, t) { c.save(); c.translate(x, y); c.scale(s, s);
+  ['ENE', 'FEB', 'MAR'].forEach((m, i) => { const f = easeOut(prog(t, t0 + i * .3, .4)), cx = (i - 1) * 150; c.save(); c.globalAlpha *= Math.max(.25, f);
+    c.fillStyle = K.white; c.strokeStyle = K.green; c.lineWidth = 5; rr(cx - 62, -70, 124, 150, 14); c.fill(); c.stroke(); c.fillStyle = f > .5 ? K.amber : K.char30; rr(cx - 62, -70, 124, 40, [14, 14, 0, 0]); c.fill();
+    txt(m, cx, -40, `700 24px ${SANS}`, K.white); for (let d = 0; d < 12; d++) circ(cx - 39 + (d % 4) * 26, -2 + Math.floor(d / 4) * 26, 7, f > .5 ? K.greenMid : K.char30); c.restore(); });
+  c.restore(); }
+function sceneGauge(t) {   // análisis de sangre · promedio de 3 meses · no solo un día · parece poco
+  const fA = win(t, S('g2') - .3, X.dia, .4);   // tarjetas: análisis + calendario
+  if (fA > 0) { c.save(); c.globalAlpha *= fA;
+    const a1 = easeOut(prog(t, X.analisis - .2, .5)); if (a1 > 0) { c.save(); c.globalAlpha *= a1; c.translate(0, (1 - a1) * 40); shadowCard(140, 300, 800, 360, 32);
+      iconTube(330, 480, 1.1); txt('Análisis', 470, 470, `600 60px ${SERIF}`, K.char, 'left'); txt('de sangre', 470, 540, `italic 400 56px ${SERIF}`, K.amber, 'left'); c.restore(); }
+    const a2 = easeOut(prog(t, X.promedio - .2, .5)); if (a2 > 0) { c.save(); c.globalAlpha *= a2; c.translate(0, (1 - a2) * 40); shadowCard(140, 720, 800, 520, 32);
+      txt('Tu promedio de azúcar', 540, 810, `600 46px ${SERIF}`, K.char); iconCalendar(540, 1000, 1.3, X.meses - .3, t); txt('de los últimos 3 meses', 540, 1190, `500 36px ${SANS}`, K.char60); c.restore(); }
+    c.restore(); }
+  const fB = easeOut(prog(t, X.dia - .2, .6)); if (fB <= 0) return;   // medidor
+  const v = lerp(8, 7, ease(prog(t, X.poco + .2, 1.6)));
+  gauge(540, 760, 300, v, fB);
+  pill('No solo lo de un día', 540, 330, fB, K.greenPale, K.green, 32);
+  const d = pop(t, X.poco + 1.4); if (d > 0) { c.save(); scaleAt(540, 1260, d); c.globalAlpha *= Math.min(1, d); pill('–1%', 540, 1260, 1, K.amber, K.white, 64); c.restore(); }
   const p = easeOut(prog(t, X.poco - .2, .5)); if (p > 0) { c.save(); c.globalAlpha *= p; txt('¿parece poco?', 540, 1420, `italic 400 56px ${SERIF}`, K.char60); c.restore(); }
 }
 const STATS = [['veintiun', '–21%', 'muertes relacionadas', 'con la diabetes', iconLife], ['catorce', '–14%', 'infartos', '', iconHeart],

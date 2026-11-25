@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El poder de un 1% · Nutrición.Health</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #111; display: grid; place-items: center; }
+  canvas { height: 100vh; max-width: 100vw; aspect-ratio: 9 / 16; display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// Video vertical 1080×1920: "El poder de un 1%". Todo es función del tiempo: renderAt(t).
+// La narración es UNA grabación continua (voz/narracion.mp3); los tiempos salen de su transcripción (python3 tiempos.py).
+const D = {"T": {"g1": [0.56, 6.804], "g2": [7.124, 13.724], "i1": [14.075, 34.328], "q": [34.409, 36.569], "e1": [37.52, 45.409], "e2": [45.449, 63.169], "e3": [63.209, 74.1], "c1": [74.409, 87.132], "f": [87.223, 91.063]}, "X": {"punto": 5.884, "bajarla": 11.284, "poco": 12.884, "veintiun": 19.764, "catorce": 23.497, "treinta7": 25.977, "treinta4": 30.724, "uno1": 41.876, "medicamento": 43.582, "mas": 50.649, "camino": 52.489, "entiendes": 54.969, "decisiones": 56.969, "habitos": 60.249, "uno2": 68.969, "tres": 71.689, "ocho": 77.729, "vivo": 80.009, "casa": 80.676, "plan": 81.716, "seguimiento": 84.036, "cambiarlo": 89.516}, "CAPS": [[0.56, 7.044, "Tu médico te habla de tu A1c… pero ¿sabes cuánto puede cambiar tu vida un solo punto?", 0], [7.124, 11.204, "La A1c es tu promedio de azúcar de los últimos tres meses.", 0], [11.284, 13.995, "Bajarla un 1% parece poco…", 0], [14.075, 19.684, "pero estudios con miles de personas encontraron que, por cada 1% menos, hay:", 0], [19.764, 23.417, "21% menos muertes relacionadas con la diabetes,", 0], [23.497, 25.897, "14% menos infartos,", 0], [25.977, 30.537, "37% menos daño en tus ojos, tus riñones y tus nervios,", 0], [30.617, 34.678, "y 34% de reducción en las hospitalizaciones.", 0], [37.52, 43.502, "Se ha encontrado que una educación estructurada en diabetes baja la A1c hasta un 1%:", 0], [43.582, 45.369, "tanto como un medicamento.", 0], [45.449, 48.329, "Ahora, ¿qué es una educación estructurada?", 0], [48.409, 52.409, "Hablar de una educación estructurada es más que recibir información.", 0], [52.489, 56.409, "Es un camino con un orden: primero entiendes tu diabetes,", 0], [56.489, 59.239, "luego aprendes a tomar decisiones en tu día a día,", 0], [59.609, 63.129, "y después las conviertes en hábitos que se quedan contigo.", 0], [63.209, 68.289, "Según las investigaciones en este tema, aquellos quienes participaron en un programa de este tipo", 0], [68.369, 74.329, "bajaron 1.1%… frente a solo tres décimas con el cuidado usual.", 0], [74.409, 77.396, "Esto es lo que te ofrecemos en Nutrición.Health:", 0], [77.476, 81.636, "un programa completo de ocho semanas, en vivo, desde tu casa,", 0], [81.716, 83.956, "con un plan nutricional hecho para ti…", 0], [84.036, 87.132, "y siempre en complemento con el seguimiento de tu médico.", 0]], "off": 0.4, "end": 93.66, "total": 97.26};   // tiempos.json
+const T = D.T, X = D.X, CAPS = D.CAPS, S = k => T[k][0], EN = k => T[k][1], TOTAL = D.total;
+const W = 1080, H = 1920;
+const cv = document.getElementById('c'), c = cv.getContext('2d');
+const K = { green: '#2B4038', greenMid: '#3D5C4F', greenLight: '#D4E4DD', greenPale: '#EBF3EF', cream: '#F7F3ED', creamDark: '#EDE8DF',
+  amber: '#C4832B', amberLight: '#F5E8D6', red: '#B5523B', redPale: '#F6E3DD', char: '#1E1C19', char60: '#6B6760', char30: '#C2C0BC', white: '#FFFFFF' };
+const SANS = '"DM Sans", system-ui, sans-serif', SERIF = '"Playfair Display", Georgia, serif';
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, easeOut = t => 1 - Math.pow(1 - t, 3);
+const prog = (t, s, d) => clamp((t - s) / d, 0, 1);
+const win = (t, a, b, f = .45) => Math.min(prog(t, a, f), 1 - prog(t, b - f, f));
+const pop = (t, s, d = .45) => { const p = prog(t, s, d); return p <= 0 ? 0 : 1 + Math.sin(p * Math.PI) * .12 * (1 - p) + (easeOut(p) - 1); };
+
+// ── Primitivas ────────────────────────────────────────────────────────────
+function rr(x, y, w, h, r) { c.beginPath(); c.roundRect(x, y, w, h, r); }
+function wrap(text, maxW) { const ws = text.split(' '), out = []; let cur = ''; for (const w of ws) { const t = cur ? cur + ' ' + w : w; if (c.measureText(t).width > maxW && cur) { out.push(cur); cur = w; } else cur = t; } if (cur) out.push(cur); return out; }
+function pill(text, cx, cy, a, bg = K.white, fg = K.char, size = 30) {
+  if (a <= .01) return; c.save(); c.globalAlpha *= a; c.font = `600 ${size}px ${SANS}`; const w = c.measureText(text).width + size * 1.5, h = size * 1.9;
+  c.fillStyle = bg; rr(cx - w / 2, cy - h / 2, w, h, h / 2); c.fill(); c.fillStyle = fg; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(text, cx, cy + 2); c.restore();
+}
+function shadowCard(x, y, w, h, r = 28, fill = K.white) { c.save(); c.shadowColor = 'rgba(30,28,25,.10)'; c.shadowBlur = 30; c.shadowOffsetY = 8; c.fillStyle = fill; rr(x, y, w, h, r); c.fill(); c.restore(); }
+function label(text, x, y, color = K.amber, align = 'left', size = 24) { c.font = `700 ${size}px ${SANS}`; c.letterSpacing = '4px'; c.fillStyle = color; c.textAlign = align; c.textBaseline = 'alphabetic'; c.fillText(text.toUpperCase(), x, y); c.letterSpacing = '0px'; }
+function txt(text, x, y, font, color, align = 'center') { c.font = font; c.fillStyle = color; c.textAlign = align; c.textBaseline = 'alphabetic'; c.fillText(text, x, y); }
+function scaleAt(x, y, s) { c.translate(x, y); c.scale(s, s); c.translate(-x, -y); }
+function circ(x, y, r, fill) { c.fillStyle = fill; c.beginPath(); c.arc(x, y, r, 0, 6.283); c.fill(); }
+function stroke(col = K.green, w = 7) { c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.lineJoin = 'round'; }
+// Íconos (trazo redondeado, estilo uniforme)
+function iconHeart(x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); c.fillStyle = col; c.beginPath(); c.moveTo(0, 30); c.bezierCurveTo(-46, 0, -34, -40, 0, -18); c.bezierCurveTo(34, -40, 46, 0, 0, 30); c.fill();
+  stroke(K.white, 5); c.beginPath(); c.moveTo(-24, -2); c.lineTo(-10, -2); c.lineTo(-4, -14); c.lineTo(4, 10); c.lineTo(10, -2); c.lineTo(24, -2); c.stroke(); c.restore(); }
+function iconEye(x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); stroke(col, 6); c.beginPath(); c.moveTo(-36, 0); c.quadraticCurveTo(0, -34, 36, 0); c.quadraticCurveTo(0, 34, -36, 0); c.stroke(); circ(0, 0, 11, col); c.restore(); }
+function iconKidney(x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); c.fillStyle = col; c.beginPath(); c.ellipse(0, 0, 20, 30, 0, 0, 6.283); c.fill(); circ(14, 0, 9, K.white); c.restore(); }
+function iconNerve(x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); stroke(col, 5); c.beginPath(); c.moveTo(0, -30); c.lineTo(0, 30); c.moveTo(0, -6); c.lineTo(-18, -22); c.moveTo(0, 8); c.lineTo(18, -6); c.moveTo(0, 20); c.lineTo(-16, 30); c.stroke(); c.restore(); }
+function iconLife(x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); circ(0, -22, 14, col); c.fillStyle = col; c.beginPath(); c.moveTo(-26, 30); c.quadraticCurveTo(-26, -2, 0, -2); c.quadraticCurveTo(26, -2, 26, 30); c.closePath(); c.fill(); c.restore(); }
+function iconHospital(x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); stroke(col, 6); rr(-30, -26, 60, 56, 6); c.stroke(); c.fillStyle = col; c.fillRect(-5, -14, 10, 30); c.fillRect(-15, -4, 30, 10); c.restore(); }
+function iconPill(x, y, s) { c.save(); c.translate(x, y); c.scale(s, s); c.rotate(-.6); c.fillStyle = K.amber; rr(-40, -18, 40, 36, [18, 0, 0, 18]); c.fill(); c.fillStyle = K.white; c.strokeStyle = K.amber; c.lineWidth = 5; rr(0, -18, 40, 36, [0, 18, 18, 0]); c.fill(); c.stroke(); c.restore(); }
+function iconBook(x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); stroke(col, 6); c.beginPath(); c.moveTo(0, -24); c.quadraticCurveTo(-20, -34, -40, -26); c.lineTo(-40, 26); c.quadraticCurveTo(-20, 18, 0, 28); c.quadraticCurveTo(20, 18, 40, 26); c.lineTo(40, -26); c.quadraticCurveTo(20, -34, 0, -24); c.lineTo(0, 28); c.stroke(); c.restore(); }
+function iconSign(x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); stroke(col, 6); c.beginPath(); c.moveTo(0, -34); c.lineTo(0, 36); c.stroke(); c.fillStyle = col; c.beginPath(); c.moveTo(-4, -28); c.lineTo(30, -28); c.lineTo(40, -18); c.lineTo(30, -8); c.lineTo(-4, -8); c.fill(); c.beginPath(); c.moveTo(4, 0); c.lineTo(-30, 0); c.lineTo(-40, 10); c.lineTo(-30, 20); c.lineTo(4, 20); c.fill(); c.restore(); }
+function iconLoop(x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); stroke(col, 7); c.beginPath(); c.arc(0, 0, 28, -.3, 4.6); c.stroke(); c.fillStyle = col; c.beginPath(); c.moveTo(26, -22); c.lineTo(40, -2); c.lineTo(16, 0); c.fill(); c.restore(); }
+function iconCheck(x, y, r) { circ(x, y, r, K.amber); stroke(K.white, r / 4); c.beginPath(); c.moveTo(x - r * .42, y); c.lineTo(x - r * .1, y + r * .32); c.lineTo(x + r * .45, y - r * .32); c.stroke(); }
+// Medidor de A1c: arco de 5% a 10%, con zona meta
+function gauge(cx, cy, R, val, a = 1) {
+  c.save(); c.globalAlpha *= a; const A0 = Math.PI * .8, A1 = Math.PI * 2.2, ang = v => lerp(A0, A1, clamp((v - 5) / 5, 0, 1));
+  c.lineCap = 'butt'; [[5, 7, K.greenLight], [7, 8, K.amberLight], [8, 10, K.redPale]].forEach(([a, b, col]) => { c.strokeStyle = col; c.lineWidth = 46; c.beginPath(); c.arc(cx, cy, R, ang(a), ang(b)); c.stroke(); });
+  c.strokeStyle = val > 8 ? K.red : val > 7 ? K.amber : K.green; c.lineWidth = 46; c.beginPath(); c.arc(cx, cy, R, A0, ang(val)); c.stroke();
+  const p = ang(val); circ(cx + Math.cos(p) * R, cy + Math.sin(p) * R, 34, K.white); circ(cx + Math.cos(p) * R, cy + Math.sin(p) * R, 22, K.char);
+  [5, 6, 7, 8, 9, 10].forEach(v => txt(v + '%', cx + Math.cos(ang(v)) * (R + 70), cy + Math.sin(ang(v)) * (R + 70) + 10, `500 28px ${SANS}`, K.char60));
+  txt(val.toFixed(1) + '%', cx, cy + 40, `700 150px ${SERIF}`, K.char); txt('A1c', cx, cy + 110, `600 40px ${SANS}`, K.char60); c.restore();
+}
+
+// ── Escenas ───────────────────────────────────────────────────────────────
+function sceneHook(t) {   // Tu médico te habla de tu A1c… ¿cuánto puede cambiar un solo punto?
+  const a = pop(t, S('g1') + .1, .7); c.save(); scaleAt(540, 700, a); c.globalAlpha *= Math.min(1, a);
+  circ(540, 700, 300, K.white); c.strokeStyle = K.amber; c.lineWidth = 12; c.beginPath(); c.arc(540, 700, 300, -Math.PI / 2, -Math.PI / 2 + 6.283 * ease(prog(t, S('g1') + .3, 2.2))); c.stroke();
+  txt('A1c', 540, 760, `700 200px ${SERIF}`, K.green); c.restore();
+  const q = easeOut(prog(t, X.punto - .6, .6)); if (q > 0) { c.save(); c.globalAlpha *= q;
+    txt('¿Cuánto importa', 540, 1150 + (1 - q) * 30, `400 74px ${SERIF}`, K.char); txt('un solo punto?', 540, 1240 + (1 - q) * 30, `italic 400 74px ${SERIF}`, K.amber); c.restore(); }
+}
+function sceneGauge(t) {   // promedio de 3 meses · bajar 1%
+  const a = easeOut(prog(t, S('g2'), .6)), v = lerp(8, 7, ease(prog(t, X.bajarla, 1.6)));
+  gauge(540, 760, 300, v, a);
+  pill('Tu promedio de azúcar de 3 meses', 540, 330, easeOut(prog(t, S('g2') + .5, .5)), K.greenPale, K.green, 32);
+  const d = pop(t, X.bajarla + 1.2); if (d > 0) { c.save(); scaleAt(540, 1260, d); c.globalAlpha *= Math.min(1, d); pill('–1%', 540, 1260, 1, K.amber, K.white, 64); c.restore(); }
+  const p = easeOut(prog(t, X.poco - .2, .5)); if (p > 0) { c.save(); c.globalAlpha *= p; txt('¿parece poco?', 540, 1420, `italic 400 56px ${SERIF}`, K.char60); c.restore(); }
+}
+const STATS = [['veintiun', '–21%', 'muertes relacionadas', 'con la diabetes', iconLife], ['catorce', '–14%', 'infartos', '', iconHeart],
+  ['treinta7', '–37%', 'daño en ojos, riñones', 'y nervios', null], ['treinta4', '–34%', 'hospitalizaciones', '', iconHospital]];
+function microIcons(x, y, s, col) { iconEye(x - 46 * s, y - 20 * s, .7 * s, col); iconKidney(x + 40 * s, y - 18 * s, .7 * s, col); iconNerve(x, y + 30 * s, .7 * s, col); }
+function sceneImpact(t) {   // por cada 1% menos
+  const h = easeOut(prog(t, S('i1'), .6)); c.save(); c.globalAlpha *= h;
+  label('Por cada', 540, 250, K.amber, 'center'); txt('1% menos de A1c', 540, 340, `600 70px ${SERIF}`, K.char); c.restore();
+  STATS.forEach(([k, num, l1, l2, ic], i) => { const at = X[k] - .15, a = easeOut(prog(t, at, .55)); if (a <= 0) return; const y = 410 + i * 285;
+    const on = t >= at && (i === 3 || t < X[STATS[i + 1][0]] - .15);
+    c.save(); c.globalAlpha *= a; c.translate((1 - a) * 90, 0); shadowCard(90, y, 900, 245, 30, on ? K.green : K.white);
+    circ(220, y + 122, 82, on ? K.greenMid : K.greenPale); ic ? ic(220, y + 122, 1.5, on ? K.white : K.green) : microIcons(220, y + 122, 1.05, on ? K.white : K.green);
+    const n = Math.round(parseInt(num.slice(1)) * easeOut(prog(t, at, .9)));
+    txt('–' + n + '%', 340, y + 120, `700 96px ${SERIF}`, on ? K.amber : K.amber, 'left');
+    txt(l1, 340, y + 178, `500 36px ${SANS}`, on ? K.white : K.char, 'left'); if (l2) txt(l2, 340, y + 220, `500 36px ${SANS}`, on ? K.greenLight : K.char60, 'left'); c.restore(); });
+}
+function sceneQuestion(t) {   // ¿Y cómo se logra? (slide propio)
+  c.fillStyle = K.green; c.fillRect(0, 0, W, H);
+  const a = easeOut(prog(t, S('q') - .1, .7)); c.save(); c.globalAlpha *= a;
+  c.fillStyle = K.amber; c.fillRect(500, 820, 80 * a, 6);
+  txt('¿Y cómo', 540, 960 + (1 - a) * 30, `400 110px ${SERIF}`, K.white); txt('se logra?', 540, 1090 + (1 - a) * 30, `italic 400 110px ${SERIF}`, K.greenLight); c.restore();
+}
+function sceneEducation(t) {   // educación estructurada: hasta –1%, como un medicamento
+  const a = easeOut(prog(t, S('e1'), .6)); c.save(); c.globalAlpha *= a; c.translate(0, (1 - a) * 40);
+  label('Educación estructurada', 540, 300, K.amber, 'center');
+  shadowCard(140, 360, 800, 480, 36); iconBook(540, 470, 2, K.green);
+  const n = pop(t, X.uno1 - .2, .6); if (n > 0) { c.save(); scaleAt(540, 660, n); c.globalAlpha *= Math.min(1, n); txt('hasta –1%', 540, 700, `700 120px ${SERIF}`, K.amber); c.restore(); }
+  txt('de A1c', 540, 780, `500 40px ${SANS}`, K.char60); c.restore();
+  const m = easeOut(prog(t, X.medicamento - .4, .6)); if (m > 0) { c.save(); c.globalAlpha *= m;
+    txt('=', 540, 1010, `700 90px ${SANS}`, K.char30);
+    shadowCard(240, 1080, 600, 200, 30, K.green); iconPill(380, 1180, 1.6); txt('Tanto como', 470, 1170, `500 36px ${SANS}`, K.greenLight, 'left'); txt('un medicamento', 470, 1225, `600 44px ${SERIF}`, K.white, 'left'); c.restore(); }
+}
+function sceneSteps(t) {   // Entender → Decidir → Mantener
+  const a = easeOut(prog(t, S('e2'), .6)); c.save(); c.globalAlpha *= a;
+  label('¿Qué es una', 540, 260, K.amber, 'center'); txt('educación estructurada?', 540, 345, `600 64px ${SERIF}`, K.char); c.restore();
+  const m = easeOut(prog(t, X.mas - .3, .5)); if (m > 0) { c.save(); c.globalAlpha *= m * (1 - prog(t, X.camino - .2, .4) * .55); pill('Más que recibir información', 540, 450, 1, K.amberLight, K.amber, 34); c.restore(); }
+  const ST = [['entiendes', 'Entender', 'tu diabetes', iconBook], ['decisiones', 'Decidir', 'en tu día a día', iconSign], ['habitos', 'Mantener', 'hábitos que se quedan', iconLoop]];
+  const y0 = 560, dy = 330;
+  const lp = ST.reduce((mm, s, i) => t > X[s[0]] - .2 ? i : mm, -1);
+  const cam = easeOut(prog(t, X.camino - .2, .6)); if (cam > 0) { c.strokeStyle = K.creamDark; c.lineWidth = 10; c.beginPath(); c.moveTo(200, y0 + 110); c.lineTo(200, y0 + 110 + 2 * dy * cam); c.stroke(); }
+  if (lp > 0) { c.strokeStyle = K.amber; c.lineWidth = 10; c.beginPath(); c.moveTo(200, y0 + 110); c.lineTo(200, y0 + 110 + dy * (lp - 1 + ease(prog(t, X[ST[lp][0]] - .2, .6)))); c.stroke(); }
+  ST.forEach(([k, l1, l2, ic], i) => { const at = X[k] - .2, f = easeOut(prog(t, at, .55)), y = y0 + i * dy; if (cam <= 0) return;
+    c.save(); c.globalAlpha *= Math.max(.25 * cam, f); c.translate((1 - f) * 50, 0); shadowCard(300, y + 10, 680, 200, 26, f > .5 && i === lp ? K.green : K.white);
+    ic(410, y + 110, 1.1, f > .5 && i === lp ? K.greenLight : K.green); txt(l1, 500, y + 100, `600 56px ${SERIF}`, f > .5 && i === lp ? K.white : K.char, 'left'); txt(l2, 500, y + 155, `500 34px ${SANS}`, f > .5 && i === lp ? K.greenLight : K.char60, 'left'); c.restore();
+    const s = Math.max(pop(t, at), cam * .001); c.save(); scaleAt(200, y + 110, Math.max(s, .6 * cam)); circ(200, y + 110, 50, f > .3 ? K.amber : K.char30); txt(String(i + 1), 200, y + 128, `700 48px ${SANS}`, K.white); c.restore(); });
+}
+function sceneBars(t) {   // –1.1% vs –0.3%
+  const a = easeOut(prog(t, S('e3'), .6)); c.save(); c.globalAlpha *= a;
+  label('Lo que dicen los estudios', 540, 280, K.amber, 'center'); txt('Cambio en la A1c', 540, 365, `600 62px ${SERIF}`, K.char); c.restore();
+  const base = 520, sc = 560;   // barras hacia abajo: más larga = más reducción
+  const B = [['uno2', 1.1, 'Con educación', 'estructurada', K.green, 320], ['tres', 0.3, 'Cuidado', 'usual', K.char30, 760]];
+  c.strokeStyle = K.char30; c.lineWidth = 4; c.beginPath(); c.moveTo(150, base); c.lineTo(930, base); c.stroke();
+  B.forEach(([k, v, l1, l2, col, x]) => { const p = ease(prog(t, X[k] - .3, 1.1)); if (p <= 0) return; const h = v * sc * p;
+    c.fillStyle = col; rr(x - 110, base, 220, Math.max(h, 2), [0, 0, 24, 24]); c.fill();
+    txt('–' + (v * p).toFixed(1) + '%', x, base + h + 100, `700 90px ${SERIF}`, col === K.green ? K.amber : K.char60);
+    txt(l1, x, base - 90, `600 36px ${SANS}`, K.char); txt(l2, x, base - 40, `500 32px ${SANS}`, K.char60); });
+}
+function sceneOffer(t) {   // lo que te ofrecemos
+  const a = easeOut(prog(t, S('c1'), .6)); c.save(); c.globalAlpha *= a; c.translate(0, (1 - a) * 40);
+  shadowCard(90, 250, 900, 260, 36, K.green); c.fillStyle = K.amber; c.fillRect(500, 320, 80, 6);
+  txt('Nutrición.Health', 540, 420, `400 80px ${SERIF}`, K.white); txt('Un programa completo', 540, 480, `italic 400 36px ${SERIF}`, K.greenLight); c.restore();
+  const R = [['ocho', '8 semanas', 'de educación estructurada'], ['vivo', 'En vivo', 'con tu nutricionista'], ['casa', 'Desde tu casa', 'en español'],
+    ['plan', 'Plan nutricional', 'hecho para ti'], ['seguimiento', 'Junto a tu médico', 'en complemento con su seguimiento']];
+  R.forEach(([k, l1, l2], i) => { const f = easeOut(prog(t, X[k] - .25, .5)); if (f <= 0) return; const y = 580 + i * 180;
+    c.save(); c.globalAlpha *= f; c.translate((1 - f) * 70, 0); shadowCard(90, y, 900, 150, 24); iconCheck(180, y + 75, 40);
+    txt(l1, 250, y + 70, `600 50px ${SERIF}`, K.char, 'left'); txt(l2, 250, y + 118, `500 32px ${SANS}`, K.char60, 'left'); c.restore(); });
+}
+function sceneSummary(t) {   // resumen visual: –1% al centro
+  c.fillStyle = K.green; c.fillRect(0, 0, W, H);
+  const cx = 540, cy = 860, a = pop(t, S('f') - .1, .7);
+  const ring = ease(prog(t, S('f') + .3, 1.6));
+  STATS.forEach(([k, num, l1, l2], i) => { const ang = -Math.PI / 2 + Math.PI / 4 + i * Math.PI / 2, d = 330 * ring, x = cx + Math.cos(ang) * d, y = cy + Math.sin(ang) * d;
+    const f = easeOut(prog(t, S('f') + .3 + i * .25, .5)); if (f <= 0) return;
+    c.save(); c.globalAlpha *= f; c.strokeStyle = 'rgba(212,228,221,.35)'; c.lineWidth = 4; c.beginPath(); c.moveTo(cx, cy); c.lineTo(x, y); c.stroke();
+    circ(x, y, 128, K.greenMid); txt(num, x, y + 6, `700 64px ${SERIF}`, K.amber);
+    const lab = ['muertes', 'infartos', 'ojos · riñones', 'hospitalizaciones'][i]; txt(lab, x, y + 52, `600 ${i === 3 ? 22 : 26}px ${SANS}`, K.greenLight); if (i === 2) txt('nervios', x, y + 82, `600 26px ${SANS}`, K.greenLight); c.restore(); });
+  if (a > 0) { c.save(); scaleAt(cx, cy, a); circ(cx, cy, 150, K.amber); txt('–1%', cx, cy + 20, `700 104px ${SERIF}`, K.white); txt('A1c', cx, cy + 74, `700 32px ${SANS}`, K.white); c.restore(); }
+  const e = easeOut(prog(t, X.cambiarlo - .3, .7)); if (e > 0) { c.save(); c.globalAlpha *= e;
+    txt('1% puede', 540, 1430 + (1 - e) * 30, `400 84px ${SERIF}`, K.white); txt('cambiarlo todo.', 540, 1530 + (1 - e) * 30, `italic 400 84px ${SERIF}`, K.greenLight); c.restore(); }
+}
+const SC = [[0, S('g2'), sceneHook], [S('g2'), S('i1'), sceneGauge], [S('i1'), S('q') - .2, sceneImpact], [S('q') - .2, S('e1') - .1, sceneQuestion],
+  [S('e1') - .1, S('e2'), sceneEducation], [S('e2'), S('e3'), sceneSteps], [S('e3'), S('c1'), sceneBars], [S('c1'), S('f') - .2, sceneOffer], [S('f') - .2, D.end, sceneSummary]];
+const DARK = [[S('q') - .2, S('e1') - .1], [S('f') - .2, TOTAL + 1]];
+// Fuentes al pie, cuando aparece cada dato
+const SRC = [[S('i1'), X.treinta4 - .2, 'Fuente: UKPDS 35, BMJ 2000'], [X.treinta4 - .2, S('q') - .2, 'Fuentes: UKPDS 35, BMJ 2000 · CDC'],
+  [S('e1'), S('e2'), 'Fuente: ADA Standards of Care 2025 · Health Affairs Scholar 2024'], [S('e3'), S('c1'), 'Fuente: Latino Health Access, PMC9831659']];
+
+function captions(t) {   // subtítulo: cada línea con su franja blanca semitransparente
+  CAPS.forEach(([a, b, text, strong]) => { const al = win(t, a, b + .25, .3); if (al <= 0) return;
+    c.save(); c.globalAlpha = al; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = strong ? `600 54px ${SERIF}` : `600 44px ${SANS}`;
+    const lines = wrap(text, 920), lh = strong ? 74 : 64, yb = 1720 - (lines.length - 1) * lh;
+    lines.forEach((l, i) => { const w = c.measureText(l).width + 36, y = yb + i * lh; c.fillStyle = 'rgba(255,255,255,.82)'; rr(540 - w / 2, y - lh / 2 + 4, w, lh - 8, 10); c.fill(); });
+    c.fillStyle = strong ? K.green : K.char; lines.forEach((l, i) => c.fillText(l, 540, yb + i * lh + 2)); c.restore(); });
+}
+function renderAt(t) {
+  c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; c.letterSpacing = '0px'; c.fillStyle = K.cream; c.fillRect(0, 0, W, H);
+  SC.forEach(([a, b, f]) => { const al = win(t, a, b, .35); if (al <= 0) return; c.save(); c.globalAlpha = al; f(t); c.restore(); });
+  const dark = Math.max(...DARK.map(([a, b]) => win(t, a, b, .35)));
+  c.fillStyle = dark > .5 ? K.greenMid : K.creamDark; c.fillRect(0, 0, W, 10); c.fillStyle = K.amber; c.fillRect(0, 0, W * t / TOTAL, 10);
+  label('Nutrición.Health', 70, 108, K.amber, 'left', 28);
+  c.font = `500 28px ${SANS}`; c.textAlign = 'right'; c.fillStyle = dark > .5 ? K.greenLight : K.char60; c.fillText('El poder de un 1%', W - 70, 108);
+  SRC.forEach(([a, b, s]) => { const al = win(t, a, b, .3); if (al <= 0) return; c.save(); c.globalAlpha = al; txt(s, 540, 1880, `400 24px ${SANS}`, K.char60); c.restore(); });
+  captions(t);
+  const end = prog(t, D.end, .7);   // cierre con logo
+  if (end > 0) { c.save(); c.globalAlpha = end; c.fillStyle = K.green; c.fillRect(0, 0, W, H); const up = easeOut(prog(t, D.end + .2, .8)); c.globalAlpha = end * up;
+    c.fillStyle = K.amber; c.fillRect(500, 800, 80, 6); txt('Nutrición.Health', 540, 940, `400 92px ${SERIF}`, K.white); txt('Más allá del consultorio.', 540, 1020, `italic 400 42px ${SERIF}`, K.greenLight);
+    pill('nutricion.health', 540, 1160, easeOut(prog(t, D.end + .8, .6)), K.amber, K.white, 40);
+    txt('Material educativo. Complementa — no reemplaza — el cuidado de tu médico.', 540, 1760, `400 26px ${SANS}`, 'rgba(255,255,255,.5)'); c.restore(); }
+}
+window.renderAt = renderAt; window.renderFrame = renderAt; window.DUR = TOTAL; window.prepare = () => Promise.resolve();
+window.frameJPEG = t => { renderAt(t); return cv.toDataURL('image/jpeg', .93).slice(23); };
+document.fonts.ready.then(() => {
+  const q = new URLSearchParams(location.search).get('t');
+  if (q != null) { renderAt(+q); window.ready = true; return; }
+  window.ready = true; const s = performance.now(); (function loop(n) { renderAt(((n - s) / 1000) % TOTAL); requestAnimationFrame(loop); })(s);
+});
+</script>
+</body>
+</html>

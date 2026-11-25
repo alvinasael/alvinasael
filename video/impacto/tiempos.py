@@ -16,7 +16,7 @@ idx = []; p = 0
 for k, s in cues: i = find(s, p); idx.append(i); p = i + 1
 T = {k: [tt(W[idx[n]]['start']), tt(W[(idx[n + 1] - 1) if n + 1 < len(idx) else len(W) - 1]['end'])] for n, (k, _) in enumerate(cues)}
 def at(seq, after=None): return tt(W[find(seq, find(after) if after else 0)]['start'])
-X = {'punto': at('solo punto'), 'bajarla': at('Bajarla'), 'poco': at('parece poco'), 'veintiun': at('veintiún'), 'catorce': at('catorce'),
+X = {'punto': at('reducirla'), 'analisis': at('análisis de sangre'), 'promedio': at('muestra tu promedio'), 'meses': at('últimos tres meses'), 'dia': at('no solo lo'), 'poco': at('Parece poco'), 'veintiun': at('veintiún'), 'catorce': at('catorce'),
      'treinta7': at('treinta y siete'), 'treinta4': at('treinta y cuatro'), 'uno1': at('hasta un uno'), 'medicamento': at('tanto como'),
      'mas': at('más que recibir'), 'camino': at('Es un camino'), 'entiendes': at('entiendes'), 'decisiones': at('aprendes a tomar'), 'habitos': at('las conviertes'),
      'uno2': at('uno punto uno'), 'tres': at('tres décimas'), 'ocho': at('programa completo de ocho'), 'vivo': at('en vivo'), 'casa': at('desde tu casa'),

@@ -1,11 +1,11 @@
-# Video: "El poder de un 1%" — guion v12 (v1 en historial git)
+# Video: "El poder de un 1%" — guion v13 (v1 en historial git)
 
 Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de números (estilo videos anteriores)
 
 | # | Narración | En pantalla |
 |---|-----------|-------------|
 | 1 | Tu médico te habla de tu A1c… pero ¿sabes cuánto puede cambiar tu vida reducirla en un uno por ciento? | "A1c" grande · "¿Cuánto cambia tu vida bajarla 1%?" |
-| 2 | La A1c es un análisis de sangre que muestra tu promedio de azúcar de los últimos tres meses, no solo lo de un día. Bajarla un uno por ciento parece poco… | Tubo de sangre → calendario de 3 meses → medidor 8% → 7% |
+| 2 | La A1c es un análisis de sangre que muestra tu promedio de azúcar de los últimos tres meses, no solo lo de un día. Parece poco… | Tubo de sangre → calendario de 3 meses → medidor 8% → 7% |
 | 3 | …pero estudios con miles de personas encontraron que, por cada uno por ciento menos, hay: | "Por cada 1% menos de A1c:" |
 | 4 | veintiún por ciento menos muertes relacionadas con la diabetes, | **–21%** muertes por diabetes |
 | 5 | catorce por ciento menos infartos, | **–14%** infartos |
