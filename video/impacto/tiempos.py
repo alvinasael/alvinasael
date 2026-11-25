@@ -19,7 +19,7 @@ def at(seq, after=None): return tt(W[find(seq, find(after) if after else 0)]['st
 X = {'punto': at('reducirla'), 'analisis': at('análisis de sangre'), 'promedio': at('muestra tu promedio'), 'meses': at('últimos tres meses'), 'dia': at('no solo lo'), 'bajar': at('Bajar un uno'), 'poco': at('parece poco'), 'porcada': at('por cada uno'), 'veintiun': at('veintiún'), 'catorce': at('catorce'),
      'treinta7': at('treinta y siete'), 'treinta4': at('treinta y cuatro'), 'uno1': at('hasta un uno'), 'medicamento': at('tanto como'),
      'mas': at('más que recibir'), 'camino': at('Es un camino'), 'entiendes': at('entiendes'), 'decisiones': at('aprendes a tomar'), 'habitos': at('las conviertes'),
-     'uno2': at('uno punto uno'), 'tres': at('tres décimas'), 'ocho': at('programa completo de ocho'), 'vivo': at('en vivo'), 'casa': at('desde tu casa'),
+     'aquellos': at('aquellos quienes'), 'uno2': at('uno punto uno'), 'tres': at('tres décimas'), 'ocho': at('programa completo de ocho'), 'vivo': at('en vivo'), 'casa': at('desde tu casa'),
      'plan': at('con un plan'), 'seguimiento': at('y siempre en complemento'), 'cambiarlo': at('puede cambiarlo')}
 caps_def = [('Tu médico te habla de tu A1c… pero ¿sabes cuánto puede cambiar tu vida reducirla en un 1%?', 'Tu médico', 'ciento'),
  ('La A1c es un análisis de sangre que muestra tu promedio de azúcar de los últimos tres meses,', 'La A uno', 'meses'),

@@ -1,4 +1,4 @@
-# Video: "El poder de un 1%" — guion v14 (v1 en historial git)
+# Video: "El poder de un 1%" — guion v15 (v1 en historial git)
 
 Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de números (estilo videos anteriores)
 
