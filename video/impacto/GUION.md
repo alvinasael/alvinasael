@@ -23,3 +23,9 @@ Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de número
 - Hasta –1%: ADA Standards of Care 2025; Health Affairs Scholar 2024.
 - –1.1% vs –0.3%: Latino Health Access, PMC9831659.
 - –34% hospitalizaciones: CDC (DSMES).
+
+## Producción (v11)
+- Voz: `voz/narracion.mp3` (90.6 s, una sola toma, voz Educadora). Transcripción por palabra: `voz/palabras.json` → `voz/habladas.json`.
+- Tiempos: `python3 tiempos.py` → `tiempos.json` (y los inserta en `impacto.html`).
+- Audio: `python3 mezcla.py` → `mezcla.m4a` (música 4 con ducking + efectos).
+- Video: `PAGE=impacto/impacto.html AUDIO=impacto/mezcla.m4a node render.js impacto/el-poder-de-un-1.mp4` (97 s).
