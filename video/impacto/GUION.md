@@ -1,4 +1,4 @@
-# Video: "El poder de un 1%" — guion v1
+# Video: "El poder de un 1%" — guion v2 (v1 en historial git)
 
 Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de números (estilo videos anteriores)
 
@@ -11,10 +11,11 @@ Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de número
 | 5 | catorce por ciento menos infartos, | **–14%** infartos |
 | 6 | y treinta y siete por ciento menos daño en tus ojos, tus riñones y tus nervios. | **–37%** daño en ojos, riñones y nervios (iconos) |
 | 7 | ¿Y cómo se logra? Aprendiendo a manejar tu diabetes en el día a día. | Transición: plato, glucómetro, grupo |
-| 8 | La educación estructurada en diabetes baja la A1c hasta un uno por ciento: tanto como un medicamento. | **hasta –1%** · "comparable a un medicamento" |
+| 8 | Se ha encontrado que una educación estructurada en diabetes baja la A1c hasta un uno por ciento: tanto como un medicamento. | **hasta –1%** · "comparable a un medicamento" |
+| 8b | ¿Y qué es una educación estructurada? No es una charla ni un folleto. Es un programa, paso a paso, donde aprendes a comer, a moverte, a medir tu azúcar, a tomar tus medicamentos y a manejar el estrés… y te pones metas reales para tu día a día. | Iconos en secuencia: plato · caminar · glucómetro · pastilla · corazón · meta ✓ |
 | 9 | En un programa para latinos, quienes participaron bajaron uno punto uno por ciento… frente a solo tres décimas con el cuidado usual. | Barras: –1.1% vs –0.3% |
 | 10 | Y la educación en diabetes reduce las hospitalizaciones en un treinta y cuatro por ciento. | **–34%** hospitalizaciones |
-| 11 | Eso es lo que hacemos en Nutrición punto Health: ocho semanas, en vivo, desde tu casa, junto a tu médico. | Logo · "8 semanas · en vivo · desde tu casa" |
+| 11 | Eso es lo que hacemos en Nutrición punto Health: ocho semanas, en vivo, desde tu casa, con un plan nutricional hecho para ti… y siempre en complemento con el seguimiento de tu médico. | Logo · "8 semanas · en vivo · desde tu casa" · "Plan nutricional personalizado" · "+ tu médico" |
 | 12 | Porque un uno por ciento… puede cambiarlo todo. | "1% puede cambiarlo todo." (tono de cierre) |
 
 ## Fuentes (nota al pie del video)
