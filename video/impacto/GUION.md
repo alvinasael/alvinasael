@@ -1,4 +1,4 @@
-# Video: "El poder de un 1%" — guion v10 (v1 en historial git)
+# Video: "El poder de un 1%" — guion v11 (v1 en historial git)
 
 Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de números (estilo videos anteriores)
 
@@ -13,10 +13,10 @@ Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de número
 | 6b | y treinta y cuatro por ciento de reducción en las hospitalizaciones. | **–34%** hospitalizaciones |
 | 7 | ¿Y cómo se logra? *(pausa ~1 s)* | Slide propio: solo "¿Y cómo se logra?" centrado |
 | 8 | Se ha encontrado que una educación estructurada en diabetes baja la A1c hasta un uno por ciento: tanto como un medicamento. | **hasta –1%** · "comparable a un medicamento" |
-| 8b | Ahora, ¿qué es una educación estructurada? Es más que recibir información. Es un camino con un orden: primero entiendes tu diabetes, luego aprendes a tomar decisiones en tu día a día, y después las conviertes en hábitos que se quedan contigo. | Camino de 3 pasos: Entender → Decidir → Mantener |
+| 8b | Ahora, ¿qué es una educación estructurada? Hablar de una educación estructurada es más que recibir información. Es un camino con un orden: primero entiendes tu diabetes, luego aprendes a tomar decisiones en tu día a día, y después las conviertes en hábitos que se quedan contigo. | Camino de 3 pasos: Entender → Decidir → Mantener |
 | 9 | Según las investigaciones en este tema, aquellos quienes participaron en un programa de este tipo bajaron uno punto uno por ciento… frente a solo tres décimas con el cuidado usual. | Barras: –1.1% vs –0.3% |
-| 11 | Eso es lo que hacemos en Nutrición punto Health: ocho semanas, en vivo, desde tu casa, con un plan nutricional hecho para ti… y siempre en complemento con el seguimiento de tu médico. | Logo · "8 semanas · en vivo · desde tu casa" · "Plan nutricional personalizado" · "+ tu médico" |
-| 12 | Porque un uno por ciento… puede cambiarlo todo. | "1% puede cambiarlo todo." (tono de cierre) |
+| 11 | Esto es lo que te ofrecemos en Nutrición punto Health: un programa completo de ocho semanas, en vivo, desde tu casa, con un plan nutricional hecho para ti… y siempre en complemento con el seguimiento de tu médico. | Logo · "Programa completo · 8 semanas · en vivo · desde tu casa" · "Plan nutricional personalizado" · "+ tu médico" |
+| 12 | Porque un uno por ciento… puede cambiarlo todo. | Resumen visual: "–1% A1c" al centro, rodeado de –21% muertes · –14% infartos · –37% ojos/riñones/nervios · –34% hospitalizaciones · "1% puede cambiarlo todo." (tono de cierre) |
 
 ## Fuentes (nota al pie del video)
 - –21% / –14% / –37%: Stratton et al., UKPDS 35, BMJ 2000 (asociación por cada 1% de A1c).
