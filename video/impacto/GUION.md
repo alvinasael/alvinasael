@@ -1,4 +1,4 @@
-# Video: "El poder de un 1%" — guion v5 (v1 en historial git)
+# Video: "El poder de un 1%" — guion v6 (v1 en historial git)
 
 Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de números (estilo videos anteriores)
 
@@ -10,7 +10,7 @@ Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de número
 | 4 | veintiún por ciento menos muertes relacionadas con la diabetes, | **–21%** muertes por diabetes |
 | 5 | catorce por ciento menos infartos, | **–14%** infartos |
 | 6 | y treinta y siete por ciento menos daño en tus ojos, tus riñones y tus nervios. | **–37%** daño en ojos, riñones y nervios (iconos) |
-| 7 | ¿Y cómo se logra? | Transición: plato, glucómetro, grupo |
+| 7 | ¿Y cómo se logra? *(pausa ~1 s)* | Slide propio: solo "¿Y cómo se logra?" centrado |
 | 8 | Se ha encontrado que una educación estructurada en diabetes baja la A1c hasta un uno por ciento: tanto como un medicamento. | **hasta –1%** · "comparable a un medicamento" |
 | 8b | ¿Y qué es una educación estructurada? Es más que recibir información. Es un camino con un orden: primero entiendes tu diabetes, luego aprendes a tomar decisiones en tu día a día, y después las conviertes en hábitos que se quedan contigo. | Camino de 3 pasos: Entender → Decidir → Mantener |
 | 9 | En un programa para latinos, quienes participaron bajaron uno punto uno por ciento… frente a solo tres décimas con el cuidado usual. | Barras: –1.1% vs –0.3% |
