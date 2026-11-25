@@ -1,0 +1,207 @@
+{
+ "T": {
+  "g1": [
+   0.56,
+   7.564
+  ],
+  "g2": [
+   7.924,
+   17.604
+  ],
+  "i1": [
+   17.683,
+   38.287
+  ],
+  "q": [
+   38.642,
+   41.77
+  ],
+  "e1": [
+   43.21,
+   51.21
+  ],
+  "e2": [
+   51.29,
+   68.73
+  ],
+  "e3": [
+   68.97,
+   79.37
+  ],
+  "c1": [
+   80.31,
+   93.45
+  ],
+  "f": [
+   94.165,
+   97.851
+  ]
+ },
+ "X": {
+  "punto": 5.444,
+  "analisis": 9.044,
+  "promedio": 10.244,
+  "meses": 12.084,
+  "dia": 13.684,
+  "bajar": 15.364,
+  "poco": 16.484,
+  "porcada": 20.807,
+  "veintiun": 23.487,
+  "catorce": 27.327,
+  "treinta7": 29.807,
+  "treinta4": 34.727,
+  "uno1": 47.49,
+  "medicamento": 49.397,
+  "mas": 56.41,
+  "camino": 58.25,
+  "entiendes": 60.57,
+  "decisiones": 62.57,
+  "habitos": 66.09,
+  "aquellos": 71.29,
+  "uno2": 74.81,
+  "tres": 77.45,
+  "ocho": 83.53,
+  "vivo": 86.01,
+  "casa": 86.73,
+  "plan": 88.0,
+  "seguimiento": 90.45,
+  "cambiarlo": 96.291
+ },
+ "CAPS": [
+  [
+   0.56,
+   7.844,
+   "Tu médico te habla de tu A1c… pero ¿sabes cuánto puede cambiar tu vida reducirla en un 1%?",
+   0
+  ],
+  [
+   7.924,
+   13.604,
+   "La A1c es un análisis de sangre que muestra tu promedio de azúcar de los últimos tres meses,",
+   0
+  ],
+  [
+   13.684,
+   15.284,
+   "no solo lo de un día.",
+   0
+  ],
+  [
+   15.364,
+   17.603,
+   "Bajar un 1% parece poco…",
+   0
+  ],
+  [
+   17.683,
+   23.407,
+   "pero estudios con miles de personas encontraron que, por cada 1% menos, hay:",
+   0
+  ],
+  [
+   23.487,
+   27.247,
+   "21% menos muertes relacionadas con la diabetes,",
+   0
+  ],
+  [
+   27.327,
+   29.727,
+   "14% menos infartos,",
+   0
+  ],
+  [
+   29.807,
+   34.54,
+   "37% menos daño en tus ojos, tus riñones y tus nervios,",
+   0
+  ],
+  [
+   34.62,
+   38.637,
+   "y 34% de reducción en las hospitalizaciones.",
+   0
+  ],
+  [
+   43.21,
+   49.317,
+   "Se ha encontrado que una educación estructurada en diabetes baja la A1c hasta un 1%:",
+   0
+  ],
+  [
+   49.397,
+   51.21,
+   "tanto como un medicamento.",
+   0
+  ],
+  [
+   51.29,
+   54.04,
+   "Ahora, ¿qué es una educación estructurada?",
+   0
+  ],
+  [
+   54.17,
+   58.17,
+   "Hablar de una educación estructurada es más que recibir información.",
+   0
+  ],
+  [
+   58.25,
+   62.09,
+   "Es un camino con un orden: primero entiendes tu diabetes,",
+   0
+  ],
+  [
+   62.17,
+   64.92,
+   "luego aprendes a tomar decisiones en tu día a día,",
+   0
+  ],
+  [
+   65.41,
+   68.89,
+   "y después las conviertes en hábitos que se quedan contigo.",
+   0
+  ],
+  [
+   68.97,
+   74.09,
+   "Según las investigaciones en este tema, aquellos quienes participaron en un programa de este tipo",
+   0
+  ],
+  [
+   74.17,
+   79.72,
+   "bajaron 1.1%… frente a solo tres décimas con el cuidado usual.",
+   0
+  ],
+  [
+   80.31,
+   83.33,
+   "Esto es lo que te ofrecemos en Nutrición.Health:",
+   0
+  ],
+  [
+   83.41,
+   87.92,
+   "un programa completo de ocho semanas, en vivo, desde tu casa,",
+   0
+  ],
+  [
+   88.0,
+   90.37,
+   "con un plan nutricional hecho para ti…",
+   0
+  ],
+  [
+   90.45,
+   93.45,
+   "y siempre en complemento con el seguimiento de tu médico.",
+   0
+  ]
+ ],
+ "off": 0.4,
+ "end": 100.45,
+ "total": 104.05
+}
