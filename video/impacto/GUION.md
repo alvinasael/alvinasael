@@ -35,3 +35,6 @@ Formato: 9:16 · ~65 s · voz Educadora (una sola toma) · animación de número
 - `mezcla.py` sin `voz/narracion.mp3` → `mezcla-sin-voz.m4a` (música + efectos). Video: `el-poder-de-un-1-v2-sin-voz.mp4`.
 - Para agregar la voz: generar la narración v13 → `voz/narracion.mp3`, transcribir → `voz/palabras.json` → `voz/habladas.json`,
   luego `python3 tiempos.py && python3 mezcla.py` y renderizar `el-poder-de-un-1-v2.mp4`.
+
+## Versión final aprobada
+- `el-poder-de-un-1-v6.mp4` (107 s): voz v17 en una sola toma, cierre con el mismo tono de la oferta.
