@@ -2,197 +2,197 @@
  "T": {
   "g1": [
    0.56,
-   8.284
+   7.844
   ],
   "g2": [
-   8.9,
-   18.949
+   8.164,
+   16.724
   ],
   "i1": [
-   19.765,
-   40.018
+   16.875,
+   37.609
   ],
   "q": [
-   40.099,
-   42.259
+   37.848,
+   38.905
   ],
   "e1": [
-   43.21,
-   51.099
+   40.248,
+   48.368
   ],
   "e2": [
-   51.139,
-   68.859
+   48.408,
+   66.861
   ],
   "e3": [
-   68.899,
-   79.79
+   66.915,
+   77.773
   ],
   "c1": [
-   80.099,
-   92.822
+   77.849,
+   91.216
   ],
   "f": [
-   92.913,
-   96.753
+   91.442,
+   94.889
   ]
  },
  "X": {
-  "punto": 6.376,
-  "analisis": 10.875,
-  "promedio": 12.191,
-  "meses": 14.495,
-  "dia": 15.832,
-  "poco": 18.357,
-  "veintiun": 25.454,
-  "catorce": 29.187,
-  "treinta7": 31.667,
-  "treinta4": 36.414,
-  "uno1": 47.566,
-  "medicamento": 49.272,
-  "mas": 56.339,
-  "camino": 58.179,
-  "entiendes": 60.659,
-  "decisiones": 62.659,
-  "habitos": 65.939,
-  "uno2": 74.659,
-  "tres": 77.379,
-  "ocho": 83.419,
-  "vivo": 85.699,
-  "casa": 86.366,
-  "plan": 87.406,
-  "seguimiento": 89.726,
-  "cambiarlo": 95.206
+  "punto": 5.684,
+  "analisis": 9.364,
+  "promedio": 10.564,
+  "meses": 12.404,
+  "dia": 14.004,
+  "poco": 15.604,
+  "veintiun": 22.644,
+  "catorce": 26.457,
+  "treinta7": 28.964,
+  "treinta4": 33.844,
+  "uno1": 44.595,
+  "medicamento": 46.381,
+  "mas": 53.808,
+  "camino": 55.688,
+  "entiendes": 58.168,
+  "decisiones": 60.328,
+  "habitos": 63.848,
+  "uno2": 72.728,
+  "tres": 75.368,
+  "ocho": 81.409,
+  "vivo": 83.609,
+  "casa": 84.356,
+  "plan": 85.476,
+  "seguimiento": 87.769,
+  "cambiarlo": 93.502
  },
  "CAPS": [
   [
    0.56,
-   8.634,
+   8.084,
    "Tu médico te habla de tu A1c… pero ¿sabes cuánto puede cambiar tu vida reducirla en un 1%?",
    0
   ],
   [
-   8.9,
-   15.752,
+   8.164,
+   13.924,
    "La A1c es un análisis de sangre que muestra tu promedio de azúcar de los últimos tres meses,",
    0
   ],
   [
-   15.832,
-   19.299,
+   14.004,
+   16.795,
    "no solo lo de un día. Parece poco…",
    0
   ],
   [
-   19.765,
-   25.374,
+   16.875,
+   22.564,
    "pero estudios con miles de personas encontraron que, por cada 1% menos, hay:",
    0
   ],
   [
-   25.454,
-   29.107,
+   22.644,
+   26.377,
    "21% menos muertes relacionadas con la diabetes,",
    0
   ],
   [
-   29.187,
-   31.587,
+   26.457,
+   28.884,
    "14% menos infartos,",
    0
   ],
   [
-   31.667,
-   36.227,
+   28.964,
+   33.657,
    "37% menos daño en tus ojos, tus riñones y tus nervios,",
    0
   ],
   [
-   36.307,
-   40.368,
+   33.737,
+   37.959,
    "y 34% de reducción en las hospitalizaciones.",
    0
   ],
   [
-   43.21,
-   49.192,
+   40.248,
+   46.301,
    "Se ha encontrado que una educación estructurada en diabetes baja la A1c hasta un 1%:",
    0
   ],
   [
-   49.272,
-   51.059,
+   46.381,
+   48.328,
    "tanto como un medicamento.",
    0
   ],
   [
-   51.139,
-   54.019,
+   48.408,
+   51.528,
    "Ahora, ¿qué es una educación estructurada?",
    0
   ],
   [
-   54.099,
-   58.099,
+   51.608,
+   55.608,
    "Hablar de una educación estructurada es más que recibir información.",
    0
   ],
   [
-   58.179,
-   62.099,
+   55.688,
+   59.688,
    "Es un camino con un orden: primero entiendes tu diabetes,",
    0
   ],
   [
-   62.179,
-   64.929,
+   59.768,
+   62.678,
    "luego aprendes a tomar decisiones en tu día a día,",
    0
   ],
   [
-   65.299,
-   68.819,
+   63.128,
+   66.835,
    "y después las conviertes en hábitos que se quedan contigo.",
    0
   ],
   [
-   68.899,
-   73.979,
+   66.915,
+   71.928,
    "Según las investigaciones en este tema, aquellos quienes participaron en un programa de este tipo",
    0
   ],
   [
-   74.059,
-   80.019,
+   72.008,
+   77.769,
    "bajaron 1.1%… frente a solo tres décimas con el cuidado usual.",
    0
   ],
   [
-   80.099,
-   83.086,
+   77.849,
+   81.049,
    "Esto es lo que te ofrecemos en Nutrición.Health:",
    0
   ],
   [
-   83.166,
-   87.326,
+   81.129,
+   85.396,
    "un programa completo de ocho semanas, en vivo, desde tu casa,",
    0
   ],
   [
-   87.406,
-   89.646,
+   85.476,
+   87.689,
    "con un plan nutricional hecho para ti…",
    0
   ],
   [
-   89.726,
-   92.822,
+   87.769,
+   91.216,
    "y siempre en complemento con el seguimiento de tu médico.",
    0
   ]
  ],
  "off": 0.4,
- "end": 99.35,
- "total": 102.95
+ "end": 97.49,
+ "total": 101.09
 }
