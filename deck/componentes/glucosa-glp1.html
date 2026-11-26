@@ -1,0 +1,77 @@
+<div class="slide-page slide-anim" data-index="{{INDEX}}" data-titulo="{{TITULO}}" data-fuente="{{FUENTE}}">
+  <script>{{INCLUIR:_motor-celula.js}}</script>
+  <script>
+  (function () {
+    const root = document.currentScript.closest('.slide-page');
+    const { prog, lerp, ease, easeOut } = NHCelula;
+
+    // Mismo punto de partida que el slide de insulina: DM2 con 2 de 5 receptores y 1 puerta GLUT4
+    const RECEPTORS = [110, 215, 320, 425, 530];
+    const BASE_REC = [1, 0, 1, 0, 0];
+    const BASE_FUSE = [0, 0, 1, 0];
+    const METERS = ['stomach', 'liver', 'appetite'];
+    const weak = { glow: .25, signal: { r: 26, a: .3 } };
+
+    NHCelula.mount(root, {
+      receptors: RECEPTORS,
+      legend: ['glucosa', 'insulina', 'glp1', 'receptor', 'glut4'],
+      steps: [
+        { label: 'Se aplica GLP-1', caption: 'El GLP-1 se inyecta una vez por semana y queda circulando en la sangre. Calma el hambre y le pide al hígado que suelte menos glucosa.' },
+        { label: 'Come el plato', caption: 'Las dos comen el mismo plato. Con GLP-1 el estómago lo pasa más despacio y la persona se llena antes, así que la glucosa sube menos.' },
+        { label: 'Más insulina', caption: 'Cuando la glucosa sube, el GLP-1 le pide al páncreas más insulina. Solo actúa si la glucosa está alta, por eso por sí solo casi no causa bajones.' },
+        { label: 'Baja la glucosa', caption: 'Entra más glucosa al músculo y el hígado suelta menos. Con el tiempo, comer menos y bajar de peso también reduce la resistencia a la insulina.' },
+      ],
+      panels: [
+        {
+          label: 'Diabetes tipo 2 · sin GLP-1', tone: 'amber', labels: true, meters: METERS,
+          aria: 'Ilustración: célula muscular de una persona con diabetes tipo 2 sin tratamiento con GLP-1',
+          state: (s, t) => Object.assign({
+            G: s === 0 ? 156 : s === 1 ? lerp(156, 232, ease(prog(t, 0, 4))) : s === 2 ? 232 : lerp(232, 224, easeOut(prog(t, .5, 10))),
+            freeIns: s === 0 ? 2 : 3,
+            rec: BASE_REC, fuse: BASE_FUSE,
+            uptake: { elapsed: t, every: 2.8 },
+            stomach: s === 0 ? 0 : s === 1 ? lerp(0, .85, prog(t, 0, 1)) : s === 2 ? .85 : lerp(.85, .6, prog(t, 0, 8)),
+            liver: .85,
+            appetite: s === 0 ? .85 : s === 1 ? lerp(.85, .6, prog(t, 2, 4)) : .6,
+          }, weak),
+        },
+        {
+          label: 'Diabetes tipo 2 · con GLP-1', tone: 'green', meters: METERS,
+          aria: 'Ilustración: célula muscular de una persona con diabetes tipo 2 en tratamiento con GLP-1',
+          state: (s, t) => {
+            if (s === 0) return Object.assign({
+              G: lerp(156, 138, easeOut(prog(t, 1, 6))), freeIns: 2, glp1: Math.round(6 * prog(t, .2, 2)),
+              rec: BASE_REC, fuse: BASE_FUSE, uptake: { elapsed: t, every: 2.8 },
+              stomach: 0, liver: lerp(.85, .5, prog(t, 1, 4)), appetite: lerp(.85, .45, prog(t, 1.5, 4)),
+              tag: { text: 'Medicamento GLP-1', alpha: prog(t, .2, .6) },
+            }, weak);
+            if (s === 1) return Object.assign({
+              G: lerp(138, 180, ease(prog(t, 0, 7))), freeIns: 3, glp1: 6,
+              rec: BASE_REC, fuse: BASE_FUSE, uptake: { elapsed: t, every: 2.8 },
+              stomach: lerp(0, .35, prog(t, 0, 1)), liver: .5, appetite: lerp(.45, .2, prog(t, 1.5, 4)),
+            }, weak);
+            if (s === 2) {
+              const arrive = [1, 3];
+              return {
+                G: 180, freeIns: 3 + Math.round(5 * prog(t, .2, 2.5)), glp1: 6,
+                rec: BASE_REC.map((v, i) => v || prog(t, 1.2 + arrive.indexOf(i) * .7, 2.4)),
+                fuse: [0, prog(t, 3.6, 1.8), 1, prog(t, 4.1, 1.8)],
+                glow: lerp(.25, .85, prog(t, 2, 1.5)),
+                signal: { r: lerp(26, 52, prog(t, 2, 2)), a: lerp(.3, .45, prog(t, 2, 2)) },
+                uptake: { elapsed: t, every: t < 5.5 ? 2.8 : 1.2 },
+                stomach: .35, liver: .5, appetite: .2,
+              };
+            }
+            return {
+              G: lerp(180, 132, easeOut(prog(t, .5, 9))), freeIns: 8, glp1: 6,
+              rec: [1, 1, 1, 1, 0], fuse: [0, 1, 1, 1], glow: .85,
+              signal: { r: 52, a: .45 }, uptake: { elapsed: t, every: .75 },
+              stomach: lerp(.35, .25, prog(t, 0, 8)), liver: lerp(.5, .3, easeOut(prog(t, .5, 5))), appetite: .2,
+            };
+          },
+        },
+      ],
+    });
+  })();
+  </script>
+</div>

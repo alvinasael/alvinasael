@@ -1,0 +1,51 @@
+====
+SLIDE: 1
+TIPO: Portada
+INSIGHT: El Viaje de la Glucosa
+DATOS: Educación en diabetes
+NOTAS: Subtítulo: Qué hace la insulina y qué cambia en la diabetes tipo 2 · Fecha: Noviembre 2026
+
+====
+SLIDE: 2
+TIPO: Animación
+INSIGHT: El mismo plato, dos respuestas distintas
+DATOS: glucosa-comparacion
+NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativa, valores aproximados
+
+====
+SLIDE: 3
+TIPO: Animación
+INSIGHT: Qué hace la insulina inyectada
+DATOS: glucosa-insulina
+NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativa, valores aproximados
+
+====
+SLIDE: 4
+TIPO: Animación
+INSIGHT: Qué hace la metformina
+DATOS: glucosa-metformina
+NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativa, valores aproximados
+
+====
+SLIDE: 5
+TIPO: Animación
+INSIGHT: Qué hace un medicamento GLP-1
+DATOS: glucosa-glp1
+NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativa, valores aproximados
+
+====
+SLIDE: 6
+TIPO: Animación
+INSIGHT: Qué hace un medicamento SGLT2
+DATOS: glucosa-sglt2
+NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025 · Simulación ilustrativa, valores aproximados
+
+====
+SLIDE: 7
+TIPO: Tabla
+INSIGHT: Los números del diagnóstico
+DATOS: Prueba|Prediabetes|Diabetes
+Glucosa en ayunas (mg/dL)|100 a 125|126 o más
+2 h después de tomar glucosa (mg/dL)|140 a 199|200 o más
+Hemoglobina A1c|5.7% a 6.4%|6.5% o más
+NOTAS: Fuente: ADA, Standards of Care in Diabetes 2025

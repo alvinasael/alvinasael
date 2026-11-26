@@ -1,0 +1,48 @@
+<div class="slide-page slide-anim" data-index="{{INDEX}}" data-titulo="{{TITULO}}" data-fuente="{{FUENTE}}">
+  <script>{{INCLUIR:_motor-celula.js}}</script>
+  <script>
+  (function () {
+    const root = document.currentScript.closest('.slide-page');
+    const { curve, prog } = NHCelula;
+    const binding = (step, t) => step < 2 ? [0, 0, 0] : step === 2 ? [0, 1, 2].map(i => prog(t, .4 + i * .55, 2.4)) : [1, 1, 1];
+
+    NHCelula.mount(root, {
+      legend: ['glucosa', 'insulina', 'receptor', 'glut4'],
+      steps: [
+        { label: 'En ayunas', caption: 'En ayunas, la persona con diabetes tipo 2 ya empieza con más glucosa en la sangre.' },
+        { label: 'Come el plato', caption: 'Las dos comen el mismo plato. La glucosa pasa del intestino a la sangre igual en ambas.' },
+        { label: 'Llega la insulina', caption: 'El páncreas envía insulina. En los dos casos llega y se une a su receptor en la célula.' },
+        { label: 'La célula responde', caption: 'En la persona sana la señal entra y las puertas GLUT4 suben a la membrana. En la diabetes tipo 2 la señal se pierde: casi no suben y la glucosa se queda en la sangre.' },
+      ],
+      panels: [
+        {
+          label: 'Persona sana', tone: 'green', labels: true,
+          aria: 'Ilustración: capilar, pared del capilar y membrana de una célula muscular de una persona sana',
+          state: (s, t) => ({
+            G: curve([90, 138, 138, 104], s, t),
+            freeIns: s >= 2 ? 3 : 0,
+            rec: binding(s, t),
+            fuse: [0, 1, 2, 3].map(k => s === 3 ? prog(t, .8 + k * .35, 1.7) : 0),
+            glow: s === 3 ? prog(t, .2, .6) : 0,
+            signal: s === 3 ? { r: 74, a: .55 } : null,
+            uptake: s === 3 ? { elapsed: t - 3.0, every: .38 } : null,
+          }),
+        },
+        {
+          label: 'Diabetes tipo 2', tone: 'amber',
+          aria: 'Ilustración: capilar, pared del capilar y membrana de una célula muscular de una persona con diabetes tipo 2',
+          state: (s, t) => ({
+            G: curve([156, 232, 232, 218], s, t),
+            freeIns: s >= 2 ? 3 : 0,
+            rec: binding(s, t),
+            fuse: [0, 0, s === 3 ? prog(t, 2.6, 3.4) : 0, 0],
+            glow: s === 3 ? prog(t, .2, .6) * .25 : 0,
+            signal: s === 3 ? { r: 26, a: .32 } : null,
+            uptake: s === 3 ? { elapsed: t - 6.2, every: 2.6 } : null,
+          }),
+        },
+      ],
+    });
+  })();
+  </script>
+</div>
